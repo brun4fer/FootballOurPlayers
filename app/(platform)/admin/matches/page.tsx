@@ -17,23 +17,23 @@ export default async function AdminMatchesPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Matches</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Jogos</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Match</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={createMatchAction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="space-y-2">
-              <Label htmlFor="matchdayNumber">Matchday Number</Label>
+        <Card>
+          <CardHeader>
+          <CardTitle>Criar Jogo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={createMatchAction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <div className="space-y-2">
+              <Label htmlFor="matchdayNumber">Número da Jornada</Label>
               <Input id="matchdayNumber" name="matchdayNumber" type="number" min={1} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="competitionId">Competition</Label>
+              <Label htmlFor="competitionId">Competição</Label>
               <NativeSelect id="competitionId" name="competitionId" required defaultValue="">
                 <option value="" disabled>
-                  Select competition
+                  Selecionar competição
                 </option>
                 {competitionList.map((competition) => (
                   <option key={competition.id} value={competition.id}>
@@ -43,10 +43,10 @@ export default async function AdminMatchesPage() {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="opponentTeamId">Opponent Team</Label>
+              <Label htmlFor="opponentTeamId">Equipa Adversária</Label>
               <NativeSelect id="opponentTeamId" name="opponentTeamId" required defaultValue="">
                 <option value="" disabled>
-                  Select opponent
+                  Selecionar adversário
                 </option>
                 {opponentOptions.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -56,35 +56,35 @@ export default async function AdminMatchesPage() {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="homeAway">Home/Away</Label>
+              <Label htmlFor="homeAway">Casa/Fora</Label>
               <NativeSelect id="homeAway" name="homeAway" required defaultValue="home">
-                <option value="home">Home</option>
-                <option value="away">Away</option>
+                <option value="home">Casa</option>
+                <option value="away">Fora</option>
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Data</Label>
               <Input id="date" name="date" type="date" required />
             </div>
-            <Button className="sm:col-span-2 xl:col-span-5">Save Match</Button>
+            <Button className="sm:col-span-2 xl:col-span-5">Guardar Jogo</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Match List</CardTitle>
+          <CardTitle>Lista de Jogos</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Match</TableHead>
-                <TableHead>Competition</TableHead>
-                <TableHead>Season</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="w-[320px]">Actions</TableHead>
+                <TableHead>Jogo</TableHead>
+                <TableHead>Competição</TableHead>
+                <TableHead>Época</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead className="w-[320px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,18 +129,18 @@ export default async function AdminMatchesPage() {
                           ))}
                         </NativeSelect>
                         <NativeSelect name="homeAway" defaultValue={match.homeAway} required>
-                          <option value="home">Home</option>
-                          <option value="away">Away</option>
+                          <option value="home">Casa</option>
+                          <option value="away">Fora</option>
                         </NativeSelect>
                         <Input name="date" type="date" defaultValue={match.date} required />
                         <Button variant="outline" size="sm">
-                          Update
+                          Atualizar
                         </Button>
                       </form>
                       <form action={deleteMatchAction}>
                         <input type="hidden" name="id" value={match.id} />
                         <Button variant="danger" size="sm">
-                          Delete
+                          Eliminar
                         </Button>
                       </form>
                     </div>

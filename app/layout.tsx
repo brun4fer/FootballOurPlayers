@@ -16,8 +16,9 @@ const headingFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Football Tactical Analysis",
-  description: "Football analytics platform for aggregated player and team match statistics.",
+  title: "Análise Tática de Futebol",
+  description:
+    "Plataforma de análise de futebol para estatísticas agregadas de jogadores e equipas por jogo.",
 };
 
 export default function RootLayout({
@@ -26,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-PT" suppressHydrationWarning>
       <body className={`${bodyFont.variable} ${headingFont.variable} font-[var(--font-body)]`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}

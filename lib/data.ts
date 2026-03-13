@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -20,7 +20,7 @@ function isAnalyzedTeam(name: string) {
 }
 
 function formatHomeAwayLabel(value: "home" | "away") {
-  return value === "home" ? "Home" : "Away";
+  return value === "home" ? "Casa" : "Fora";
 }
 
 export function formatMatchLabel(match: {
@@ -28,7 +28,7 @@ export function formatMatchLabel(match: {
   matchdayNumber: number;
   homeAway: "home" | "away";
 }) {
-  return `Feirense vs ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+  return `Feirense vs ${match.opponentTeamName} - Jornada ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {
@@ -180,6 +180,31 @@ export async function getPlayerOptionsByTeam(teamId?: number) {
     .orderBy(asc(players.name));
 }
 
+export async function getAnalyzedTeamPlayerOptionsByCompetition(competitionId?: number) {
+  if (!competitionId) {
+    return [] as Array<{
+      id: number;
+      name: string;
+      isGoalkeeper: boolean;
+    }>;
+  }
+
+  return db
+    .select({
+      id: players.id,
+      name: players.name,
+      isGoalkeeper: players.isGoalkeeper,
+    })
+    .from(players)
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .innerJoin(
+      teamCompetitions,
+      and(eq(teamCompetitions.teamId, teams.id), eq(teamCompetitions.competitionId, competitionId)),
+    )
+    .where(eq(teams.name, ANALYZED_TEAM_NAME))
+    .orderBy(asc(players.name));
+}
+
 export async function getExistingPlayerMatchStats(playerId?: number, matchId?: number) {
   if (!playerId || !matchId) {
     return null;
@@ -210,9 +235,86 @@ export async function getExistingTeamMatchStats(teamId?: number, matchId?: numbe
   });
 }
 
+type TeamOutfieldTotals = {
+  minutesPlayed: number;
+  shortPassSuccess: number;
+  shortPassFail: number;
+  longPassSuccess: number;
+  longPassFail: number;
+  crossSuccess: number;
+  crossFail: number;
+  dribbleSuccess: number;
+  dribbleFail: number;
+  throwSuccess: number;
+  throwFail: number;
+  shotsOnTarget: number;
+  shotsOffTarget: number;
+  aerialDuelSuccess: number;
+  aerialDuelFail: number;
+  defensiveDuelSuccess: number;
+  defensiveDuelFail: number;
+  goals: number;
+  assists: number;
+  foulsSuffered: number;
+  foulsCommitted: number;
+  recoveries: number;
+  interceptions: number;
+  offsides: number;
+  possessionLosses: number;
+  responsibilityGoal: number;
+  yellowCards: number;
+  redCards: number;
+};
+
+export async function getCalculatedTeamTotalsByMatch(
+  matchId?: number,
+): Promise<TeamOutfieldTotals | null> {
+  if (!matchId) {
+    return null;
+  }
+
+  const rows = await db
+    .select({
+      minutesPlayed: sql<number>`coalesce(sum(${playerMatchStats.minutesPlayed}), 0)`,
+      shortPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.shortPassSuccess}), 0)`,
+      shortPassFail: sql<number>`coalesce(sum(${playerMatchStats.shortPassFail}), 0)`,
+      longPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.longPassSuccess}), 0)`,
+      longPassFail: sql<number>`coalesce(sum(${playerMatchStats.longPassFail}), 0)`,
+      crossSuccess: sql<number>`coalesce(sum(${playerMatchStats.crossSuccess}), 0)`,
+      crossFail: sql<number>`coalesce(sum(${playerMatchStats.crossFail}), 0)`,
+      dribbleSuccess: sql<number>`coalesce(sum(${playerMatchStats.dribbleSuccess}), 0)`,
+      dribbleFail: sql<number>`coalesce(sum(${playerMatchStats.dribbleFail}), 0)`,
+      throwSuccess: sql<number>`coalesce(sum(${playerMatchStats.throwSuccess}), 0)`,
+      throwFail: sql<number>`coalesce(sum(${playerMatchStats.throwFail}), 0)`,
+      shotsOnTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOnTarget}), 0)`,
+      shotsOffTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOffTarget}), 0)`,
+      aerialDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelSuccess}), 0)`,
+      aerialDuelFail: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelFail}), 0)`,
+      defensiveDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelSuccess}), 0)`,
+      defensiveDuelFail: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelFail}), 0)`,
+      goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
+      assists: sql<number>`coalesce(sum(${playerMatchStats.assists}), 0)`,
+      foulsSuffered: sql<number>`coalesce(sum(${playerMatchStats.foulsSuffered}), 0)`,
+      foulsCommitted: sql<number>`coalesce(sum(${playerMatchStats.foulsCommitted}), 0)`,
+      recoveries: sql<number>`coalesce(sum(${playerMatchStats.recoveries}), 0)`,
+      interceptions: sql<number>`coalesce(sum(${playerMatchStats.interceptions}), 0)`,
+      offsides: sql<number>`coalesce(sum(${playerMatchStats.offsides}), 0)`,
+      possessionLosses: sql<number>`coalesce(sum(${playerMatchStats.possessionLosses}), 0)`,
+      responsibilityGoal: sql<number>`coalesce(sum(${playerMatchStats.responsibilityGoal}), 0)`,
+      yellowCards: sql<number>`coalesce(sum(${playerMatchStats.yellowCards}), 0)`,
+      redCards: sql<number>`coalesce(sum(${playerMatchStats.redCards}), 0)`,
+    })
+    .from(playerMatchStats)
+    .innerJoin(players, eq(playerMatchStats.playerId, players.id))
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .where(and(eq(playerMatchStats.matchId, matchId), eq(teams.name, ANALYZED_TEAM_NAME)));
+
+  return rows[0] ?? null;
+}
+
 export async function getDashboardPlayersByCompetition(competitionId?: number) {
   if (!competitionId) {
-    return [] as Array<{ id: number; name: string; teamName: string }>;
+    return [] as Array<{ id: number; name: string; teamName: string; isGoalkeeper: boolean }>;
   }
 
   const rows = await db
@@ -220,6 +322,7 @@ export async function getDashboardPlayersByCompetition(competitionId?: number) {
       id: players.id,
       name: players.name,
       teamName: teams.name,
+      isGoalkeeper: players.isGoalkeeper,
     })
     .from(players)
     .innerJoin(teams, eq(players.teamId, teams.id))
@@ -233,9 +336,18 @@ export async function getDashboardPlayersByCompetition(competitionId?: number) {
   return analyzedPlayers.length ? analyzedPlayers : rows;
 }
 
-export async function getPlayerCompetitionMatchStats(playerId?: number, competitionId?: number) {
+export async function getPlayerCompetitionMatchStats(
+  playerId?: number,
+  competitionId?: number,
+  matchIds?: number[],
+) {
   if (!playerId || !competitionId) {
     return [] as Array<Record<string, number | string>>;
+  }
+
+  const conditions = [eq(playerMatchStats.playerId, playerId), eq(matches.competitionId, competitionId)];
+  if (matchIds && matchIds.length > 0) {
+    conditions.push(inArray(matches.id, matchIds));
   }
 
   return db
@@ -278,31 +390,87 @@ export async function getPlayerCompetitionMatchStats(playerId?: number, competit
     .from(playerMatchStats)
     .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
     .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
-    .where(and(eq(playerMatchStats.playerId, playerId), eq(matches.competitionId, competitionId)))
+    .where(and(...conditions))
     .orderBy(asc(matches.matchdayNumber), asc(matches.date));
 }
 
-export async function getCompetitionPlayerTotals(competitionId?: number) {
+export async function getGoalkeeperCompetitionMatchStats(
+  playerId?: number,
+  competitionId?: number,
+  matchIds?: number[],
+) {
+  if (!playerId || !competitionId) {
+    return [] as Array<Record<string, number | string>>;
+  }
+
+  const conditions = [eq(goalkeeperMatchStats.playerId, playerId), eq(matches.competitionId, competitionId)];
+  if (matchIds && matchIds.length > 0) {
+    conditions.push(inArray(matches.id, matchIds));
+  }
+
+  return db
+    .select({
+      matchId: goalkeeperMatchStats.matchId,
+      matchdayNumber: matches.matchdayNumber,
+      date: matches.date,
+      opponentTeamName: teams.name,
+      minutesPlayed: goalkeeperMatchStats.minutesPlayed,
+      saves: goalkeeperMatchStats.saves,
+      incompleteSaves: goalkeeperMatchStats.incompleteSaves,
+      shotsConceded: goalkeeperMatchStats.shotsConceded,
+      goalsConceded: goalkeeperMatchStats.goalsConceded,
+    })
+    .from(goalkeeperMatchStats)
+    .innerJoin(matches, eq(goalkeeperMatchStats.matchId, matches.id))
+    .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
+    .where(and(...conditions))
+    .orderBy(asc(matches.matchdayNumber), asc(matches.date));
+}
+
+export async function getCompetitionPlayerTotals(competitionId?: number, matchIds?: number[]) {
   if (!competitionId) {
     return [];
   }
+
+  const whereCondition =
+    matchIds && matchIds.length > 0
+      ? and(eq(matches.competitionId, competitionId), inArray(matches.id, matchIds))
+      : eq(matches.competitionId, competitionId);
 
   return db
     .select({
       playerId: players.id,
       playerName: players.name,
       teamName: teams.name,
+      shortPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.shortPassSuccess}), 0)`,
+      shortPassFail: sql<number>`coalesce(sum(${playerMatchStats.shortPassFail}), 0)`,
+      longPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.longPassSuccess}), 0)`,
+      longPassFail: sql<number>`coalesce(sum(${playerMatchStats.longPassFail}), 0)`,
+      crossSuccess: sql<number>`coalesce(sum(${playerMatchStats.crossSuccess}), 0)`,
+      crossFail: sql<number>`coalesce(sum(${playerMatchStats.crossFail}), 0)`,
+      dribbleSuccess: sql<number>`coalesce(sum(${playerMatchStats.dribbleSuccess}), 0)`,
+      dribbleFail: sql<number>`coalesce(sum(${playerMatchStats.dribbleFail}), 0)`,
+      throwSuccess: sql<number>`coalesce(sum(${playerMatchStats.throwSuccess}), 0)`,
+      throwFail: sql<number>`coalesce(sum(${playerMatchStats.throwFail}), 0)`,
+      shotsOnTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOnTarget}), 0)`,
+      shotsOffTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOffTarget}), 0)`,
+      aerialDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelSuccess}), 0)`,
+      aerialDuelFail: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelFail}), 0)`,
+      defensiveDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelSuccess}), 0)`,
+      defensiveDuelFail: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelFail}), 0)`,
       goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
       assists: sql<number>`coalesce(sum(${playerMatchStats.assists}), 0)`,
-      shotsOnTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOnTarget}), 0)`,
       recoveries: sql<number>`coalesce(sum(${playerMatchStats.recoveries}), 0)`,
+      interceptions: sql<number>`coalesce(sum(${playerMatchStats.interceptions}), 0)`,
+      yellowCards: sql<number>`coalesce(sum(${playerMatchStats.yellowCards}), 0)`,
+      redCards: sql<number>`coalesce(sum(${playerMatchStats.redCards}), 0)`,
       minutesPlayed: sql<number>`coalesce(sum(${playerMatchStats.minutesPlayed}), 0)`,
     })
     .from(players)
     .innerJoin(teams, eq(players.teamId, teams.id))
     .innerJoin(playerMatchStats, eq(playerMatchStats.playerId, players.id))
     .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
-    .where(eq(matches.competitionId, competitionId))
+    .where(whereCondition)
     .groupBy(players.id, players.name, teams.name)
     .orderBy(sql`coalesce(sum(${playerMatchStats.goals}), 0) desc`, asc(players.name));
 }
@@ -414,25 +582,37 @@ export async function getReportGoalkeeperStats(playerId: number, competitionId?:
     .orderBy(asc(matches.matchdayNumber), asc(matches.date));
 }
 
-export async function getCompetitionTeamTotals(competitionId?: number) {
+export async function getCompetitionTeamTotals(competitionId?: number, matchIds?: number[]) {
   if (!competitionId) {
     return [];
   }
+
+  const whereCondition =
+    matchIds && matchIds.length > 0
+      ? and(eq(matches.competitionId, competitionId), inArray(matches.id, matchIds))
+      : eq(matches.competitionId, competitionId);
 
   return db
     .select({
       teamId: teams.id,
       teamName: teams.name,
-      goals: sql<number>`coalesce(sum(${teamMatchStats.goals}), 0)`,
-      assists: sql<number>`coalesce(sum(${teamMatchStats.assists}), 0)`,
-      shotsOnTarget: sql<number>`coalesce(sum(${teamMatchStats.shotsOnTarget}), 0)`,
-      recoveries: sql<number>`coalesce(sum(${teamMatchStats.recoveries}), 0)`,
-      minutesPlayed: sql<number>`coalesce(sum(${teamMatchStats.minutesPlayed}), 0)`,
+      goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
+      assists: sql<number>`coalesce(sum(${playerMatchStats.assists}), 0)`,
+      shotsTotal: sql<number>`coalesce(sum(${playerMatchStats.shotsOnTarget} + ${playerMatchStats.shotsOffTarget}), 0)`,
+      shotsOnTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOnTarget}), 0)`,
+      shotsOffTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOffTarget}), 0)`,
+      recoveries: sql<number>`coalesce(sum(${playerMatchStats.recoveries}), 0)`,
+      interceptions: sql<number>`coalesce(sum(${playerMatchStats.interceptions}), 0)`,
+      possessionLosses: sql<number>`coalesce(sum(${playerMatchStats.possessionLosses}), 0)`,
+      yellowCards: sql<number>`coalesce(sum(${playerMatchStats.yellowCards}), 0)`,
+      redCards: sql<number>`coalesce(sum(${playerMatchStats.redCards}), 0)`,
+      minutesPlayed: sql<number>`coalesce(sum(${playerMatchStats.minutesPlayed}), 0)`,
     })
-    .from(teamMatchStats)
-    .innerJoin(teams, eq(teamMatchStats.teamId, teams.id))
-    .innerJoin(matches, eq(teamMatchStats.matchId, matches.id))
-    .where(eq(matches.competitionId, competitionId))
+    .from(playerMatchStats)
+    .innerJoin(players, eq(playerMatchStats.playerId, players.id))
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
+    .where(whereCondition)
     .groupBy(teams.id, teams.name)
     .orderBy(asc(teams.name));
 }

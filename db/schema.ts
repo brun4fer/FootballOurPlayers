@@ -87,6 +87,7 @@ export const teams = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
+    emblemUrl: text("emblem_url"),
   },
   (table) => ({
     nameUnique: uniqueIndex("teams_name_unique").on(table.name),

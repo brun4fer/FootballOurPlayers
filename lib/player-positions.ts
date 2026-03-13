@@ -1,0 +1,15 @@
+export const playerPositionOptions = [
+  "Guarda-Redes",
+  "Defesa Direito",
+  "Defesa Esquerdo",
+  "Defesa Central",
+  "Lateral Direito",
+  "Lateral Esquerdo",
+  "Médio Defensivo",
+  "Médio Centro",
+  "Médio Ofensivo",
+  "Extremo Direito",
+  "Extremo Esquerdo",
+  "Avançado",
+  "Ponta de Lança",
+] as const;

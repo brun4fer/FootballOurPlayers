@@ -9,6 +9,15 @@ import {
 import { toInt } from "@/lib/utils";
 
 const idSchema = z.coerce.number().int().positive();
+const optionalIdSchema = z.preprocess((value) => {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+  if (typeof value === "string" && value.trim() === "") {
+    return undefined;
+  }
+  return value;
+}, idSchema.optional());
 
 export const seasonSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -21,6 +30,7 @@ export const competitionSchema = z.object({
 
 export const teamSchema = z.object({
   name: z.string().trim().min(2).max(120),
+  emblemUrl: z.string().trim().max(2000).optional(),
 });
 
 export const teamCompetitionSchema = z.object({
@@ -30,7 +40,7 @@ export const teamCompetitionSchema = z.object({
 
 export const playerSchema = z.object({
   name: z.string().trim().min(2).max(140),
-  photo: z.string().trim().url().optional().or(z.literal("")),
+  photo: z.string().trim().max(2000).optional(),
   height: z.coerce.number().int().nonnegative().optional(),
   weight: z.coerce.number().int().nonnegative().optional(),
   nationality: z.string().trim().max(100).optional(),
@@ -51,8 +61,8 @@ export const matchSchema = z.object({
 });
 
 export const outfieldStatsBaseSchema = z.object({
-  playerId: idSchema.optional(),
-  teamId: idSchema.optional(),
+  playerId: optionalIdSchema,
+  teamId: optionalIdSchema,
   matchId: idSchema,
 });
 

@@ -11,14 +11,16 @@ import {
   YAxis,
 } from "recharts";
 
-type PerformancePoint = {
+type DashboardEvolutionPoint = {
   matchLabel: string;
+  remates: number;
   goals: number;
   assists: number;
-  shotAccuracy: number;
+  dribbles: number;
+  passesCertos: number;
 };
 
-export function LinePerformanceChart({ data }: { data: PerformancePoint[] }) {
+export function DashboardEvolutionChart({ data }: { data: DashboardEvolutionPoint[] }) {
   return (
     <div className="h-[320px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -28,16 +30,11 @@ export function LinePerformanceChart({ data }: { data: PerformancePoint[] }) {
           <YAxis stroke="rgba(148,163,184,0.8)" />
           <Tooltip />
           <Legend />
+          <Line type="monotone" dataKey="remates" stroke="#22d3ee" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="goals" stroke="#00e7ff" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="assists" stroke="#ff2ea6" strokeWidth={2} dot={false} />
-          <Line
-            type="monotone"
-            dataKey="shotAccuracy"
-            name="Precisão de Remate %"
-            stroke="#84cc16"
-            strokeWidth={2}
-            dot={false}
-          />
+          <Line type="monotone" dataKey="dribbles" stroke="#f97316" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="passesCertos" stroke="#84cc16" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

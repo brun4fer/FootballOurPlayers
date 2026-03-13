@@ -8,18 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 const quickLinks = [
   {
     href: "/admin/stats",
-    label: "Insert Match Stats",
-    description: "Workflow for competition, match, team and player totals.",
+    label: "Inserir Estatísticas de Jogo",
+    description: "Fluxo para competição, jogo, equipa e totais por jogador.",
   },
   {
-    href: "/dashboard",
-    label: "Open Dashboard",
-    description: "Competition totals, evolution charts and player comparisons.",
+    href: "/dashboard/jogadores",
+    label: "Abrir Dashboard",
+    description: "Totais por competição, evolução e comparações entre jogadores.",
   },
   {
     href: "/report/player/1",
-    label: "Sample Public Report",
-    description: "Shareable public page without admin navigation.",
+    label: "Relatório Público",
+    description: "Página partilhável sem navegação de administração.",
   },
 ];
 
@@ -28,14 +28,14 @@ export default function HomePage() {
     <section className="space-y-6">
       <div className="space-y-2">
         <Badge variant="secondary" className="w-fit">
-          Production-ready base
+          Base pronta para produção
         </Badge>
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold sm:text-3xl">
-          Football Tactical Analysis Statistics
+          Plataforma de Estatísticas para Análise Tática
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
-          Manage seasons, competitions, players, and aggregated match totals, then analyze
-          progression through dynamic percentages and per-90 metrics.
+          Gere épocas, competições, jogadores e totais agregados por jogo, e analise a evolução
+          com percentagens dinâmicas e métricas por 90 minutos.
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export default function HomePage() {
             <CardContent>
               <Button asChild variant="outline" className="w-full justify-between">
                 <Link href={item.href}>
-                  Open
+                  Abrir
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

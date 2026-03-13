@@ -5,6 +5,7 @@ import {
   removeTeamCompetitionAction,
   updateTeamAction,
 } from "@/actions/admin";
+import { ImageUploadPreview } from "@/components/forms/image-upload-preview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,35 +23,40 @@ export default async function AdminTeamsPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Teams</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Equipas</h1>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Create Team</CardTitle>
+            <CardTitle>Criar Equipa</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={createTeamAction} className="flex flex-col gap-3 sm:flex-row">
-              <div className="flex-1 space-y-2">
-                <Label htmlFor="name">Team Name</Label>
-                <Input id="name" name="name" required placeholder="SL Benfica" />
+            <form action={createTeamAction} encType="multipart/form-data" className="grid gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome da Equipa</Label>
+                <Input id="name" name="name" required placeholder="CD Feirense" />
               </div>
-              <Button className="sm:mt-7">Save</Button>
+              <ImageUploadPreview
+                id="emblemFile"
+                name="emblemFile"
+                label="Upload Emblema da Equipa"
+              />
+              <Button>Guardar</Button>
             </form>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Assign Team To Competition</CardTitle>
+            <CardTitle>Associar Equipa à Competição</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={assignTeamCompetitionAction} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="teamId">Team</Label>
+                <Label htmlFor="teamId">Equipa</Label>
                 <NativeSelect id="teamId" name="teamId" defaultValue="" required>
                   <option value="" disabled>
-                    Select team
+                    Selecionar equipa
                   </option>
                   {teamList.map((team) => (
                     <option key={team.id} value={team.id}>
@@ -60,10 +66,10 @@ export default async function AdminTeamsPage() {
                 </NativeSelect>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="competitionId">Competition</Label>
+                <Label htmlFor="competitionId">Competição</Label>
                 <NativeSelect id="competitionId" name="competitionId" defaultValue="" required>
                   <option value="" disabled>
-                    Select competition
+                    Selecionar competição
                   </option>
                   {competitionList.map((competition) => (
                     <option key={competition.id} value={competition.id}>
@@ -72,7 +78,7 @@ export default async function AdminTeamsPage() {
                   ))}
                 </NativeSelect>
               </div>
-              <Button className="w-full">Assign</Button>
+              <Button className="w-full">Guardar Associação</Button>
             </form>
           </CardContent>
         </Card>
@@ -80,15 +86,16 @@ export default async function AdminTeamsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Team List</CardTitle>
+          <CardTitle>Lista de Equipas</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-[220px]">Actions</TableHead>
+                <TableHead>Emblema</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead className="w-[260px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -96,11 +103,33 @@ export default async function AdminTeamsPage() {
                 <TableRow key={team.id}>
                   <TableCell>{team.id}</TableCell>
                   <TableCell>
-                    <form action={updateTeamAction} className="flex items-center gap-2">
+                    {team.emblemUrl ? (
+                      <img
+                        src={team.emblemUrl}
+                        alt={team.name}
+                        className="h-10 w-10 rounded-md border border-border/60 object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Sem emblema</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <form
+                      action={updateTeamAction}
+                      encType="multipart/form-data"
+                      className="grid gap-2"
+                    >
                       <input type="hidden" name="id" value={team.id} />
+                      <input type="hidden" name="existingEmblemUrl" value={team.emblemUrl ?? ""} />
                       <Input name="name" defaultValue={team.name} minLength={2} required />
+                      <ImageUploadPreview
+                        id={`emblemFile-${team.id}`}
+                        name="emblemFile"
+                        label="Upload Emblema da Equipa"
+                        defaultImageUrl={team.emblemUrl}
+                      />
                       <Button variant="outline" size="sm">
-                        Update
+                        Atualizar
                       </Button>
                     </form>
                   </TableCell>
@@ -108,7 +137,7 @@ export default async function AdminTeamsPage() {
                     <form action={deleteTeamAction}>
                       <input type="hidden" name="id" value={team.id} />
                       <Button variant="danger" size="sm">
-                        Delete
+                        Eliminar
                       </Button>
                     </form>
                   </TableCell>
@@ -121,16 +150,16 @@ export default async function AdminTeamsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Competition Assignments</CardTitle>
+          <CardTitle>Associações de Competição</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Team</TableHead>
-                <TableHead>Competition</TableHead>
-                <TableHead>Season</TableHead>
-                <TableHead className="w-[110px]">Actions</TableHead>
+                <TableHead>Equipa</TableHead>
+                <TableHead>Competição</TableHead>
+                <TableHead>Época</TableHead>
+                <TableHead className="w-[110px]">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,7 +172,7 @@ export default async function AdminTeamsPage() {
                     <form action={removeTeamCompetitionAction}>
                       <input type="hidden" name="id" value={link.id} />
                       <Button variant="danger" size="sm">
-                        Remove
+                        Eliminar
                       </Button>
                     </form>
                   </TableCell>

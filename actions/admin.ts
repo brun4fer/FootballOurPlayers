@@ -15,6 +15,7 @@ import {
   teamMatchStats,
   teams,
 } from "@/db/schema";
+import { saveImageUpload } from "@/lib/upload";
 import { parseGoalkeeperStats, parseOutfieldStats } from "@/lib/validators";
 
 function optionalText(value: FormDataEntryValue | null, max = 255) {
@@ -36,7 +37,7 @@ function optionalInt(value: FormDataEntryValue | null) {
 function toRequiredId(value: FormDataEntryValue | null) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) {
-    throw new Error("Invalid identifier.");
+    throw new Error("Identificador inválido.");
   }
   return Math.floor(parsed);
 }
@@ -44,7 +45,7 @@ function toRequiredId(value: FormDataEntryValue | null) {
 export async function createSeasonAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
-    throw new Error("Season name must have at least 2 characters.");
+    throw new Error("O nome da época deve ter pelo menos 2 caracteres.");
   }
 
   await db.insert(seasons).values({ name }).onConflictDoNothing();
@@ -55,7 +56,7 @@ export async function updateSeasonAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
-    throw new Error("Season name must have at least 2 characters.");
+    throw new Error("O nome da época deve ter pelo menos 2 caracteres.");
   }
 
   await db.update(seasons).set({ name }).where(eq(seasons.id, id));
@@ -75,7 +76,7 @@ export async function createCompetitionAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 120);
   const seasonId = toRequiredId(formData.get("seasonId"));
   if (!name || name.length < 2) {
-    throw new Error("Competition name must have at least 2 characters.");
+    throw new Error("O nome da competição deve ter pelo menos 2 caracteres.");
   }
 
   await db
@@ -95,7 +96,7 @@ export async function updateCompetitionAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 120);
   const seasonId = toRequiredId(formData.get("seasonId"));
   if (!name || name.length < 2) {
-    throw new Error("Competition name must have at least 2 characters.");
+    throw new Error("O nome da competição deve ter pelo menos 2 caracteres.");
   }
 
   await db
@@ -124,10 +125,12 @@ export async function deleteCompetitionAction(formData: FormData) {
 export async function createTeamAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
-    throw new Error("Team name must have at least 2 characters.");
+    throw new Error("O nome da equipa deve ter pelo menos 2 caracteres.");
   }
 
-  await db.insert(teams).values({ name }).onConflictDoNothing();
+  const emblemUrl = await saveImageUpload(formData.get("emblemFile"), "teams");
+
+  await db.insert(teams).values({ name, emblemUrl }).onConflictDoNothing();
   revalidatePath("/admin/teams");
 }
 
@@ -135,10 +138,19 @@ export async function updateTeamAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
-    throw new Error("Team name must have at least 2 characters.");
+    throw new Error("O nome da equipa deve ter pelo menos 2 caracteres.");
   }
 
-  await db.update(teams).set({ name }).where(eq(teams.id, id));
+  const existingEmblemUrl = optionalText(formData.get("existingEmblemUrl"), 2000);
+  const uploadedEmblemUrl = await saveImageUpload(formData.get("emblemFile"), "teams");
+
+  await db
+    .update(teams)
+    .set({
+      name,
+      emblemUrl: uploadedEmblemUrl ?? existingEmblemUrl,
+    })
+    .where(eq(teams.id, id));
   revalidatePath("/admin/teams");
   revalidatePath("/admin/players");
   revalidatePath("/admin/stats");
@@ -180,13 +192,15 @@ export async function createPlayerAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 140);
   const teamId = toRequiredId(formData.get("teamId"));
   if (!name || name.length < 2) {
-    throw new Error("Player name must have at least 2 characters.");
+    throw new Error("O nome do jogador deve ter pelo menos 2 caracteres.");
   }
+
+  const photo = await saveImageUpload(formData.get("photoFile"), "players");
 
   await db.insert(players).values({
     name,
     teamId,
-    photo: optionalText(formData.get("photo"), 2000),
+    photo,
     height: optionalInt(formData.get("height")),
     weight: optionalInt(formData.get("weight")),
     nationality: optionalText(formData.get("nationality"), 100),
@@ -206,15 +220,18 @@ export async function updatePlayerAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 140);
   const teamId = toRequiredId(formData.get("teamId"));
   if (!name || name.length < 2) {
-    throw new Error("Player name must have at least 2 characters.");
+    throw new Error("O nome do jogador deve ter pelo menos 2 caracteres.");
   }
+
+  const existingPhoto = optionalText(formData.get("existingPhoto"), 2000);
+  const uploadedPhoto = await saveImageUpload(formData.get("photoFile"), "players");
 
   await db
     .update(players)
     .set({
       name,
       teamId,
-      photo: optionalText(formData.get("photo"), 2000),
+      photo: uploadedPhoto ?? existingPhoto,
       height: optionalInt(formData.get("height")),
       weight: optionalInt(formData.get("weight")),
       nationality: optionalText(formData.get("nationality"), 100),
@@ -243,16 +260,16 @@ function toRequiredHomeAway(value: FormDataEntryValue | null): "home" | "away" {
   if (value === "home" || value === "away") {
     return value;
   }
-  throw new Error("Home/Away must be home or away.");
+  throw new Error("O campo Casa/Fora deve ser 'home' ou 'away'.");
 }
 
 function toRequiredDateString(value: FormDataEntryValue | null): string {
   if (!value) {
-    throw new Error("Match date is required.");
+    throw new Error("A data do jogo é obrigatória.");
   }
   const parsed = String(value);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(parsed)) {
-    throw new Error("Date must be in YYYY-MM-DD format.");
+    throw new Error("A data deve estar no formato YYYY-MM-DD.");
   }
   return parsed;
 }
@@ -303,7 +320,7 @@ export async function deleteMatchAction(formData: FormData) {
 export async function upsertPlayerStatsAction(formData: FormData) {
   const data = parseOutfieldStats(formData);
   if (!data.playerId) {
-    throw new Error("Player is required.");
+    throw new Error("O jogador é obrigatório.");
   }
 
   await db
@@ -410,7 +427,7 @@ export async function upsertGoalkeeperStatsAction(formData: FormData) {
 export async function upsertTeamStatsAction(formData: FormData) {
   const data = parseOutfieldStats(formData);
   if (!data.teamId) {
-    throw new Error("Team is required.");
+    throw new Error("A equipa é obrigatória.");
   }
 
   await db

@@ -17,7 +17,7 @@ type RadarPoint = {
 export function RadarProfileChart({
   data,
   color = "#ff2ea6",
-  name = "Profile",
+  name = "Perfil",
 }: {
   data: RadarPoint[];
   color?: string;

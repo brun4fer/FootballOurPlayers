@@ -15,6 +15,13 @@
       "when": 1773262100000,
       "tag": "0001_matches_refactor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773349200000,
+      "tag": "0002_team_emblem_upload",
+      "breakpoints": true
     }
   ]
 }

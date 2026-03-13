@@ -135,24 +135,24 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
               <Image src={player.photo} alt={player.name} fill sizes="160px" className="object-cover" />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                No photo
+                Sem foto
               </div>
             )}
           </div>
           <div className="space-y-3">
             <h1 className="font-[var(--font-heading)] text-3xl font-semibold">{player.name}</h1>
             <p className="text-sm text-muted-foreground">
-              {player.teamName} | {player.nationality ?? "N/A"} | {player.position1 ?? "N/A"}
+              {player.teamName} | {player.nationality ?? "N/D"} | {player.position1 ?? "N/D"}
             </p>
             <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-              <p>Height: {player.height ?? "-"} cm</p>
-              <p>Weight: {player.weight ?? "-"} kg</p>
-              <p>Agent: {player.agent ?? "-"}</p>
-              <p>Role: {player.isGoalkeeper ? "Goalkeeper" : "Outfield"}</p>
+              <p>Altura: {player.height ?? "-"} cm</p>
+              <p>Peso: {player.weight ?? "-"} kg</p>
+              <p>Agente: {player.agent ?? "-"}</p>
+              <p>Função: {player.isGoalkeeper ? "Guarda-Redes" : "Jogador de Campo"}</p>
             </div>
             <form className="grid max-w-xl gap-2 sm:grid-cols-[1fr_auto]">
               <div className="space-y-2">
-                <Label htmlFor="competitionId">Competition</Label>
+                <Label htmlFor="competitionId">Competição</Label>
                 <NativeSelect
                   id="competitionId"
                   name="competitionId"
@@ -166,7 +166,7 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
                 </NativeSelect>
               </div>
               <button className="mt-7 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">
-                Apply
+                Aplicar
               </button>
             </form>
           </div>
@@ -174,23 +174,23 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
       </Card>
 
       <div className="card-grid">
-        <StatCard title="Goals" value={outfieldTotals.goals ?? 0} />
-        <StatCard title="Assists" value={outfieldTotals.assists ?? 0} />
-        <StatCard title="Pass Accuracy" value={`${formatFixed(percentages.passAccuracy)}%`} />
-        <StatCard title="Shot Accuracy" value={`${formatFixed(percentages.shotAccuracy)}%`} />
+        <StatCard title="Golos" value={outfieldTotals.goals ?? 0} />
+        <StatCard title="Assistências" value={outfieldTotals.assists ?? 0} />
+        <StatCard title="Precisão de Passe" value={`${formatFixed(percentages.passAccuracy)}%`} />
+        <StatCard title="Precisão de Remate" value={`${formatFixed(percentages.shotAccuracy)}%`} />
       </div>
 
       <div className="card-grid">
-        <StatCard title="Goals / 90" value={formatFixed(per90.goals ?? 0)} />
-        <StatCard title="Assists / 90" value={formatFixed(per90.assists ?? 0)} />
-        <StatCard title="Interceptions / 90" value={formatFixed(per90.interceptions ?? 0)} />
-        <StatCard title="Recoveries / 90" value={formatFixed(per90.recoveries ?? 0)} />
+        <StatCard title="Golos / 90" value={formatFixed(per90.goals ?? 0)} />
+        <StatCard title="Assistências / 90" value={formatFixed(per90.assists ?? 0)} />
+        <StatCard title="Interceções / 90" value={formatFixed(per90.interceptions ?? 0)} />
+        <StatCard title="Recuperações / 90" value={formatFixed(per90.recoveries ?? 0)} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Performance Evolution</CardTitle>
+            <CardTitle>Evolução de Desempenho</CardTitle>
           </CardHeader>
           <CardContent>
             <LinePerformanceChart data={lineData} />
@@ -198,7 +198,7 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Offensive Distribution</CardTitle>
+            <CardTitle>Distribuição Ofensiva</CardTitle>
           </CardHeader>
           <CardContent>
             <BarDistributionChart data={distributionData} />
@@ -208,7 +208,7 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
 
       <Card>
         <CardHeader>
-          <CardTitle>Player Radar Profile</CardTitle>
+          <CardTitle>Radar de Perfil do Jogador</CardTitle>
         </CardHeader>
         <CardContent>
           <RadarProfileChart data={radarData} color="#00e7ff" name={player.name} />
@@ -217,27 +217,27 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
 
       {player.isGoalkeeper ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="GK Saves" value={goalkeeperTotals.saves ?? 0} />
-          <StatCard title="GK Incomplete Saves" value={goalkeeperTotals.incompleteSaves ?? 0} />
-          <StatCard title="GK Shots Conceded" value={goalkeeperTotals.shotsConceded ?? 0} />
-          <StatCard title="GK Goals Conceded" value={goalkeeperTotals.goalsConceded ?? 0} />
+          <StatCard title="Defesas (GR)" value={goalkeeperTotals.saves ?? 0} />
+          <StatCard title="Defesas Incompletas (GR)" value={goalkeeperTotals.incompleteSaves ?? 0} />
+          <StatCard title="Remates Sofridos (GR)" value={goalkeeperTotals.shotsConceded ?? 0} />
+          <StatCard title="Golos Sofridos (GR)" value={goalkeeperTotals.goalsConceded ?? 0} />
         </div>
       ) : null}
 
       <Card>
         <CardHeader>
-          <CardTitle>Match Totals Table</CardTitle>
+          <CardTitle>Tabela de Totais por Jogo</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Match</TableHead>
-                <TableHead>Minutes</TableHead>
-                <TableHead>Goals</TableHead>
-                <TableHead>Assists</TableHead>
-                <TableHead>Shots On</TableHead>
-                <TableHead>Interceptions</TableHead>
+                <TableHead>Jogo</TableHead>
+                <TableHead>Minutos</TableHead>
+                <TableHead>Golos</TableHead>
+                <TableHead>Assistências</TableHead>
+                <TableHead>Remates à Baliza</TableHead>
+                <TableHead>Interceções</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

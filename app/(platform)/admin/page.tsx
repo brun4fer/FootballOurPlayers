@@ -3,22 +3,22 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const links = [
-  { href: "/admin/seasons", title: "Seasons", description: "Create and organize season labels." },
+  { href: "/admin/seasons", title: "Épocas", description: "Criar e organizar épocas." },
   {
     href: "/admin/competitions",
-    title: "Competitions",
-    description: "Map competitions to each season and assign teams.",
+    title: "Competições",
+    description: "Associar competições a cada época e atribuir equipas.",
   },
-  { href: "/admin/teams", title: "Teams", description: "Manage team records and competition links." },
-  { href: "/admin/players", title: "Players", description: "Register player profiles and positions." },
-  { href: "/admin/matches", title: "Matches", description: "Create Feirense matches against opponents." },
-  { href: "/admin/stats", title: "Stats Entry", description: "Insert player/goalkeeper/team totals." },
+  { href: "/admin/teams", title: "Equipas", description: "Gerir equipas e ligações às competições." },
+  { href: "/admin/players", title: "Jogadores", description: "Registar perfis e posições dos jogadores." },
+  { href: "/admin/matches", title: "Jogos", description: "Criar jogos do Feirense contra adversários." },
+  { href: "/admin/stats", title: "Inserir Estatísticas", description: "Inserir totais de jogador/GR/equipa." },
 ];
 
 export default function AdminHomePage() {
   return (
     <section className="space-y-4">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Admin Management</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Administração</h1>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {links.map((link) => (
           <Link key={link.href} href={link.href}>
@@ -27,7 +27,7 @@ export default function AdminHomePage() {
                 <CardTitle>{link.title}</CardTitle>
                 <CardDescription>{link.description}</CardDescription>
               </CardHeader>
-              <CardContent className="text-sm text-cyan-300">Open section</CardContent>
+              <CardContent className="text-sm text-cyan-300">Abrir secção</CardContent>
             </Card>
           </Link>
         ))}
