@@ -7,6 +7,7 @@ import {
   matches,
   playerMatchStats,
   players,
+  publicReports,
   seasons,
   teamCompetitions,
   teamMatchStats,
@@ -14,6 +15,17 @@ import {
 } from "@/db/schema";
 
 const ANALYZED_TEAM_NAME = "Feirense";
+
+export type PublicReportFilters = {
+  competitionId?: number;
+  playerId?: number;
+  matchId?: number;
+  matchIds?: number[];
+  playerIds?: number[];
+  selectedMatchIds?: number[];
+  selectedPlayers?: number[];
+  selectedMatchdays?: number[];
+};
 
 function isAnalyzedTeam(name: string) {
   return name.trim().toLowerCase() === ANALYZED_TEAM_NAME.toLowerCase();
@@ -264,6 +276,44 @@ type TeamOutfieldTotals = {
   responsibilityGoal: number;
   yellowCards: number;
   redCards: number;
+};
+
+export type TeamDashboardMatchAggregate = {
+  matchId: number;
+  matchdayNumber: number;
+  date: string;
+  opponentTeamName: string;
+  minutesPlayed: number;
+  shortPassSuccess: number;
+  shortPassFail: number;
+  longPassSuccess: number;
+  longPassFail: number;
+  crossSuccess: number;
+  crossFail: number;
+  dribbleSuccess: number;
+  dribbleFail: number;
+  throwSuccess: number;
+  throwFail: number;
+  shotsOnTarget: number;
+  shotsOffTarget: number;
+  aerialDuelSuccess: number;
+  aerialDuelFail: number;
+  defensiveDuelSuccess: number;
+  defensiveDuelFail: number;
+  goals: number;
+  foulsSuffered: number;
+  foulsCommitted: number;
+  recoveries: number;
+  interceptions: number;
+  offsides: number;
+  possessionLosses: number;
+  yellowCards: number;
+  redCards: number;
+  responsibilityGoal: number;
+  saves: number;
+  incompleteSaves: number;
+  shotsConceded: number;
+  goalsConceded: number;
 };
 
 export async function getCalculatedTeamTotalsByMatch(
@@ -615,4 +665,213 @@ export async function getCompetitionTeamTotals(competitionId?: number, matchIds?
     .where(whereCondition)
     .groupBy(teams.id, teams.name)
     .orderBy(asc(teams.name));
+}
+
+export async function createPublicReport(filters: PublicReportFilters) {
+  const id = crypto.randomUUID();
+
+  await db.insert(publicReports).values({
+    id,
+    filters,
+  });
+
+  return id;
+}
+
+export async function getPublicReportById(id: string) {
+  if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
+    return null;
+  }
+
+  const row = await db.query.publicReports.findFirst({
+    columns: {
+      id: true,
+      filters: true,
+      createdAt: true,
+    },
+    where: (table, { eq }) => eq(table.id, id),
+  });
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    createdAt: row.createdAt,
+    filters: (row.filters ?? {}) as PublicReportFilters,
+  };
+}
+
+export async function getAnalyzedTeamMatchAggregates(
+  competitionId?: number,
+  matchIds?: number[],
+): Promise<TeamDashboardMatchAggregate[]> {
+  if (!competitionId) {
+    return [];
+  }
+
+  const matchConditions = [eq(matches.competitionId, competitionId)];
+  if (matchIds && matchIds.length > 0) {
+    matchConditions.push(inArray(matches.id, matchIds));
+  }
+
+  const matchRows = await db
+    .select({
+      matchId: matches.id,
+      matchdayNumber: matches.matchdayNumber,
+      date: matches.date,
+      opponentTeamName: teams.name,
+    })
+    .from(matches)
+    .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
+    .where(and(...matchConditions))
+    .orderBy(asc(matches.matchdayNumber), asc(matches.date));
+
+  if (matchRows.length === 0) {
+    return [];
+  }
+
+  const analyzedTeam = await db.query.teams.findFirst({
+    columns: { id: true },
+    where: (table, { eq }) => eq(table.name, ANALYZED_TEAM_NAME),
+  });
+
+  if (!analyzedTeam) {
+    return matchRows.map((row) => ({
+      ...row,
+      minutesPlayed: 0,
+      shortPassSuccess: 0,
+      shortPassFail: 0,
+      longPassSuccess: 0,
+      longPassFail: 0,
+      crossSuccess: 0,
+      crossFail: 0,
+      dribbleSuccess: 0,
+      dribbleFail: 0,
+      throwSuccess: 0,
+      throwFail: 0,
+      shotsOnTarget: 0,
+      shotsOffTarget: 0,
+      aerialDuelSuccess: 0,
+      aerialDuelFail: 0,
+      defensiveDuelSuccess: 0,
+      defensiveDuelFail: 0,
+      goals: 0,
+      foulsSuffered: 0,
+      foulsCommitted: 0,
+      recoveries: 0,
+      interceptions: 0,
+      offsides: 0,
+      possessionLosses: 0,
+      yellowCards: 0,
+      redCards: 0,
+      responsibilityGoal: 0,
+      saves: 0,
+      incompleteSaves: 0,
+      shotsConceded: 0,
+      goalsConceded: 0,
+    }));
+  }
+
+  const scopedMatchIds = matchRows.map((match) => match.matchId);
+
+  const outfieldRows = await db
+    .select({
+      matchId: playerMatchStats.matchId,
+      minutesPlayed: sql<number>`coalesce(sum(${playerMatchStats.minutesPlayed}), 0)`,
+      shortPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.shortPassSuccess}), 0)`,
+      shortPassFail: sql<number>`coalesce(sum(${playerMatchStats.shortPassFail}), 0)`,
+      longPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.longPassSuccess}), 0)`,
+      longPassFail: sql<number>`coalesce(sum(${playerMatchStats.longPassFail}), 0)`,
+      crossSuccess: sql<number>`coalesce(sum(${playerMatchStats.crossSuccess}), 0)`,
+      crossFail: sql<number>`coalesce(sum(${playerMatchStats.crossFail}), 0)`,
+      dribbleSuccess: sql<number>`coalesce(sum(${playerMatchStats.dribbleSuccess}), 0)`,
+      dribbleFail: sql<number>`coalesce(sum(${playerMatchStats.dribbleFail}), 0)`,
+      throwSuccess: sql<number>`coalesce(sum(${playerMatchStats.throwSuccess}), 0)`,
+      throwFail: sql<number>`coalesce(sum(${playerMatchStats.throwFail}), 0)`,
+      shotsOnTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOnTarget}), 0)`,
+      shotsOffTarget: sql<number>`coalesce(sum(${playerMatchStats.shotsOffTarget}), 0)`,
+      aerialDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelSuccess}), 0)`,
+      aerialDuelFail: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelFail}), 0)`,
+      defensiveDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelSuccess}), 0)`,
+      defensiveDuelFail: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelFail}), 0)`,
+      goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
+      foulsSuffered: sql<number>`coalesce(sum(${playerMatchStats.foulsSuffered}), 0)`,
+      foulsCommitted: sql<number>`coalesce(sum(${playerMatchStats.foulsCommitted}), 0)`,
+      recoveries: sql<number>`coalesce(sum(${playerMatchStats.recoveries}), 0)`,
+      interceptions: sql<number>`coalesce(sum(${playerMatchStats.interceptions}), 0)`,
+      offsides: sql<number>`coalesce(sum(${playerMatchStats.offsides}), 0)`,
+      possessionLosses: sql<number>`coalesce(sum(${playerMatchStats.possessionLosses}), 0)`,
+      yellowCards: sql<number>`coalesce(sum(${playerMatchStats.yellowCards}), 0)`,
+      redCards: sql<number>`coalesce(sum(${playerMatchStats.redCards}), 0)`,
+      responsibilityGoal: sql<number>`coalesce(sum(${playerMatchStats.responsibilityGoal}), 0)`,
+    })
+    .from(playerMatchStats)
+    .innerJoin(players, eq(playerMatchStats.playerId, players.id))
+    .where(and(eq(players.teamId, analyzedTeam.id), inArray(playerMatchStats.matchId, scopedMatchIds)))
+    .groupBy(playerMatchStats.matchId);
+
+  const goalkeeperRows = await db
+    .select({
+      matchId: goalkeeperMatchStats.matchId,
+      saves: sql<number>`coalesce(sum(${goalkeeperMatchStats.saves}), 0)`,
+      incompleteSaves: sql<number>`coalesce(sum(${goalkeeperMatchStats.incompleteSaves}), 0)`,
+      shotsConceded: sql<number>`coalesce(sum(${goalkeeperMatchStats.shotsConceded}), 0)`,
+      goalsConceded: sql<number>`coalesce(sum(${goalkeeperMatchStats.goalsConceded}), 0)`,
+    })
+    .from(goalkeeperMatchStats)
+    .innerJoin(players, eq(goalkeeperMatchStats.playerId, players.id))
+    .where(and(eq(players.teamId, analyzedTeam.id), inArray(goalkeeperMatchStats.matchId, scopedMatchIds)))
+    .groupBy(goalkeeperMatchStats.matchId);
+
+  const outfieldMap = new Map(outfieldRows.map((row) => [row.matchId, row]));
+  const goalkeeperMap = new Map(goalkeeperRows.map((row) => [row.matchId, row]));
+  const toSafeNumber = (value: unknown) => {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  return matchRows.map((match) => {
+    const outfield = outfieldMap.get(match.matchId);
+    const goalkeeper = goalkeeperMap.get(match.matchId);
+
+    return {
+      matchId: toSafeNumber(match.matchId),
+      matchdayNumber: toSafeNumber(match.matchdayNumber),
+      date: match.date,
+      opponentTeamName: match.opponentTeamName,
+      minutesPlayed: toSafeNumber(outfield?.minutesPlayed),
+      shortPassSuccess: toSafeNumber(outfield?.shortPassSuccess),
+      shortPassFail: toSafeNumber(outfield?.shortPassFail),
+      longPassSuccess: toSafeNumber(outfield?.longPassSuccess),
+      longPassFail: toSafeNumber(outfield?.longPassFail),
+      crossSuccess: toSafeNumber(outfield?.crossSuccess),
+      crossFail: toSafeNumber(outfield?.crossFail),
+      dribbleSuccess: toSafeNumber(outfield?.dribbleSuccess),
+      dribbleFail: toSafeNumber(outfield?.dribbleFail),
+      throwSuccess: toSafeNumber(outfield?.throwSuccess),
+      throwFail: toSafeNumber(outfield?.throwFail),
+      shotsOnTarget: toSafeNumber(outfield?.shotsOnTarget),
+      shotsOffTarget: toSafeNumber(outfield?.shotsOffTarget),
+      aerialDuelSuccess: toSafeNumber(outfield?.aerialDuelSuccess),
+      aerialDuelFail: toSafeNumber(outfield?.aerialDuelFail),
+      defensiveDuelSuccess: toSafeNumber(outfield?.defensiveDuelSuccess),
+      defensiveDuelFail: toSafeNumber(outfield?.defensiveDuelFail),
+      goals: toSafeNumber(outfield?.goals),
+      foulsSuffered: toSafeNumber(outfield?.foulsSuffered),
+      foulsCommitted: toSafeNumber(outfield?.foulsCommitted),
+      recoveries: toSafeNumber(outfield?.recoveries),
+      interceptions: toSafeNumber(outfield?.interceptions),
+      offsides: toSafeNumber(outfield?.offsides),
+      possessionLosses: toSafeNumber(outfield?.possessionLosses),
+      yellowCards: toSafeNumber(outfield?.yellowCards),
+      redCards: toSafeNumber(outfield?.redCards),
+      responsibilityGoal: toSafeNumber(outfield?.responsibilityGoal),
+      saves: toSafeNumber(goalkeeper?.saves),
+      incompleteSaves: toSafeNumber(goalkeeper?.incompleteSaves),
+      shotsConceded: toSafeNumber(goalkeeper?.shotsConceded),
+      goalsConceded: toSafeNumber(goalkeeper?.goalsConceded),
+    };
+  });
 }

@@ -1,3 +1,4 @@
+import { generatePublicReportAction } from "@/actions/reports";
 import { ComparisonBarChart } from "@/components/charts/comparison-bar-chart";
 import { PlayerMetricEvolutionChart } from "@/components/charts/player-metric-evolution-chart";
 import { RadarComparisonChart } from "@/components/charts/radar-comparison-chart";
@@ -324,6 +325,23 @@ export default async function DashboardJogadoresPage({ searchParams }: Dashboard
   ];
 
   const modeLabel = buildModeLabel(selectedPlayerIds, selectedMatchIds);
+  const selectedPlayerNames = selectedPlayerIds
+    .map((playerId) => playerMap.get(playerId)?.name)
+    .filter((name): name is string => Boolean(name));
+  const selectedMatchdayNumbers = selectedMatchIds
+    .map((matchId) => matchOptions.find((match) => match.id === matchId)?.matchdayNumber)
+    .filter((matchday): matchday is number => Number.isFinite(matchday));
+  const publicReportFilters = JSON.stringify({
+    competitionId: selectedCompetitionId,
+    playerId: parseOptionalId(params.playerId),
+    matchId: parseOptionalId(params.matchId),
+    playerIds: parseIdList(params.playerIds),
+    matchIds: parseIdList(params.matchIds),
+    selectedPlayers: selectedPlayerIds,
+    selectedPlayerNames,
+    selectedMatchIds,
+    selectedMatchdays: selectedMatchdayNumbers,
+  });
 
   return (
     <section className="space-y-6">
@@ -731,6 +749,22 @@ export default async function DashboardJogadoresPage({ searchParams }: Dashboard
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{"Relat\u00f3rio P\u00fablico"}</CardTitle>
+          <CardDescription>
+            {"Gera um link partilh\u00e1vel com os filtros atualmente aplicados no dashboard."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={generatePublicReportAction} className="flex flex-wrap items-center gap-3">
+            <input type="hidden" name="filters" value={publicReportFilters} />
+            <Button type="submit">{"Gerar Relat\u00f3rio P\u00fablico"}</Button>
+          </form>
+        </CardContent>
+      </Card>
     </section>
   );
 }
+

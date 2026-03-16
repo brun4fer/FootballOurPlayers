@@ -4,11 +4,14 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   serial,
   text,
+  timestamp,
   uniqueIndex,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -232,6 +235,20 @@ export const teamMatchStats = pgTable(
   }),
 );
 
+export const publicReports = pgTable(
+  "public_reports",
+  {
+    id: uuid("id").primaryKey(),
+    filters: jsonb("filters").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    createdAtIdx: index("public_reports_created_at_idx").on(table.createdAt),
+  }),
+);
+
 export const seasonsRelations = relations(seasons, ({ many }) => ({
   competitions: many(competitions),
 }));
@@ -337,6 +354,7 @@ export type Match = typeof matches.$inferSelect;
 export type PlayerMatchStats = typeof playerMatchStats.$inferSelect;
 export type GoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferSelect;
 export type TeamMatchStats = typeof teamMatchStats.$inferSelect;
+export type PublicReport = typeof publicReports.$inferSelect;
 
 export type NewSeason = typeof seasons.$inferInsert;
 export type NewCompetition = typeof competitions.$inferInsert;
@@ -347,3 +365,4 @@ export type NewMatch = typeof matches.$inferInsert;
 export type NewPlayerMatchStats = typeof playerMatchStats.$inferInsert;
 export type NewGoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferInsert;
 export type NewTeamMatchStats = typeof teamMatchStats.$inferInsert;
+export type NewPublicReport = typeof publicReports.$inferInsert;
