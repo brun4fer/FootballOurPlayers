@@ -7,16 +7,16 @@ import { BarChart3, ClipboardPen, Database, Home, Shield, Users } from "lucide-r
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Visão Geral", icon: Home },
+  { href: "/", label: "Visao Geral", icon: Home },
   { href: "/dashboard/jogadores", label: "Dashboard Jogadores", icon: BarChart3 },
   { href: "/dashboard/equipas", label: "Dashboard Equipas", icon: BarChart3 },
-  { href: "/admin", label: "Administração", icon: Shield },
-  { href: "/admin/seasons", label: "Épocas", icon: Database },
-  { href: "/admin/competitions", label: "Competições", icon: Database },
+  { href: "/admin", label: "Administracao", icon: Shield },
+  { href: "/admin/seasons", label: "Epocas", icon: Database },
+  { href: "/admin/competitions", label: "Competicoes", icon: Database },
   { href: "/admin/teams", label: "Equipas", icon: Users },
   { href: "/admin/players", label: "Jogadores", icon: Users },
   { href: "/admin/matches", label: "Jogos", icon: ClipboardPen },
-  { href: "/admin/stats", label: "Inserir Estatísticas", icon: ClipboardPen },
+  { href: "/admin/stats", label: "Inserir Estatisticas", icon: ClipboardPen },
 ];
 
 export function Sidebar() {
@@ -25,8 +25,8 @@ export function Sidebar() {
   return (
     <aside className="w-full border-b border-border/60 bg-card/60 backdrop-blur md:h-screen md:w-64 md:border-b-0 md:border-r">
       <div className="border-b border-border/60 p-4">
-        <p className="font-semibold tracking-wide text-cyan-300">Laboratório Tático de Futebol</p>
-        <p className="text-xs text-muted-foreground">Estatísticas agregadas por jogo</p>
+        <p className="font-semibold tracking-wide text-cyan-300">G.A.P. - Nossos Jogadores</p>
+        <p className="text-xs text-muted-foreground">Gestao e analise estatistica</p>
       </div>
       <nav className="grid grid-cols-2 gap-1 p-2 md:grid-cols-1">
         {links.map(({ href, label, icon: Icon }) => {

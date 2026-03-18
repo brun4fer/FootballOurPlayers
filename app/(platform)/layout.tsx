@@ -14,10 +14,8 @@ export default function PlatformLayout({
       <main className="min-w-0 flex-1">
         <header className="flex items-center justify-between border-b border-border/50 px-4 py-3 sm:px-6">
           <div>
-            <p className="font-[var(--font-heading)] text-lg tracking-wide">Análise Tática</p>
-            <p className="text-xs text-muted-foreground">
-              Insights de futebol com foco em ciano e magenta
-            </p>
+            <p className="font-[var(--font-heading)] text-lg tracking-wide">G.A.P. - Nossos Jogadores</p>
+            <p className="text-xs text-muted-foreground">Plataforma de analise de futebol</p>
           </div>
           <ThemeToggle />
         </header>

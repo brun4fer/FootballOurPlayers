@@ -16,9 +16,18 @@ const headingFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Análise Tática de Futebol",
+  title: "G.A.P. - Nossos Jogadores",
+  applicationName: "G.A.P. - Nossos Jogadores",
   description:
-    "Plataforma de análise de futebol para estatísticas agregadas de jogadores e equipas por jogo.",
+    "Plataforma de analise de futebol para estatisticas agregadas de jogadores e equipas por jogo.",
+  manifest: "/manifest.json?v=gap-v3",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png" }],
+  },
 };
 
 export default function RootLayout({
@@ -27,8 +36,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-PT" suppressHydrationWarning>
-      <body className={`${bodyFont.variable} ${headingFont.variable} font-[var(--font-body)]`}>
+    <html lang="pt" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json?v=gap-v3" />
+      </head>
+      <body
+        suppressHydrationWarning
+        className={`${bodyFont.variable} ${headingFont.variable} font-[var(--font-body)]`}
+      >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
         </ThemeProvider>
