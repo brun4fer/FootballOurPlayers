@@ -7,16 +7,16 @@ import { BarChart3, ClipboardPen, Database, Home, Shield, Users } from "lucide-r
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Visao Geral", icon: Home },
-  { href: "/dashboard/jogadores", label: "Dashboard Jogadores", icon: BarChart3 },
-  { href: "/dashboard/equipas", label: "Dashboard Equipas", icon: BarChart3 },
+  { href: "/", label: "Configurações", icon: Home },
+  { href: "/dashboard/jogadores", label: "Consulta de Jogadores", icon: BarChart3 },
+  { href: "/dashboard/equipas", label: "Consulta de Equipas", icon: BarChart3 },
   { href: "/admin", label: "Administracao", icon: Shield },
   { href: "/admin/seasons", label: "Epocas", icon: Database },
   { href: "/admin/competitions", label: "Competicoes", icon: Database },
   { href: "/admin/teams", label: "Equipas", icon: Users },
   { href: "/admin/players", label: "Jogadores", icon: Users },
   { href: "/admin/matches", label: "Jogos", icon: ClipboardPen },
-  { href: "/admin/stats", label: "Inserir Estatisticas", icon: ClipboardPen },
+  { href: "/admin/stats", label: "Registar ações", icon: ClipboardPen },
 ];
 
 export function Sidebar() {
