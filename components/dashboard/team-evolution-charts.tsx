@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import * as React from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlayerMetricEvolutionChart } from "@/components/charts/player-metric-evolution-chart";
+import { NativeSelect } from "@/components/ui/native-select";
 import type { TeamEvolutionChartSeries } from "@/lib/teamDashboardMetrics";
 
 type TeamEvolutionChartsProps = {
@@ -18,42 +11,56 @@ type TeamEvolutionChartsProps = {
 };
 
 export function TeamEvolutionCharts({ charts }: TeamEvolutionChartsProps) {
+  const [selectedKey, setSelectedKey] = React.useState(charts[0]?.key ?? "");
+
+  React.useEffect(() => {
+    if (!charts.some((chart) => chart.key === selectedKey)) {
+      setSelectedKey(charts[0]?.key ?? "");
+    }
+  }, [charts, selectedKey]);
+
+  const selectedChart = charts.find((chart) => chart.key === selectedKey) ?? charts[0] ?? null;
+
+  if (!selectedChart) {
+    return null;
+  }
+
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      {charts.map((chart) => (
-        <Card key={chart.title}>
-          <CardHeader>
-            <CardTitle>{chart.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chart.data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
-                  <XAxis
-                    dataKey="matchLabel"
-                    stroke="rgba(148,163,184,0.85)"
-                    interval={0}
-                    angle={-15}
-                    textAnchor="end"
-                    height={72}
-                  />
-                  <YAxis stroke="rgba(148,163,184,0.85)" />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    name={chart.title}
-                    stroke={chart.color}
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-4">
+      <div className="max-w-xs space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          Metrica
+        </p>
+        <NativeSelect
+          value={selectedChart.key}
+          onChange={(event) => setSelectedKey(event.target.value)}
+        >
+          {charts.map((chart) => (
+            <option key={chart.key} value={chart.key}>
+              {chart.title}
+            </option>
+          ))}
+        </NativeSelect>
+      </div>
+
+      <div className="rounded-xl border border-border/60 bg-card/30 p-4 sm:p-5">
+        <div className="mb-4 space-y-1">
+          <p className="font-[var(--font-heading)] text-lg font-semibold">{selectedChart.title}</p>
+          <p className="text-sm text-muted-foreground">{selectedChart.description}</p>
+        </div>
+
+        <PlayerMetricEvolutionChart
+          data={selectedChart.data}
+          lines={[
+            {
+              dataKey: "team",
+              label: "Feirense",
+              color: selectedChart.color,
+            },
+          ]}
+          displayMode="percentage"
+        />
+      </div>
     </div>
   );
 }

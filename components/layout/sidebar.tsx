@@ -7,16 +7,38 @@ import { BarChart3, ClipboardPen, Database, Home, Shield, Users } from "lucide-r
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Configurações", icon: Home },
-  { href: "/dashboard/jogadores", label: "Consulta de Jogadores", icon: BarChart3 },
-  { href: "/dashboard/equipas", label: "Consulta de Equipas", icon: BarChart3 },
+  { href: "/", label: "Configuracoes", icon: Home },
+  {
+    href: "/players",
+    label: "Consulta de Jogadores",
+    icon: BarChart3,
+    children: [
+      { href: "/players/total-competition", label: "Totais por Competicao" },
+      { href: "/players/total-all-matchdays", label: "Totais (Todas as Jornadas)" },
+      { href: "/players/single-matchday", label: "Por Jornada" },
+      { href: "/players/evolution", label: "Evolucao" },
+      { href: "/players/comparison-matchdays", label: "Comparacao por Jornada" },
+      { href: "/players/comparison-total", label: "Comparacao Geral" },
+      { href: "/players/action-profile", label: "Perfil de Acoes" },
+    ],
+  },
+  {
+    href: "/teams",
+    label: "Consulta de Equipas",
+    icon: BarChart3,
+    children: [
+      { href: "/teams/total-all-matchdays", label: "Totais (Todas as Jornadas)" },
+      { href: "/teams/single-matchday", label: "Por Jornada" },
+      { href: "/teams/evolution", label: "Evolucao" },
+    ],
+  },
   { href: "/admin", label: "Administracao", icon: Shield },
   { href: "/admin/seasons", label: "Epocas", icon: Database },
   { href: "/admin/competitions", label: "Competicoes", icon: Database },
   { href: "/admin/teams", label: "Equipas", icon: Users },
   { href: "/admin/players", label: "Jogadores", icon: Users },
   { href: "/admin/matches", label: "Jogos", icon: ClipboardPen },
-  { href: "/admin/stats", label: "Registar ações", icon: ClipboardPen },
+  { href: "/admin/stats", label: "Registar acoes", icon: ClipboardPen },
 ];
 
 export function Sidebar() {
@@ -29,8 +51,52 @@ export function Sidebar() {
         <p className="text-xs text-muted-foreground">Gestao e analise estatistica</p>
       </div>
       <nav className="grid grid-cols-2 gap-1 p-2 md:grid-cols-1">
-        {links.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== "/" && pathname.startsWith(href));
+        {links.map(({ href, label, icon: Icon, children }) => {
+          const childActive = children?.some((child) => pathname === child.href) ?? false;
+          const active =
+            childActive || pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+
+          if (children?.length) {
+            return (
+              <div key={href} className="col-span-2 space-y-1 md:col-span-1">
+                <Link
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                    active
+                      ? "bg-cyan-500/15 text-cyan-200 ring-1 ring-cyan-400/50"
+                      : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="truncate">{label}</span>
+                </Link>
+
+                <div className="grid gap-1 pl-4 md:pl-9">
+                  {children.map((child) => {
+                    const childIsActive = pathname === child.href;
+
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          childIsActive
+                            ? "bg-secondary/15 text-secondary ring-1 ring-secondary/40"
+                            : "text-muted-foreground hover:bg-accent/30 hover:text-foreground",
+                        )}
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+                        <span className="truncate">{child.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+
           return (
             <Link
               key={href}

@@ -44,11 +44,20 @@ function mergeSelectedIds(...sources: Array<number[] | undefined>) {
 type MetricChart = {
   title: string;
   color: string;
-  data: Array<{ matchLabel: string; total: number }>;
+  data: Array<{
+    matchLabel: string;
+    matchdayNumber: number;
+    opponentTeamName: string;
+    total: number;
+    total__minutes: number;
+  }>;
 };
 
 type MatchAggregationRow = {
   matchLabel: string;
+  matchdayNumber: number;
+  opponentTeamName: string;
+  minutesPlayed: number;
   shortPassSuccess: number;
   longPassSuccess: number;
   crossSuccess: number;
@@ -177,6 +186,9 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
           matchdayNumber: match.matchdayNumber,
           homeAway: match.homeAway,
         }),
+        matchdayNumber: match.matchdayNumber,
+        opponentTeamName: match.opponentTeamName,
+        minutesPlayed: 0,
         shortPassSuccess: 0,
         longPassSuccess: 0,
         crossSuccess: 0,
@@ -191,6 +203,7 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
     if (!current) {
       continue;
     }
+    current.minutesPlayed += Number(row.minutesPlayed ?? 0);
     current.shortPassSuccess += Number(row.shortPassSuccess ?? 0);
     current.longPassSuccess += Number(row.longPassSuccess ?? 0);
     current.crossSuccess += Number(row.crossSuccess ?? 0);
@@ -202,11 +215,41 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
     .map((match) => rowsByMatch.get(match.id))
     .filter((row): row is MatchAggregationRow => Boolean(row));
 
-  metricCharts[0].data = orderedMatchRows.map((row) => ({ matchLabel: row.matchLabel, total: row.shortPassSuccess }));
-  metricCharts[1].data = orderedMatchRows.map((row) => ({ matchLabel: row.matchLabel, total: row.longPassSuccess }));
-  metricCharts[2].data = orderedMatchRows.map((row) => ({ matchLabel: row.matchLabel, total: row.crossSuccess }));
-  metricCharts[3].data = orderedMatchRows.map((row) => ({ matchLabel: row.matchLabel, total: row.dribbleSuccess }));
-  metricCharts[4].data = orderedMatchRows.map((row) => ({ matchLabel: row.matchLabel, total: row.shotsTotal }));
+  metricCharts[0].data = orderedMatchRows.map((row) => ({
+    matchLabel: row.matchLabel,
+    matchdayNumber: row.matchdayNumber,
+    opponentTeamName: row.opponentTeamName,
+    total: row.shortPassSuccess,
+    total__minutes: row.minutesPlayed,
+  }));
+  metricCharts[1].data = orderedMatchRows.map((row) => ({
+    matchLabel: row.matchLabel,
+    matchdayNumber: row.matchdayNumber,
+    opponentTeamName: row.opponentTeamName,
+    total: row.longPassSuccess,
+    total__minutes: row.minutesPlayed,
+  }));
+  metricCharts[2].data = orderedMatchRows.map((row) => ({
+    matchLabel: row.matchLabel,
+    matchdayNumber: row.matchdayNumber,
+    opponentTeamName: row.opponentTeamName,
+    total: row.crossSuccess,
+    total__minutes: row.minutesPlayed,
+  }));
+  metricCharts[3].data = orderedMatchRows.map((row) => ({
+    matchLabel: row.matchLabel,
+    matchdayNumber: row.matchdayNumber,
+    opponentTeamName: row.opponentTeamName,
+    total: row.dribbleSuccess,
+    total__minutes: row.minutesPlayed,
+  }));
+  metricCharts[4].data = orderedMatchRows.map((row) => ({
+    matchLabel: row.matchLabel,
+    matchdayNumber: row.matchdayNumber,
+    opponentTeamName: row.opponentTeamName,
+    total: row.shotsTotal,
+    total__minutes: row.minutesPlayed,
+  }));
 
   const percentualRows = [
     { label: "Passe Curto", success: percentualActions.shortPass.success, fail: percentualActions.shortPass.fail, percentage: percentualActions.shortPass.percentage },
@@ -325,8 +368,9 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
                 <CardContent>
                   {chart.data.length > 0 ? (
                     <PlayerMetricEvolutionChart
-                      data={chart.data.map((point) => ({ matchLabel: point.matchLabel, total: point.total }))}
+                      data={chart.data}
                       lines={CHART_LINES.map((line) => ({ ...line, color: chart.color }))}
+                      displayMode="per90"
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">Sem dados para este grafico.</p>

@@ -451,18 +451,3 @@ export function buildEvolutionChartData(rows: OutfieldMatchRow[]) {
     passesCertos: row.shortPassSuccess + row.longPassSuccess,
   }));
 }
-
-export function buildDynamicComparisonRows(
-  rows: Array<{ label: string; totals: OutfieldTotals }>,
-) {
-  return rows.map((row) => {
-    const metrics = buildComparisonMetrics(row.totals);
-    return {
-      label: row.label,
-      crossingAccuracy: Number(formatMetric(metrics.crossingAccuracy)),
-      longPassAccuracy: Number(formatMetric(metrics.longPassAccuracy)),
-      dribbleAccuracy: Number(formatMetric(metrics.dribbleAccuracy)),
-      duelSuccess: Number(formatMetric(metrics.duelSuccess)),
-    };
-  });
-}

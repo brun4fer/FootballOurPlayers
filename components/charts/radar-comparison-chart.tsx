@@ -20,10 +20,14 @@ export function RadarComparisonChart({
   data,
   primaryLabel,
   secondaryLabel,
+  primaryColor = "#00e7ff",
+  secondaryColor = "#ff2ea6",
 }: {
   data: ComparisonPoint[];
   primaryLabel: string;
   secondaryLabel: string;
+  primaryColor?: string;
+  secondaryColor?: string;
 }) {
   return (
     <div className="h-[340px] w-full">
@@ -36,15 +40,15 @@ export function RadarComparisonChart({
           <Radar
             name={primaryLabel}
             dataKey="primary"
-            stroke="#00e7ff"
-            fill="#00e7ff"
+            stroke={primaryColor}
+            fill={primaryColor}
             fillOpacity={0.25}
           />
           <Radar
             name={secondaryLabel}
             dataKey="secondary"
-            stroke="#ff2ea6"
-            fill="#ff2ea6"
+            stroke={secondaryColor}
+            fill={secondaryColor}
             fillOpacity={0.25}
           />
         </RadarChart>

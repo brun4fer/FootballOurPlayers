@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function DashboardJogadoresLegacyPage() {
+export default function PlayersPage() {
   redirect("/players/total-competition");
 }
