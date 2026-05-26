@@ -65,14 +65,20 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
   const competitionOptions = await getCompetitionOptions();
   const selectedCompetitionId =
     parseOptionalId(params.competitionId) ?? competitionOptions[0]?.id;
-  const selectedMatchId = parseOptionalId(params.matchId);
-  const selectedPlayerId = parseOptionalId(params.playerId);
+  const requestedMatchId = parseOptionalId(params.matchId);
+  const requestedPlayerId = parseOptionalId(params.playerId);
 
   const [matchOptions, playerOptions] = await Promise.all([
     getMatchOptionsByCompetition(selectedCompetitionId),
     getAnalyzedTeamPlayerOptionsByCompetition(selectedCompetitionId),
   ]);
 
+  const selectedMatchId = matchOptions.some((match) => match.id === requestedMatchId)
+    ? requestedMatchId
+    : undefined;
+  const selectedPlayerId = playerOptions.some((player) => player.id === requestedPlayerId)
+    ? requestedPlayerId
+    : undefined;
   const selectedPlayer = playerOptions.find((player) => player.id === selectedPlayerId);
 
   const [existingPlayerStats, existingGoalkeeperStats, calculatedTeamTotals] = await Promise.all([

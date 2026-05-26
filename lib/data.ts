@@ -15,6 +15,18 @@ import {
 } from "@/db/schema";
 
 const ANALYZED_TEAM_NAME = "Feirense";
+const ANALYZED_TEAM_ALIASES = ["Feirense", "CD Feirense", "C.D. Feirense"];
+
+function normalizeTeamName(name: string) {
+  return name
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+}
+
+const analyzedTeamNames = new Set(ANALYZED_TEAM_ALIASES.map(normalizeTeamName));
 
 export type PublicReportFilters = {
   competitionId?: number;
@@ -28,7 +40,32 @@ export type PublicReportFilters = {
 };
 
 function isAnalyzedTeam(name: string) {
-  return name.trim().toLowerCase() === ANALYZED_TEAM_NAME.toLowerCase();
+  return analyzedTeamNames.has(normalizeTeamName(name));
+}
+
+async function getAnalyzedTeamIds() {
+  const rows = await db.select({ id: teams.id, name: teams.name }).from(teams);
+  return Array.from(new Set(rows.filter((row) => isAnalyzedTeam(row.name)).map((row) => row.id)));
+}
+
+async function getCompetitionAnalyzedTeamIds(competitionId: number) {
+  const rows = await db
+    .select({ id: teams.id, name: teams.name })
+    .from(teamCompetitions)
+    .innerJoin(teams, eq(teamCompetitions.teamId, teams.id))
+    .where(eq(teamCompetitions.competitionId, competitionId))
+    .orderBy(asc(teams.name));
+
+  return Array.from(new Set(rows.filter((row) => isAnalyzedTeam(row.name)).map((row) => row.id)));
+}
+
+async function getScopedAnalyzedTeamIds(competitionId?: number) {
+  if (!competitionId) {
+    return [];
+  }
+
+  const scopedTeamIds = await getCompetitionAnalyzedTeamIds(competitionId);
+  return scopedTeamIds.length > 0 ? scopedTeamIds : getAnalyzedTeamIds();
 }
 
 function formatHomeAwayLabel(value: "home" | "away") {
@@ -201,6 +238,15 @@ export async function getAnalyzedTeamPlayerOptionsByCompetition(competitionId?: 
     }>;
   }
 
+  const analyzedTeamIds = await getScopedAnalyzedTeamIds(competitionId);
+  if (analyzedTeamIds.length === 0) {
+    return [] as Array<{
+      id: number;
+      name: string;
+      isGoalkeeper: boolean;
+    }>;
+  }
+
   return db
     .select({
       id: players.id,
@@ -208,12 +254,7 @@ export async function getAnalyzedTeamPlayerOptionsByCompetition(competitionId?: 
       isGoalkeeper: players.isGoalkeeper,
     })
     .from(players)
-    .innerJoin(teams, eq(players.teamId, teams.id))
-    .innerJoin(
-      teamCompetitions,
-      and(eq(teamCompetitions.teamId, teams.id), eq(teamCompetitions.competitionId, competitionId)),
-    )
-    .where(eq(teams.name, ANALYZED_TEAM_NAME))
+    .where(inArray(players.teamId, analyzedTeamIds))
     .orderBy(asc(players.name));
 }
 
@@ -323,6 +364,11 @@ export async function getCalculatedTeamTotalsByMatch(
     return null;
   }
 
+  const analyzedTeamIds = await getAnalyzedTeamIds();
+  if (analyzedTeamIds.length === 0) {
+    return null;
+  }
+
   const rows = await db
     .select({
       minutesPlayed: sql<number>`coalesce(sum(${playerMatchStats.minutesPlayed}), 0)`,
@@ -356,8 +402,7 @@ export async function getCalculatedTeamTotalsByMatch(
     })
     .from(playerMatchStats)
     .innerJoin(players, eq(playerMatchStats.playerId, players.id))
-    .innerJoin(teams, eq(players.teamId, teams.id))
-    .where(and(eq(playerMatchStats.matchId, matchId), eq(teams.name, ANALYZED_TEAM_NAME)));
+    .where(and(eq(playerMatchStats.matchId, matchId), inArray(players.teamId, analyzedTeamIds)));
 
   return rows[0] ?? null;
 }
@@ -367,7 +412,12 @@ export async function getDashboardPlayersByCompetition(competitionId?: number) {
     return [] as Array<{ id: number; name: string; teamName: string; isGoalkeeper: boolean }>;
   }
 
-  const rows = await db
+  const analyzedTeamIds = await getScopedAnalyzedTeamIds(competitionId);
+  if (analyzedTeamIds.length === 0) {
+    return [] as Array<{ id: number; name: string; teamName: string; isGoalkeeper: boolean }>;
+  }
+
+  return db
     .select({
       id: players.id,
       name: players.name,
@@ -376,14 +426,8 @@ export async function getDashboardPlayersByCompetition(competitionId?: number) {
     })
     .from(players)
     .innerJoin(teams, eq(players.teamId, teams.id))
-    .innerJoin(
-      teamCompetitions,
-      and(eq(teamCompetitions.teamId, teams.id), eq(teamCompetitions.competitionId, competitionId)),
-    )
+    .where(inArray(players.teamId, analyzedTeamIds))
     .orderBy(asc(players.name));
-
-  const analyzedPlayers = rows.filter((row) => isAnalyzedTeam(row.teamName));
-  return analyzedPlayers.length ? analyzedPlayers : rows;
 }
 
 export async function getPlayerCompetitionMatchStats(
@@ -732,12 +776,8 @@ export async function getAnalyzedTeamMatchAggregates(
     return [];
   }
 
-  const analyzedTeam = await db.query.teams.findFirst({
-    columns: { id: true },
-    where: (table, { eq }) => eq(table.name, ANALYZED_TEAM_NAME),
-  });
-
-  if (!analyzedTeam) {
+  const analyzedTeamIds = await getScopedAnalyzedTeamIds(competitionId);
+  if (analyzedTeamIds.length === 0) {
     return matchRows.map((row) => ({
       ...row,
       minutesPlayed: 0,
@@ -809,7 +849,7 @@ export async function getAnalyzedTeamMatchAggregates(
     })
     .from(playerMatchStats)
     .innerJoin(players, eq(playerMatchStats.playerId, players.id))
-    .where(and(eq(players.teamId, analyzedTeam.id), inArray(playerMatchStats.matchId, scopedMatchIds)))
+    .where(and(inArray(players.teamId, analyzedTeamIds), inArray(playerMatchStats.matchId, scopedMatchIds)))
     .groupBy(playerMatchStats.matchId);
 
   const goalkeeperRows = await db
@@ -822,7 +862,7 @@ export async function getAnalyzedTeamMatchAggregates(
     })
     .from(goalkeeperMatchStats)
     .innerJoin(players, eq(goalkeeperMatchStats.playerId, players.id))
-    .where(and(eq(players.teamId, analyzedTeam.id), inArray(goalkeeperMatchStats.matchId, scopedMatchIds)))
+    .where(and(inArray(players.teamId, analyzedTeamIds), inArray(goalkeeperMatchStats.matchId, scopedMatchIds)))
     .groupBy(goalkeeperMatchStats.matchId);
 
   const outfieldMap = new Map(outfieldRows.map((row) => [row.matchId, row]));
