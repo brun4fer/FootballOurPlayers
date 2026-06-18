@@ -28,10 +28,10 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!baseData.selectedCompetitionId) {
     return (
       <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para acompanhar a evolucao do jogador ao longo das jornadas."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para acompanhar a evolução do jogador ao longo das jornadas."
         />
       </section>
     );
@@ -46,7 +46,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!selectedPlayerId) {
     return (
       <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
@@ -55,8 +55,8 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
           description="Vista de linhas por jornada para um unico jogador."
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponiveis"
-          description="Associe jogadores a esta competicao para consultar a evolucao."
+          title="Sem jogadores disponíveis"
+          description="Associe jogadores a esta competição para consultar a evolução."
         />
       </section>
     );
@@ -74,7 +74,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (outfieldRows.length === 0) {
     return (
       <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
@@ -85,7 +85,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
         />
         <PlayerEmptyStateCard
           title="Sem dados para o jogador selecionado"
-          description="Nao existem jornadas suficientes com registo para apresentar a evolucao."
+          description="Não existem jornadas suficientes com registo para apresentar a evolução."
         />
       </section>
     );
@@ -114,9 +114,9 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   return (
     <section className="space-y-6">
       <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <p className="text-sm text-muted-foreground">
-          Graficos em linha para acompanhar a variacao da performance por jornada.
+          Gráficos em linha para acompanhar a variação da performance por jornada.
         </p>
       </div>
 
@@ -126,16 +126,16 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedPlayerId={selectedPlayerId}
         playerMode="single"
-        description="Esta vista aceita apenas um jogador e utiliza todas as jornadas da competicao."
+        description="Esta vista aceita apenas um jogador e utiliza todas as jornadas da competição."
       />
 
       <PlayerOverviewStats stats={overviewStats} />
 
       <Card>
         <CardHeader>
-          <CardTitle>Graficos de Evolucao</CardTitle>
+          <CardTitle>Gráficos de Evolução</CardTitle>
           <CardDescription>
-            {player?.name ?? "Jogador"} jornada a jornada, com media, tendencia e consistencia.
+            {player?.name ?? "Jogador"} jornada a jornada, com média, tendência e consistência.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -159,9 +159,9 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
                 <TableHead>Adversario</TableHead>
                 <TableHead>Minutos</TableHead>
                 <TableHead>Golos</TableHead>
-                <TableHead>Assistencias</TableHead>
-                <TableHead>Recuperacoes</TableHead>
-                <TableHead>Intercecoes</TableHead>
+                <TableHead>Assistências</TableHead>
+                <TableHead>Recuperações</TableHead>
+                <TableHead>Interceções</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

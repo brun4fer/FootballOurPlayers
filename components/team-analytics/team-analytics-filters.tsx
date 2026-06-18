@@ -44,7 +44,7 @@ export function TeamAnalyticsFilters({
       <CardContent>
         <form className={`grid gap-3 ${formColumns}`}>
           <div className="space-y-2">
-            <Label htmlFor="competitionId">Competicao</Label>
+            <Label htmlFor="competitionId">Competição</Label>
             <NativeSelect
               id="competitionId"
               name="competitionId"
@@ -68,7 +68,7 @@ export function TeamAnalyticsFilters({
               >
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    Jornada {match.matchdayNumber} vs {match.opponentTeamName}
+                    Jornada {match.matchdayNumber} x {match.opponentTeamName}
                   </option>
                 ))}
               </NativeSelect>
@@ -87,7 +87,7 @@ export function TeamAnalyticsFilters({
               >
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    Jornada {match.matchdayNumber} vs {match.opponentTeamName}
+                    Jornada {match.matchdayNumber} x {match.opponentTeamName}
                   </option>
                 ))}
               </select>

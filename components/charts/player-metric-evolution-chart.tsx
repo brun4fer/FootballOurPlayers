@@ -72,6 +72,8 @@ function parseMatchMeta(point: EvolutionPoint) {
   const label = String(point.matchLabel ?? "");
   const jornadaMatch = label.match(/Jornada\s+(\d+)/i);
   const opponentMatch =
+    label.match(/x\s+(.+?)\s+-\s+Jornada/i) ??
+    label.match(/x\s+(.+?)\s+\(Jornada/i) ??
     label.match(/vs\s+(.+?)\s+-\s+Jornada/i) ??
     label.match(/vs\s+(.+?)\s+\(Jornada/i);
 
@@ -85,7 +87,7 @@ function computeTrend(values: number[]) {
   const recentValues = values.filter((value) => Number.isFinite(value)).slice(-3);
 
   if (recentValues.length < 3) {
-    return "➖ Estavel";
+    return "Estável";
   }
 
   const first = recentValues[0];
@@ -94,14 +96,14 @@ function computeTrend(values: number[]) {
   const tolerance = baseline * 0.08;
 
   if (last - first > tolerance) {
-    return "📈 Em subida";
+    return "Em subida";
   }
 
   if (first - last > tolerance) {
-    return "📉 Em queda";
+    return "Em queda";
   }
 
-  return "➖ Estavel";
+  return "Estável";
 }
 
 function computeConsistency(values: number[]) {
@@ -142,7 +144,7 @@ function getPointDifferenceLabel(
 
     const difference = current.value - other.value;
     const sign = difference > 0 ? "+" : "";
-    return `${sign}${formatValue(difference, displayMode)} vs ${other.name}`;
+    return `${sign}${formatValue(difference, displayMode)} x ${other.name}`;
   }
 
   const leader = ordered[0];
@@ -150,11 +152,11 @@ function getPointDifferenceLabel(
   if (leader.name === current.name) {
     const runnerUp = ordered[1];
     const difference = current.value - runnerUp.value;
-    return `+${formatValue(difference, displayMode)} vs ${runnerUp.name}`;
+    return `+${formatValue(difference, displayMode)} x ${runnerUp.name}`;
   }
 
   const difference = current.value - leader.value;
-  return `${formatValue(difference, displayMode)} vs ${leader.name}`;
+  return `${formatValue(difference, displayMode)} x ${leader.name}`;
 }
 
 export function PlayerMetricEvolutionChart({
@@ -212,9 +214,9 @@ export function PlayerMetricEvolutionChart({
             lineSummaries.length <= 1
               ? null
               : leader.dataKey === summary.dataKey && runnerUp
-                ? `+${formatValue(summary.average - runnerUp.average, displayMode)} vs ${runnerUp.label}`
+                ? `+${formatValue(summary.average - runnerUp.average, displayMode)} x ${runnerUp.label}`
                 : leader.dataKey !== summary.dataKey
-                  ? `${formatValue(summary.average - leader.average, displayMode)} vs ${leader.label}`
+                  ? `${formatValue(summary.average - leader.average, displayMode)} x ${leader.label}`
                   : null;
 
           return (
@@ -244,7 +246,7 @@ export function PlayerMetricEvolutionChart({
                 </div>
                 <div className="text-right">
                   <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                    Media
+                    Média
                   </p>
                   <p className="text-sm font-semibold text-cyan-200">
                     {formatValue(summary.average, displayMode)}
@@ -294,7 +296,7 @@ export function PlayerMetricEvolutionChart({
                 const meta = parseMatchMeta(point);
                 const currentEntries = payload
                   .map((entry) => ({
-                    name: String(entry.name ?? entry.dataKey ?? "Serie"),
+                    name: String(entry.name ?? entry.dataKey ?? "Série"),
                     value: Number(entry.value ?? 0),
                     color: String(entry.color ?? "#00e7ff"),
                   }))
@@ -306,7 +308,7 @@ export function PlayerMetricEvolutionChart({
                       Jornada {meta.matchday || "-"}
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      Feirense vs {meta.opponent || "-"}
+                      Feirense x {meta.opponent || "-"}
                     </p>
                     <div className="mt-3 space-y-2">
                       {currentEntries.map((entry) => (

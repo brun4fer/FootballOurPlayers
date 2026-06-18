@@ -35,8 +35,8 @@ export default async function TeamSingleMatchdayPage({
       <section className="space-y-6">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
         <TeamEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar o detalhe da equipa por jornada."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para consultar o detalhe da equipa por jornada."
         />
       </section>
     );
@@ -60,8 +60,8 @@ export default async function TeamSingleMatchdayPage({
           description="Vista isolada de uma unica jornada da equipa."
         />
         <TeamEmptyStateCard
-          title="Selecao incompleta"
-          description="Escolha uma jornada para visualizar as estatisticas da equipa nesse jogo."
+          title="Seleção incompleta"
+          description="Escolha uma jornada para visualizar as estatísticas da equipa nesse jogo."
         />
       </section>
     );
@@ -85,7 +85,7 @@ export default async function TeamSingleMatchdayPage({
         />
         <TeamEmptyStateCard
           title="Sem registo para esta jornada"
-          description="Nao existem dados registados para a equipa nesta jornada."
+          description="Não existem dados registados para a equipa nesta jornada."
         />
       </section>
     );
@@ -121,7 +121,7 @@ export default async function TeamSingleMatchdayPage({
         <CardHeader>
           <CardTitle>Resumo da Jornada</CardTitle>
           <CardDescription>
-            Jornada {selectedMatch?.matchdayNumber ?? "-"} vs {selectedMatch?.opponentTeamName ?? "-"}
+            Jornada {selectedMatch?.matchdayNumber ?? "-"} x {selectedMatch?.opponentTeamName ?? "-"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -140,7 +140,7 @@ export default async function TeamSingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Ações Percentuais</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamPercentageTable rows={percentageRows} goalkeeper={goalkeeperSummary} />
@@ -149,7 +149,7 @@ export default async function TeamSingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Ações Numéricas</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamNumericTable rows={numericRows} />

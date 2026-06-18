@@ -29,7 +29,7 @@ export function TeamEvolutionCharts({ charts }: TeamEvolutionChartsProps) {
     <div className="space-y-4">
       <div className="max-w-xs space-y-2">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-          Metrica
+          Métrica
         </p>
         <NativeSelect
           value={selectedChart.key}
@@ -58,7 +58,7 @@ export function TeamEvolutionCharts({ charts }: TeamEvolutionChartsProps) {
               color: selectedChart.color,
             },
           ]}
-          displayMode="percentage"
+          displayMode={selectedChart.displayMode ?? "percentage"}
         />
       </div>
     </div>

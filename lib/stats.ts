@@ -103,12 +103,12 @@ export function buildOffensiveDistribution(totals: NumericRecord) {
 export function buildRadarProfile(totals: NumericRecord) {
   const minutes = Number(totals.minutesPlayed ?? 0);
   return [
-    { metric: "Passing", value: per90((totals.shortPassSuccess ?? 0) + (totals.longPassSuccess ?? 0), minutes) },
-    { metric: "Creation", value: per90((totals.assists ?? 0) + (totals.crossSuccess ?? 0), minutes) },
-    { metric: "Finishing", value: per90((totals.goals ?? 0) + (totals.shotsOnTarget ?? 0), minutes) },
-    { metric: "Dribbling", value: per90(totals.dribbleSuccess ?? 0, minutes) },
-    { metric: "Defense", value: per90((totals.interceptions ?? 0) + (totals.recoveries ?? 0), minutes) },
-    { metric: "Duels", value: per90((totals.aerialDuelSuccess ?? 0) + (totals.defensiveDuelSuccess ?? 0), minutes) },
+    { metric: "Passe", value: per90((totals.shortPassSuccess ?? 0) + (totals.longPassSuccess ?? 0), minutes) },
+    { metric: "Criação", value: per90((totals.assists ?? 0) + (totals.crossSuccess ?? 0), minutes) },
+    { metric: "Finalização", value: per90((totals.goals ?? 0) + (totals.shotsOnTarget ?? 0), minutes) },
+    { metric: "Ação Individual", value: per90(totals.dribbleSuccess ?? 0, minutes) },
+    { metric: "Defesa", value: per90((totals.interceptions ?? 0) + (totals.recoveries ?? 0), minutes) },
+    { metric: "Duelos", value: per90((totals.aerialDuelSuccess ?? 0) + (totals.defensiveDuelSuccess ?? 0), minutes) },
   ];
 }
 

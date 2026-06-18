@@ -1,8 +1,8 @@
-# FootballOurPlayers
+# AP - Mapa Ações
 
-Production-ready football tactical analysis platform with aggregated (non-event) stats.
+Plataforma de análise tática de futebol com estatísticas agregadas.
 
-## Stack
+## Stack Técnico
 
 - Next.js App Router + TypeScript
 - PostgreSQL (Neon)
@@ -10,30 +10,30 @@ Production-ready football tactical analysis platform with aggregated (non-event)
 - TailwindCSS + shadcn-style UI components
 - Recharts
 
-## Core Features
+## Funcionalidades Principais
 
-- Admin management:
+- Gestão de administração:
   - `/admin/seasons`
   - `/admin/competitions`
   - `/admin/teams`
   - `/admin/players`
   - `/admin/matches`
-  - `/admin/stats` (competition -> match -> team -> player workflow)
-- Dashboard:
+  - `/admin/stats` (fluxo competição -> jogo -> equipa -> jogador)
+- Painel:
   - `/dashboard`
-  - competition totals
-  - match evolution
-  - player comparisons
-  - offensive distribution
-  - radar profile
-- Public report:
+  - totais por competição
+  - evolução por jogo
+  - comparações de jogadores
+  - distribuição ofensiva
+  - perfil radar
+- Relatório público:
   - `/report/player/[id]`
-  - shareable direct URL
-  - no admin navigation
+  - URL direta partilhável
+  - sem navegação de administração
 
-## Database
+## Base de Dados
 
-Drizzle schema + initial migration include:
+O schema Drizzle e a migração inicial incluem:
 
 - `seasons`
 - `competitions`
@@ -45,33 +45,33 @@ Drizzle schema + initial migration include:
 - `goalkeeper_match_stats`
 - `team_match_stats`
 
-## Dynamic Metrics
+## Métricas Dinâmicas
 
-Calculated in code, never persisted:
+Calculadas no código, sem persistência:
 
-- Percentages:
-  - pass accuracy
-  - cross accuracy
-  - duel success rate
-  - shot accuracy
+- Percentagens:
+  - precisão de passe
+  - precisão de cruzamento
+  - taxa de sucesso em duelos
+  - precisão de remate
 - Per 90:
   - `(stat / minutes_played) * 90`
 
-## Local Setup
+## Configuração Local
 
-1. Configure environment:
-   - Copy `.env.example` to `.env`
-   - Set `DATABASE_URL` with Neon/PostgreSQL URL
-2. Install dependencies:
+1. Configure o ambiente:
+   - Copie `.env.example` para `.env`
+   - Defina `DATABASE_URL` com o URL Neon/PostgreSQL
+2. Instale as dependências:
    - `npm install`
-3. Run migrations:
+3. Execute as migrações:
    - `npm run db:migrate`
-4. Seed example data:
+4. Insira dados de exemplo:
    - `npm run db:seed`
-5. Start development server:
+5. Inicie o servidor de desenvolvimento:
    - `npm run dev`
 
-## Useful Scripts
+## Scripts Úteis
 
 - `npm run dev`
 - `npm run build`
@@ -81,11 +81,11 @@ Calculated in code, never persisted:
 - `npm run db:studio`
 - `npm run db:seed`
 
-## Project Structure
+## Estrutura do Projeto
 
-- `app/` routes and layouts
-- `components/` UI, chart, and layout components
+- `app/` rotas e layouts
+- `components/` componentes de UI, gráficos e layout
 - `actions/` server actions
-- `lib/` queries, stat calculators, validators
-- `db/` schema, migration SQL, database client
-- `scripts/seed.ts` sample data
+- `lib/` queries, calculadores de estatísticas e validadores
+- `db/` schema, SQL de migração e cliente de base de dados
+- `scripts/seed.ts` dados de exemplo

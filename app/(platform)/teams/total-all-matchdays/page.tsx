@@ -36,8 +36,8 @@ export default async function TeamTotalAllMatchdaysPage({
           Totais (Todas as Jornadas)
         </h1>
         <TeamEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar os totais agregados da equipa."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para consultar os totais agregados da equipa."
         />
       </section>
     );
@@ -54,11 +54,11 @@ export default async function TeamTotalAllMatchdaysPage({
         <TeamAnalyticsFilters
           competitions={baseData.competitions}
           selectedCompetitionId={baseData.selectedCompetitionId}
-          description="Vista consolidada da equipa em todas as jornadas da competicao."
+          description="Vista consolidada da equipa em todas as jornadas da competição."
         />
         <TeamEmptyStateCard
-          title="Sem dados para esta competicao"
-          description="Ainda nao existem jornadas com registo para apresentar totais agregados."
+          title="Sem dados para esta competição"
+          description="Ainda não existem jornadas com registo para apresentar totais agregados."
         />
       </section>
     );
@@ -78,14 +78,14 @@ export default async function TeamTotalAllMatchdaysPage({
           Totais (Todas as Jornadas)
         </h1>
         <p className="text-sm text-muted-foreground">
-          Leitura consolidada da equipa ao longo de toda a competicao, sem filtro por jornada.
+          Leitura consolidada da equipa ao longo de toda a competição, sem filtro por jornada.
         </p>
       </div>
 
       <TeamAnalyticsFilters
         competitions={baseData.competitions}
         selectedCompetitionId={baseData.selectedCompetitionId}
-        description="Sem filtro de jornada. Esta vista resume toda a competicao."
+        description="Sem filtro de jornada. Esta vista resume toda a competição."
       />
 
       <TeamOverviewStats stats={overviewStats} />
@@ -104,7 +104,7 @@ export default async function TeamTotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Ações Percentuais</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamPercentageTable rows={percentageRows} goalkeeper={goalkeeperSummary} />
@@ -113,7 +113,7 @@ export default async function TeamTotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Ações Numéricas</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamNumericTable rows={numericRows} />

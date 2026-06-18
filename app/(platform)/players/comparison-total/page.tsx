@@ -35,11 +35,11 @@ export default async function ComparisonTotalPage({
     return (
       <section className="space-y-6">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparacao Geral
+          Comparação Geral
         </h1>
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para comparar totais agregados entre jogadores."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para comparar totais agregados entre jogadores."
         />
       </section>
     );
@@ -81,10 +81,10 @@ export default async function ComparisonTotalPage({
     <section className="space-y-6">
       <div className="space-y-2">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparacao Geral
+          Comparação Geral
         </h1>
         <p className="text-sm text-muted-foreground">
-          Totais agregados de varios jogadores em todas as jornadas da competicao.
+          Totais agregados de vários jogadores em todas as jornadas da competição.
         </p>
       </div>
 
@@ -95,21 +95,21 @@ export default async function ComparisonTotalPage({
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
         playerLabel="Jogadores"
-        description="Selecione ate 3 jogadores para visualizar graficos comparativos. Acima disso, a analise fica centrada no ranking."
+        description="Selecione até 3 jogadores para visualizar gráficos comparativos. Acima disso, a análise fica centrada no ranking."
       />
 
       {!hasValidSelection ? (
         <PlayerEmptyStateCard
-          title="Selecao insuficiente"
-          description="Escolha pelo menos um jogador para ativar o ranking e a comparacao geral."
+          title="Seleção insuficiente"
+          description="Escolha pelo menos um jogador para ativar o ranking e a comparação geral."
         />
       ) : (
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Ranking Comparativo</CardTitle>
+              <CardTitle>Classificação Comparativa</CardTitle>
               <CardDescription>
-                Vista principal para comparacao escalavel, com ordenacao por qualquer coluna e destaque automatico dos melhores valores.
+                Vista principal para comparação escalável, com ordenação por qualquer coluna e destaque automático dos melhores valores.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -123,9 +123,9 @@ export default async function ComparisonTotalPage({
             <div className="grid gap-4 xl:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Chart por Metrica</CardTitle>
+                  <CardTitle>Chart por Métrica</CardTitle>
                   <CardDescription>
-                    Comparacao simplificada para 1 a 3 jogadores, mostrando apenas uma metrica de cada vez.
+                    Comparação simplificada para 1 a 3 jogadores, mostrando apenas uma metrica de cada vez.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -142,7 +142,7 @@ export default async function ComparisonTotalPage({
                     {comparisonScopes.length === 1
                       ? "Perfil completo do jogador selecionado."
                       : comparisonScopes.length === 2
-                        ? "Disponivel quando existem exatamente dois jogadores selecionados."
+                        ? "Disponível quando existem exatamente dois jogadores selecionados."
                         : "Com tres jogadores, o radar e omitido para evitar ruido visual."}
                   </CardDescription>
                 </CardHeader>
@@ -163,7 +163,7 @@ export default async function ComparisonTotalPage({
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      O radar fica disponivel apenas para um jogador isolado ou para comparacao direta entre dois jogadores.
+                      O radar fica disponível apenas para um jogador isolado ou para comparação direta entre dois jogadores.
                     </p>
                   )}
                 </CardContent>
@@ -174,7 +174,7 @@ export default async function ComparisonTotalPage({
               <CardHeader>
                 <CardTitle>Charts Ocultos</CardTitle>
                 <CardDescription>
-                  Selecione ate 3 jogadores para visualizar graficos comparativos.
+                  Selecione até 3 jogadores para visualizar gráficos comparativos.
                 </CardDescription>
               </CardHeader>
             </Card>

@@ -6,8 +6,8 @@ export const outfieldStatFields = [
   { key: "longPassFail", label: "Passes Longos Falhados" },
   { key: "crossSuccess", label: "Cruzamentos Certos" },
   { key: "crossFail", label: "Cruzamentos Falhados" },
-  { key: "dribbleSuccess", label: "Dribles Certos" },
-  { key: "dribbleFail", label: "Dribles Falhados" },
+  { key: "dribbleSuccess", label: "Ações Individuais Certas" },
+  { key: "dribbleFail", label: "Ações Individuais Falhadas" },
   { key: "throwSuccess", label: "Lançamentos Certos" },
   { key: "throwFail", label: "Lançamentos Falhados" },
   { key: "shotsOnTarget", label: "Remates à Baliza" },
@@ -24,7 +24,7 @@ export const outfieldStatFields = [
   { key: "interceptions", label: "Interceções" },
   { key: "offsides", label: "Foras de Jogo" },
   { key: "possessionLosses", label: "Perdas de Posse" },
-  { key: "responsibilityGoal", label: "Responsabilidade em Golo" },
+  { key: "responsibilityGoal", label: "Responsabilidade em Golos" },
   { key: "yellowCards", label: "Cartões Amarelos" },
   { key: "redCards", label: "Cartões Vermelhos" },
 ] as const;
@@ -48,6 +48,6 @@ export const offensiveDistributionKeys: Array<{
   { key: "assists", label: "Assistências" },
   { key: "shotsOnTarget", label: "Remates à Baliza" },
   { key: "shotsOffTarget", label: "Remates Fora" },
-  { key: "dribbleSuccess", label: "Dribles Ganhos" },
+  { key: "dribbleSuccess", label: "Ações Individuais Certas" },
   { key: "crossSuccess", label: "Cruzamentos Certos" },
 ];

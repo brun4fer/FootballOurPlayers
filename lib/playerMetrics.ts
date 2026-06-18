@@ -223,7 +223,7 @@ export function computePer90Metrics(totals: PlayerMetricsTotals) {
 
 export function buildMatchEvolutionSeries(rows: PlayerMatchMetricsRow[]) {
   return rows.map((row) => ({
-    matchLabel: `Feirense vs ${row.opponentTeamName} (Jornada ${row.matchdayNumber})`,
+    matchLabel: `Feirense x ${row.opponentTeamName} (Jornada ${row.matchdayNumber})`,
     remates: row.shotsOnTarget + row.shotsOffTarget,
     assists: row.assists,
     goals: row.goals,
@@ -237,7 +237,7 @@ export function buildOffensiveDistributionSeries(totals: PlayerMetricsTotals) {
     { name: "Passes Curtos Certos", value: totals.shortPassSuccess },
     { name: "Passes Longos Certos", value: totals.longPassSuccess },
     { name: "Cruzamentos Certos", value: totals.crossSuccess },
-    { name: "Dribles Certos", value: totals.dribbleSuccess },
+    { name: "Ações Individuais Certas", value: totals.dribbleSuccess },
     { name: "Remates à Baliza", value: totals.shotsOnTarget },
   ];
 }
@@ -251,15 +251,15 @@ export function buildRadarNormalizedMetrics(totals: PlayerMetricsTotals) {
 
   return [
     {
-      metric: "Passing",
+      metric: "Passe",
       value: clamp0to100((accuracy.shortPassAccuracy + accuracy.longPassAccuracy) / 2),
     },
-    { metric: "Crossing", value: clamp0to100(accuracy.crossAccuracy) },
-    { metric: "Dribbling", value: clamp0to100(accuracy.dribbleAccuracy) },
-    { metric: "Duels", value: clamp0to100(duelAccuracy) },
-    { metric: "Defense", value: normalizeByCap(defensiveActionsPer90, 20) },
+    { metric: "Cruzamento", value: clamp0to100(accuracy.crossAccuracy) },
+    { metric: "Ação Individual", value: clamp0to100(accuracy.dribbleAccuracy) },
+    { metric: "Duelos", value: clamp0to100(duelAccuracy) },
+    { metric: "Defesa", value: normalizeByCap(defensiveActionsPer90, 20) },
     {
-      metric: "Finishing",
+      metric: "Finalização",
       value: clamp0to100((accuracy.shotAccuracy + normalizeByCap(finishingVolumePer90, 6)) / 2),
     },
   ];

@@ -56,7 +56,7 @@ export function TeamDashboardFilters({
               <option value="">Todas as jornadas</option>
               {matches.map((match) => (
                 <option key={match.id} value={match.id}>
-                  Jornada {match.matchdayNumber} vs {match.opponentTeamName}
+                  Jornada {match.matchdayNumber} x {match.opponentTeamName}
                 </option>
               ))}
             </NativeSelect>
@@ -73,7 +73,7 @@ export function TeamDashboardFilters({
             >
               {matches.map((match) => (
                 <option key={match.id} value={match.id}>
-                  Feirense vs {match.opponentTeamName} (Jornada {match.matchdayNumber})
+                  Feirense x {match.opponentTeamName} (Jornada {match.matchdayNumber})
                 </option>
               ))}
             </select>

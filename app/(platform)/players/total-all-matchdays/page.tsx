@@ -33,8 +33,8 @@ export default async function TotalAllMatchdaysPage({
           Totais (Todas as Jornadas)
         </h1>
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar os totais do jogador ao longo da epoca."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para consultar os totais do jogador ao longo da época."
         />
       </section>
     );
@@ -57,11 +57,11 @@ export default async function TotalAllMatchdaysPage({
           players={baseData.playerOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           playerMode="single"
-          description="Analise consolidada de um jogador em todas as jornadas da competicao."
+          description="Análise consolidada de um jogador em todas as jornadas da competição."
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponiveis"
-          description="Associe jogadores a esta competicao para visualizar os totais agregados."
+          title="Sem jogadores disponíveis"
+          description="Associe jogadores a esta competição para visualizar os totais agregados."
         />
       </section>
     );
@@ -100,7 +100,7 @@ export default async function TotalAllMatchdaysPage({
           Totais (Todas as Jornadas)
         </h1>
         <p className="text-sm text-muted-foreground">
-          Totais e percentagens derivadas do jogador selecionado ao longo de toda a epoca.
+          Totais e percentagens derivadas do jogador selecionado ao longo de toda a época.
         </p>
       </div>
 
@@ -110,14 +110,14 @@ export default async function TotalAllMatchdaysPage({
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedPlayerId={selectedPlayerId}
         playerMode="single"
-        description="Sem filtro de jornada. O objetivo desta vista e a consistencia do jogador ao longo da competicao."
+        description="Sem filtro de jornada. O objetivo desta vista é a consistência do jogador ao longo da competição."
       />
 
       <PlayerOverviewStats stats={overviewStats} />
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Ações Percentuais</CardTitle>
           <CardDescription>
             {player?.name ?? "Jogador"} em {matchesPlayed} jornada(s) com registo.
           </CardDescription>
@@ -132,7 +132,7 @@ export default async function TotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Ações Numéricas</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerNumericTable rows={numericRows} />

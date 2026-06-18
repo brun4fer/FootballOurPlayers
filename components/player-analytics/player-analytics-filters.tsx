@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -12,9 +14,11 @@ type SelectionMode = "none" | "single" | "multiple";
 
 type PlayerAnalyticsFiltersProps = {
   competitions: CompetitionOption[];
+  teams?: Array<{ id: number; name: string }>;
   players?: PlayerOption[];
   matches?: MatchOption[];
   selectedCompetitionId?: number;
+  selectedTeamIds?: number[];
   selectedPlayerId?: number;
   selectedPlayerIds?: number[];
   selectedMatchId?: number;
@@ -23,16 +27,21 @@ type PlayerAnalyticsFiltersProps = {
   matchMode?: SelectionMode;
   title?: string;
   description?: string;
+  teamLabel?: string;
   playerLabel?: string;
   matchLabel?: string;
   submitLabel?: string;
+  resetHref?: string;
+  resetLabel?: string;
 };
 
 export function PlayerAnalyticsFilters({
   competitions,
+  teams = [],
   players = [],
   matches = [],
   selectedCompetitionId,
+  selectedTeamIds = [],
   selectedPlayerId,
   selectedPlayerIds = [],
   selectedMatchId,
@@ -41,11 +50,18 @@ export function PlayerAnalyticsFilters({
   matchMode = "none",
   title = "Filtros",
   description,
+  teamLabel = "Equipas",
   playerLabel = "Jogador",
   matchLabel = "Jornada",
   submitLabel = "Aplicar Filtros",
+  resetHref,
+  resetLabel = "Limpar Filtros",
 }: PlayerAnalyticsFiltersProps) {
-  const visibleFields = 1 + (playerMode === "none" ? 0 : 1) + (matchMode === "none" ? 0 : 1);
+  const visibleFields =
+    1 +
+    (teams.length === 0 ? 0 : 1) +
+    (playerMode === "none" ? 0 : 1) +
+    (matchMode === "none" ? 0 : 1);
   const formColumns =
     visibleFields >= 3 ? "lg:grid-cols-4" : visibleFields === 2 ? "lg:grid-cols-3" : "lg:grid-cols-2";
   const buttonSpanClass =
@@ -60,7 +76,7 @@ export function PlayerAnalyticsFilters({
       <CardContent>
         <form className={`grid gap-3 ${formColumns}`}>
           <div className="space-y-2">
-            <Label htmlFor="competitionId">Competicao</Label>
+            <Label htmlFor="competitionId">Competição</Label>
             <NativeSelect
               id="competitionId"
               name="competitionId"
@@ -73,6 +89,25 @@ export function PlayerAnalyticsFilters({
               ))}
             </NativeSelect>
           </div>
+
+          {teams.length > 0 ? (
+            <div className="space-y-2">
+              <Label htmlFor="teamIds">{teamLabel}</Label>
+              <select
+                id="teamIds"
+                name="teamIds"
+                multiple
+                defaultValue={selectedTeamIds.map(String)}
+                className="h-32 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
           {playerMode === "single" ? (
             <div className="space-y-2">
@@ -120,7 +155,7 @@ export function PlayerAnalyticsFilters({
               >
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    Jornada {match.matchdayNumber} vs {match.opponentTeamName}
+                    Jornada {match.matchdayNumber} x {match.opponentTeamName}
                   </option>
                 ))}
               </NativeSelect>
@@ -139,14 +174,21 @@ export function PlayerAnalyticsFilters({
               >
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    Jornada {match.matchdayNumber} vs {match.opponentTeamName}
+                    Jornada {match.matchdayNumber} x {match.opponentTeamName}
                   </option>
                 ))}
               </select>
             </div>
           ) : null}
 
-          <Button className={buttonSpanClass}>{submitLabel}</Button>
+          <div className={`flex items-end gap-2 ${buttonSpanClass}`}>
+            <Button>{submitLabel}</Button>
+            {resetHref ? (
+              <Button asChild variant="outline">
+                <Link href={resetHref}>{resetLabel}</Link>
+              </Button>
+            ) : null}
+          </div>
         </form>
       </CardContent>
     </Card>

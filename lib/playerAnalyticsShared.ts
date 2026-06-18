@@ -20,13 +20,13 @@ export const COMPARISON_RANKING_METRICS: Array<{
   key: ComparisonRankingMetricKey;
   label: string;
 }> = [
-  { key: "shortPassAccuracy", label: "Short Pass %" },
-  { key: "longPassAccuracy", label: "Long Pass %" },
-  { key: "crossAccuracy", label: "Crossing %" },
-  { key: "individualActionAccuracy", label: "Individual Actions %" },
-  { key: "throwAccuracy", label: "Throws %" },
-  { key: "shotAccuracy", label: "Shots %" },
-  { key: "duelAccuracy", label: "Duels %" },
+  { key: "shortPassAccuracy", label: "Passe Curto %" },
+  { key: "longPassAccuracy", label: "Passe Longo %" },
+  { key: "crossAccuracy", label: "Cruzamentos %" },
+  { key: "individualActionAccuracy", label: "Ações Individuais %" },
+  { key: "throwAccuracy", label: "Lançamentos %" },
+  { key: "shotAccuracy", label: "Remates %" },
+  { key: "duelAccuracy", label: "Duelos %" },
 ];
 
 export const EVOLUTION_COLORS = SERIES_COLORS;

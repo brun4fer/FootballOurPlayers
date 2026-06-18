@@ -1,8 +1,8 @@
 {
-  "id": "gap-nossos-jogadores",
-  "name": "G.A.P. - Nossos Jogadores",
-  "short_name": "G.A.P.",
-  "start_url": "/?source=pwa-gap",
+  "id": "ap-mapa-acoes",
+  "name": "AP - Mapa Ações",
+  "short_name": "AP",
+  "start_url": "/?source=pwa-ap-mapa-acoes",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0f172a",

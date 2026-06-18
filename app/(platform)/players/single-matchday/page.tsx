@@ -33,8 +33,8 @@ export default async function SingleMatchdayPage({
       <section className="space-y-6">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar o detalhe do jogador por jornada."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para consultar o detalhe do jogador por jornada."
         />
       </section>
     );
@@ -64,10 +64,10 @@ export default async function SingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           playerMode="single"
           matchMode="single"
-          description="Analise isolada de uma unica jornada para um unico jogador."
+          description="Análise isolada de uma unica jornada para um unico jogador."
         />
         <PlayerEmptyStateCard
-          title="Selecao incompleta"
+          title="Seleção incompleta"
           description="Escolha um jogador e uma jornada para visualizar o detalhe do jogo."
         />
       </section>
@@ -98,11 +98,11 @@ export default async function SingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           playerMode="single"
           matchMode="single"
-          description="Analise isolada de uma unica jornada para um unico jogador."
+          description="Análise isolada de uma unica jornada para um unico jogador."
         />
         <PlayerEmptyStateCard
           title="Sem registo para esta jornada"
-          description="Nao existem estatisticas registadas para o jogador nesta jornada."
+          description="Não existem estatísticas registadas para o jogador nesta jornada."
         />
       </section>
     );
@@ -159,7 +159,7 @@ export default async function SingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Ações Percentuais</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerPercentageTable
@@ -171,7 +171,7 @@ export default async function SingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Ações Numéricas</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerNumericTable rows={numericRows} />
@@ -187,7 +187,7 @@ export default async function SingleMatchdayPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Metrica</TableHead>
+                  <TableHead>Métrica</TableHead>
                   <TableHead>Valor</TableHead>
                 </TableRow>
               </TableHeader>
@@ -213,7 +213,7 @@ export default async function SingleMatchdayPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Metrica</TableHead>
+                  <TableHead>Métrica</TableHead>
                   <TableHead>Valor</TableHead>
                 </TableRow>
               </TableHeader>

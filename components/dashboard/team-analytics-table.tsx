@@ -7,7 +7,7 @@ export function TeamAnalyticsTable({ rows }: { rows: TeamAnalyticsTableRow[] }) 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Metrica</TableHead>
+            <TableHead>Métrica</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead className="text-right">Percentagem</TableHead>
             <TableHead className="text-right">Por 90</TableHead>

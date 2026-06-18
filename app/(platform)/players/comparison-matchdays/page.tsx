@@ -1,20 +1,15 @@
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerComparisonSummaryTable } from "@/components/player-analytics/player-comparison-summary-table";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
-import { PlayerEvolutionChartPanel } from "@/components/player-analytics/player-evolution-chart-panel";
 import { PlayerRankingInsights } from "@/components/player-analytics/player-ranking-insights";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { aggregateOutfieldTotals } from "@/lib/dashboardMetrics";
+import { getUsedOutfieldPlayersByMatch } from "@/lib/data";
 import {
   buildComparisonSummaryRows,
-  buildMetricEvolutionData,
-  EVOLUTION_METRICS,
-  filterValidIds,
-  getSeriesColor,
   getPlayerAnalyticsBaseData,
   loadPlayerAnalyticsData,
-  parseIdList,
-  type EvolutionLine,
+  resolveSingleId,
   type PlayerAnalyticsSearchParams,
 } from "@/lib/playerAnalytics";
 
@@ -32,135 +27,89 @@ export default async function ComparisonMatchdaysPage({
     return (
       <section className="space-y-6">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparacao por Jornada
+          Comparação por Jornada
         </h1>
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para comparar jogadores em multiplas jornadas."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para comparar jogadores por jornada."
         />
       </section>
     );
   }
 
-  const selectedPlayerIds = filterValidIds(parseIdList(params.playerIds), baseData.playerIdSet);
-  const selectedMatchIds = filterValidIds(parseIdList(params.matchIds), baseData.matchIdSet);
-  const hasValidSelection = selectedPlayerIds.length >= 1 && selectedMatchIds.length >= 2;
-  const shouldShowCharts = selectedPlayerIds.length >= 1 && selectedPlayerIds.length <= 3;
+  const selectedMatchId = resolveSingleId(
+    params.matchId,
+    baseData.matchIdSet,
+    baseData.matchOptions[0]?.id,
+  );
+  const selectedMatch = baseData.matchOptions.find((match) => match.id === selectedMatchId);
+  const usedOutfieldPlayers = selectedMatchId
+    ? await getUsedOutfieldPlayersByMatch(baseData.selectedCompetitionId, selectedMatchId)
+    : [];
+  const usedOutfieldPlayerIds = usedOutfieldPlayers.map((player) => player.id);
+  const hasValidSelection = Boolean(selectedMatchId && usedOutfieldPlayerIds.length > 0);
 
   const loadedData = hasValidSelection
     ? await loadPlayerAnalyticsData({
         competitionId: baseData.selectedCompetitionId,
-        playerOptions: baseData.playerOptions,
-        playerIds: selectedPlayerIds,
-        matchIds: selectedMatchIds,
+        playerOptions: usedOutfieldPlayers,
+        playerIds: usedOutfieldPlayerIds,
+        matchIds: selectedMatchId ? [selectedMatchId] : undefined,
       })
     : undefined;
 
-  const evolutionLines: EvolutionLine[] = hasValidSelection
-    ? selectedPlayerIds.map((playerId, index) => ({
-        playerId,
-        dataKey: `player_${playerId}`,
-        label:
-          loadedData?.playerMap.get(playerId)?.name ??
-          baseData.playerOptions.find((player) => player.id === playerId)?.name ??
-          `Jogador ${playerId}`,
-        color: getSeriesColor(
-          loadedData?.playerMap.get(playerId)?.name ??
-            baseData.playerOptions.find((player) => player.id === playerId)?.name ??
-            playerId,
-        ),
-      }))
-    : [];
-
-  const chartRowsByPlayer = hasValidSelection
-    ? new Map(
-        selectedPlayerIds.map((playerId) => [
-          playerId,
-          loadedData?.outfieldRowsByPlayer.get(playerId) ?? [],
-        ]),
-      )
-    : new Map();
   const comparisonScopes = hasValidSelection
-    ? selectedPlayerIds.map((playerId) => ({
+    ? usedOutfieldPlayerIds.map((playerId) => ({
         label:
           loadedData?.playerMap.get(playerId)?.name ??
-          baseData.playerOptions.find((player) => player.id === playerId)?.name ??
+          usedOutfieldPlayers.find((player) => player.id === playerId)?.name ??
           `Jogador ${playerId}`,
         totals: aggregateOutfieldTotals(loadedData?.outfieldRowsByPlayer.get(playerId) ?? []),
       }))
     : [];
   const comparisonRows = buildComparisonSummaryRows(comparisonScopes);
 
-  const evolutionCharts = hasValidSelection
-    ? EVOLUTION_METRICS.map((metric) => ({
-        key: metric.key,
-        title: metric.label,
-        data: buildMetricEvolutionData(metric.key, chartRowsByPlayer, evolutionLines),
-      }))
-    : [];
-
   return (
     <section className="space-y-6">
       <div className="space-y-2">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparacao por Jornada
+          Comparação por Jornada
         </h1>
         <p className="text-sm text-muted-foreground">
-          Comparacao temporal com multiplos jogadores e multiplas jornadas.
+          Compara automaticamente todos os jogadores de campo utilizados na jornada selecionada.
+          Guarda-redes ficam excluídos.
         </p>
       </div>
 
       <PlayerAnalyticsFilters
         competitions={baseData.competitions}
-        players={baseData.playerOptions}
         matches={baseData.matchOptions}
         selectedCompetitionId={baseData.selectedCompetitionId}
-        selectedPlayerIds={selectedPlayerIds}
-        selectedMatchIds={selectedMatchIds}
-        playerMode="multiple"
-        matchMode="multiple"
-        playerLabel="Jogadores"
-        matchLabel="Jornadas"
-        description="Selecione ate 3 jogadores para visualizar graficos comparativos. Acima disso, a vista troca para ranking."
+        selectedMatchId={selectedMatchId}
+        matchMode="single"
+        matchLabel="Jornada"
+        description="Escolha a jornada; os jogadores de campo utilizados são carregados automaticamente."
       />
 
       {!hasValidSelection ? (
         <PlayerEmptyStateCard
-          title="Selecao insuficiente"
-          description="Escolha pelo menos um jogador e duas jornadas para comparar o desempenho ao longo do tempo."
+          title={selectedMatchId ? "Sem jogadores de campo utilizados" : "Seleção incompleta"}
+          description={
+            selectedMatchId
+              ? "Não existem jogadores de campo com minutos registados nesta jornada."
+              : "Escolha uma jornada para comparar os jogadores utilizados."
+          }
         />
       ) : (
         <>
-          {shouldShowCharts ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Graficos Comparativos</CardTitle>
-                <CardDescription>
-                  Cada linha representa um jogador ao longo das jornadas selecionadas, com media, tendencia e consistencia.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PlayerEvolutionChartPanel
-                  charts={evolutionCharts}
-                  lines={evolutionLines}
-                  displayMode="per90"
-                />
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Charts Ocultos</CardTitle>
-                <CardDescription>
-                  Selecione ate 3 jogadores para visualizar graficos comparativos.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-
           <Card>
             <CardHeader>
-              <CardTitle>Ranking no Intervalo Selecionado</CardTitle>
+              <CardTitle>Classificação da Jornada</CardTitle>
+              <CardDescription>
+                Jornada {selectedMatch?.matchdayNumber ?? "-"} x{" "}
+                {selectedMatch?.opponentTeamName ?? "-"} · {comparisonRows.length} jogadores de
+                campo
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <PlayerComparisonSummaryTable rows={comparisonRows} />

@@ -29,10 +29,10 @@ export default async function TeamEvolutionPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <TeamEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para acompanhar a evolucao da equipa ao longo das jornadas."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para acompanhar a evolução da equipa ao longo das jornadas."
         />
       </section>
     );
@@ -50,18 +50,18 @@ export default async function TeamEvolutionPage({
   if (matchAggregates.length === 0) {
     return (
       <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <TeamAnalyticsFilters
           competitions={baseData.competitions}
           matches={baseData.matchOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           selectedMatchIds={selectedMatchIds}
           matchMode="multiple"
-          description="Selecione varias jornadas para analisar a evolucao temporal da equipa."
+          description="Selecione varias jornadas para analisar a evolução temporal da equipa."
         />
         <TeamEmptyStateCard
           title="Sem dados para o filtro atual"
-          description="Ajuste a competicao ou a selecao de jornadas para gerar os graficos evolutivos."
+          description="Ajuste a competição ou a seleção de jornadas para gerar os gráficos evolutivos."
         />
       </section>
     );
@@ -70,18 +70,18 @@ export default async function TeamEvolutionPage({
   if (hasSingleExplicitSelection || matchAggregates.length < 2) {
     return (
       <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <TeamAnalyticsFilters
           competitions={baseData.competitions}
           matches={baseData.matchOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           selectedMatchIds={selectedMatchIds}
           matchMode="multiple"
-          description="Selecione varias jornadas para analisar a evolucao temporal da equipa."
+          description="Selecione varias jornadas para analisar a evolução temporal da equipa."
         />
         <TeamEmptyStateCard
-          title="Jornadas insuficientes para evolucao"
-          description="Selecione pelo menos duas jornadas, ou deixe a competicao completa para visualizar os graficos evolutivos."
+          title="Jornadas insuficientes para evolução"
+          description="Selecione pelo menos duas jornadas, ou deixe a competição completa para visualizar os gráficos evolutivos."
         />
       </section>
     );
@@ -94,9 +94,9 @@ export default async function TeamEvolutionPage({
   return (
     <section className="space-y-6">
       <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolucao</h1>
+        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
         <p className="text-sm text-muted-foreground">
-          Graficos por jornada com media, tendencia e destaque para melhores e piores momentos da equipa.
+          Gráficos por jornada com média, tendência e destaque para melhores e piores momentos da equipa.
         </p>
       </div>
 
@@ -106,16 +106,16 @@ export default async function TeamEvolutionPage({
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedMatchIds={selectedMatchIds}
         matchMode="multiple"
-        description="Vista de evolucao por jornada. Se nao selecionar jornadas, a pagina usa toda a competicao."
+        description="Vista de evolução por jornada. Se não selecionar jornadas, a pagina usa toda a competição."
       />
 
       <TeamOverviewStats stats={overviewStats} />
 
       <Card>
         <CardHeader>
-          <CardTitle>Graficos de Evolucao</CardTitle>
+          <CardTitle>Gráficos de Evolução</CardTitle>
           <CardDescription>
-            Evolucao por jornada do Feirense nas metricas chave selecionadas.
+            Evolução por jornada do Feirense nas métricas percentuais e ações não percentuais.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { APP_DESCRIPTION, APP_MANIFEST_VERSION, APP_NAME } from "@/lib/app-config";
 
 import "./globals.css";
 
@@ -16,17 +17,13 @@ const headingFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "G.A.P. - Nossos Jogadores",
-  applicationName: "G.A.P. - Nossos Jogadores",
-  description:
-    "Plataforma de analise de futebol para estatisticas agregadas de jogadores e equipas por jogo.",
-  manifest: "/manifest.json?v=gap-v3",
+  title: APP_NAME,
+  applicationName: APP_NAME,
+  description: APP_DESCRIPTION,
+  manifest: `/manifest.json?v=${APP_MANIFEST_VERSION}`,
   icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon.png", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png" }],
+    icon: [{ url: "/favicon.ico" }],
+    apple: [{ url: "/icons/icon-192.png", type: "image/png" }],
   },
 };
 
@@ -38,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="pt" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json?v=gap-v3" />
+        <link rel="manifest" href={`/manifest.json?v=${APP_MANIFEST_VERSION}`} />
       </head>
       <body
         suppressHydrationWarning

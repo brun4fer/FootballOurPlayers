@@ -5,40 +5,41 @@ import { usePathname } from "next/navigation";
 import { BarChart3, ClipboardPen, Database, Home, Shield, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { APP_NAME } from "@/lib/app-config";
 
 const links = [
-  { href: "/", label: "Configuracoes", icon: Home },
+  { href: "/", label: "Início", icon: Home },
   {
     href: "/players",
-    label: "Consulta de Jogadores",
+    label: "Análise de Jogadores",
     icon: BarChart3,
     children: [
-      { href: "/players/total-competition", label: "Totais por Competicao" },
+      { href: "/players/total-competition", label: "Totais por Competição" },
       { href: "/players/total-all-matchdays", label: "Totais (Todas as Jornadas)" },
       { href: "/players/single-matchday", label: "Por Jornada" },
-      { href: "/players/evolution", label: "Evolucao" },
-      { href: "/players/comparison-matchdays", label: "Comparacao por Jornada" },
-      { href: "/players/comparison-total", label: "Comparacao Geral" },
-      { href: "/players/action-profile", label: "Perfil de Acoes" },
+      { href: "/players/evolution", label: "Evolução" },
+      { href: "/players/comparison-matchdays", label: "Comparação por Jornada" },
+      { href: "/players/comparison-total", label: "Comparação Geral" },
+      { href: "/players/action-profile", label: "Perfil de Ações" },
     ],
   },
   {
     href: "/teams",
-    label: "Consulta de Equipas",
+    label: "Análise de Equipas",
     icon: BarChart3,
     children: [
       { href: "/teams/total-all-matchdays", label: "Totais (Todas as Jornadas)" },
       { href: "/teams/single-matchday", label: "Por Jornada" },
-      { href: "/teams/evolution", label: "Evolucao" },
+      { href: "/teams/evolution", label: "Evolução" },
     ],
   },
-  { href: "/admin", label: "Administracao", icon: Shield },
-  { href: "/admin/seasons", label: "Epocas", icon: Database },
-  { href: "/admin/competitions", label: "Competicoes", icon: Database },
+  { href: "/admin", label: "Administração", icon: Shield },
+  { href: "/admin/seasons", label: "Épocas", icon: Database },
+  { href: "/admin/competitions", label: "Competições", icon: Database },
   { href: "/admin/teams", label: "Equipas", icon: Users },
   { href: "/admin/players", label: "Jogadores", icon: Users },
   { href: "/admin/matches", label: "Jogos", icon: ClipboardPen },
-  { href: "/admin/stats", label: "Registar acoes", icon: ClipboardPen },
+  { href: "/admin/stats", label: "Registar Ações", icon: ClipboardPen },
 ];
 
 export function Sidebar() {
@@ -46,9 +47,17 @@ export function Sidebar() {
 
   return (
     <aside className="w-full border-b border-border/60 bg-card/60 backdrop-blur md:h-screen md:w-64 md:border-b-0 md:border-r">
-      <div className="border-b border-border/60 p-4">
-        <p className="font-semibold tracking-wide text-cyan-300">G.A.P. - Nossos Jogadores</p>
-        <p className="text-xs text-muted-foreground">Gestao e analise estatistica</p>
+      <div className="flex items-center gap-3 border-b border-border/60 p-4">
+        <img
+          src="/favicon.ico"
+          alt=""
+          aria-hidden="true"
+          className="h-9 w-9 shrink-0 rounded-md border border-border/70 bg-background object-contain"
+        />
+        <div className="min-w-0">
+          <p className="truncate font-semibold tracking-wide text-cyan-300">{APP_NAME}</p>
+          <p className="text-xs text-muted-foreground">Gestão e análise estatística</p>
+        </div>
       </div>
       <nav className="grid grid-cols-2 gap-1 p-2 md:grid-cols-1">
         {links.map(({ href, label, icon: Icon, children }) => {

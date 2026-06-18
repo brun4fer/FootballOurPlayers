@@ -101,7 +101,7 @@ export function PlayerMetricFocusChart({ rows }: { rows: ComparisonSummaryRow[] 
                     {comparisonTarget ? (
                       <p className="mt-1 text-xs text-muted-foreground">
                         {sign}
-                        {difference.toFixed(2)}% vs {comparisonTarget.label}
+                        {difference.toFixed(2)}% x {comparisonTarget.label}
                       </p>
                     ) : null}
                   </div>

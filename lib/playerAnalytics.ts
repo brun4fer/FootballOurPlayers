@@ -163,11 +163,11 @@ const ACTION_PROFILE_DEFINITIONS = [
     value: (totals: OutfieldTotals) => totals.crossSuccess + totals.crossFail,
   },
   {
-    label: "Acoes Individuais",
+    label: "Ações Individuais",
     value: (totals: OutfieldTotals) => totals.dribbleSuccess + totals.dribbleFail,
   },
   {
-    label: "Lancamentos",
+    label: "Lançamentos",
     value: (totals: OutfieldTotals) => totals.throwSuccess + totals.throwFail,
   },
   {
@@ -175,7 +175,7 @@ const ACTION_PROFILE_DEFINITIONS = [
     value: (totals: OutfieldTotals) => totals.shotsOnTarget + totals.shotsOffTarget,
   },
   {
-    label: "Duelos Aereos",
+    label: "Duelos Aéreos",
     value: (totals: OutfieldTotals) => totals.aerialDuelSuccess + totals.aerialDuelFail,
   },
   {
@@ -189,10 +189,10 @@ export const EVOLUTION_METRICS: EvolutionMetricDefinition[] = [
   { key: "shortPassSuccess", label: "Passes Curtos Sucesso" },
   { key: "longPassSuccess", label: "Passes Longos Sucesso" },
   { key: "crossSuccess", label: "Cruzamentos Sucesso" },
-  { key: "dribbleSuccess", label: "Acoes Individuais Sucesso" },
-  { key: "throwSuccess", label: "Lancamentos Sucesso" },
+  { key: "dribbleSuccess", label: "Ações Individuais Sucesso" },
+  { key: "throwSuccess", label: "Lançamentos Sucesso" },
   { key: "shotsOnTarget", label: "Remates Enquadrados" },
-  { key: "aerialDuelSuccess", label: "Duelos Aereos Sucesso" },
+  { key: "aerialDuelSuccess", label: "Duelos Aéreos Sucesso" },
   { key: "defensiveDuelSuccess", label: "Duelos Defensivos Sucesso" },
 ];
 
@@ -380,7 +380,7 @@ export function buildMetricEvolutionData(
     .sort((a, b) => a.matchdayNumber - b.matchdayNumber || a.date.localeCompare(b.date))
     .map((entry) => {
       const point: EvolutionPoint = {
-        matchLabel: `Feirense vs ${entry.opponentTeamName} - Jornada ${entry.matchdayNumber}`,
+        matchLabel: `Feirense x ${entry.opponentTeamName} - Jornada ${entry.matchdayNumber}`,
         matchdayNumber: entry.matchdayNumber,
         opponentTeamName: entry.opponentTeamName,
       };
@@ -413,14 +413,14 @@ export function buildPlayerOverviewStats(
 
   return [
     { title: "Golos", value: totals.goals },
-    { title: "Assistencias", value: totals.assists },
-    { title: "Precisao de Passe", value: `${formatMetric(metrics.passAccuracy)}%` },
+    { title: "Assistências", value: totals.assists },
+    { title: "Precisão de Passe", value: `${formatMetric(metrics.passAccuracy)}%` },
     {
-      title: "Precisao de Remate",
+      title: "Precisão de Remate",
       value: `${formatMetric(percent(totals.shotsOnTarget, totals.shotsOffTarget))}%`,
     },
     { title: "Minutos", value: totals.minutesPlayed },
-    { title: "Acoes / 90", value: formatMetric(numeric.actionsPer90) },
+    { title: "Ações / 90", value: formatMetric(numeric.actionsPer90) },
   ];
 }
 
@@ -447,13 +447,13 @@ export function buildPlayerPercentageRows(totals: OutfieldTotals): PercentageRow
       percentage: percentualActions.cross.percentage,
     },
     {
-      metric: "Acoes Individuais",
+      metric: "Ações Individuais",
       success: percentualActions.dribble.success,
       fail: percentualActions.dribble.fail,
       percentage: percentualActions.dribble.percentage,
     },
     {
-      metric: "Lancamentos",
+      metric: "Lançamentos",
       success: percentualActions.throw.success,
       fail: percentualActions.throw.fail,
       percentage: percentualActions.throw.percentage,
@@ -465,7 +465,7 @@ export function buildPlayerPercentageRows(totals: OutfieldTotals): PercentageRow
       percentage: percentualActions.shot.percentage,
     },
     {
-      metric: "Duelos Aereos",
+      metric: "Duelos Aéreos",
       success: percentualActions.aerialDuel.success,
       fail: percentualActions.aerialDuel.fail,
       percentage: percentualActions.aerialDuel.percentage,
@@ -548,12 +548,12 @@ export function buildPlayerNumericRows(options: {
       per90: numericActions.foulsCommittedPer90,
     },
     {
-      metric: "Recuperacoes",
+      metric: "Recuperações",
       total: numericActions.recoveriesTotal,
       per90: numericActions.recoveriesPer90,
     },
     {
-      metric: "Intercecoes",
+      metric: "Interceções",
       total: numericActions.interceptionsTotal,
       per90: numericActions.interceptionsPer90,
     },
@@ -568,12 +568,12 @@ export function buildPlayerNumericRows(options: {
       per90: numericActions.possessionLossesPer90,
     },
     {
-      metric: "Cartoes Amarelos",
+      metric: "Cartões Amarelos",
       total: numericActions.yellowCardsTotal,
       per90: numericActions.yellowCardsPer90,
     },
     {
-      metric: "Cartoes Vermelhos",
+      metric: "Cartões Vermelhos",
       total: numericActions.redCardsTotal,
       per90: numericActions.redCardsPer90,
     },
@@ -583,7 +583,7 @@ export function buildPlayerNumericRows(options: {
       per90: numericActions.responsibilityGoalPer90,
     },
     {
-      metric: "Remates Concedidos",
+      metric: "Remates Sofridos",
       total: numericActions.shotsConcededTotal,
       per90: numericActions.shotsConcededPer90,
     },
@@ -592,14 +592,14 @@ export function buildPlayerNumericRows(options: {
       total: numericActions.goalsConcededTotal,
       per90: numericActions.goalsConcededPer90,
     },
-    { metric: "Minutos de Utilizacao", total: numericActions.minutesTotal },
+    { metric: "Minutos de Utilização", total: numericActions.minutesTotal },
     {
-      metric: "Media de Utilizacao por Jogo",
+      metric: "Média de Utilização por Jogo",
       total: formatMetric(numericActions.averageMinutesPerMatch),
     },
-    { metric: "Totais de Acoes", total: numericActions.totalActions },
+    { metric: "Totais de Ações", total: numericActions.totalActions },
     {
-      metric: "Media de Acoes por 90",
+      metric: "Média de Ações por 90",
       total: formatMetric(numericActions.actionsPer90),
       per90: numericActions.actionsPer90,
     },

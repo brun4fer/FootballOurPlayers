@@ -8,7 +8,7 @@ export function PlayerNumericTable({ rows }: { rows: NumericRow[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Metrica</TableHead>
+            <TableHead>Métrica</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Por 90</TableHead>
           </TableRow>

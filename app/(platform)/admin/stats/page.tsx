@@ -205,7 +205,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
               </Button>
               <Button asChild variant="secondary" size="sm">
                 <Link href={`/dashboard/jogadores?competitionId=${selectedCompetitionId ?? ""}&playerId=${selectedPlayerId}`}>
-                  Abrir Dashboard do Jogador
+                  Abrir Painel do Jogador
                 </Link>
               </Button>
             </div>

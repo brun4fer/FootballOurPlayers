@@ -23,7 +23,7 @@ export function PlayerPercentageTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Metrica</TableHead>
+              <TableHead>Métrica</TableHead>
               <TableHead>Sucesso</TableHead>
               <TableHead>Insucesso</TableHead>
               <TableHead>Percentagem</TableHead>

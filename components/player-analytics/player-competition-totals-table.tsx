@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 type CompetitionPlayerTotalsRow = {
   playerId: number;
   playerName: string;
+  teamId?: number;
   teamName: string;
   shortPassSuccess: number;
   shortPassFail: number;
@@ -38,37 +39,45 @@ export function PlayerCompetitionTotalsTable({
             <TableHead>PL Falhados</TableHead>
             <TableHead>Cruz. Certos</TableHead>
             <TableHead>Cruz. Falhados</TableHead>
-            <TableHead>Dribles Certos</TableHead>
-            <TableHead>Dribles Falhados</TableHead>
+            <TableHead>Ações Individuais Certas</TableHead>
+            <TableHead>Ações Individuais Falhadas</TableHead>
             <TableHead>Remates Baliza</TableHead>
             <TableHead>Remates Fora</TableHead>
-            <TableHead>Recuperacoes</TableHead>
-            <TableHead>Intercecoes</TableHead>
-            <TableHead>Cartoes</TableHead>
+            <TableHead>Recuperações</TableHead>
+            <TableHead>Interceções</TableHead>
+            <TableHead>Cartões</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.playerId}>
-              <TableCell>{row.playerName}</TableCell>
-              <TableCell>{row.teamName}</TableCell>
-              <TableCell>{row.shortPassSuccess}</TableCell>
-              <TableCell>{row.shortPassFail}</TableCell>
-              <TableCell>{row.longPassSuccess}</TableCell>
-              <TableCell>{row.longPassFail}</TableCell>
-              <TableCell>{row.crossSuccess}</TableCell>
-              <TableCell>{row.crossFail}</TableCell>
-              <TableCell>{row.dribbleSuccess}</TableCell>
-              <TableCell>{row.dribbleFail}</TableCell>
-              <TableCell>{row.shotsOnTarget}</TableCell>
-              <TableCell>{row.shotsOffTarget}</TableCell>
-              <TableCell>{row.recoveries}</TableCell>
-              <TableCell>{row.interceptions}</TableCell>
-              <TableCell>
-                {row.yellowCards}/{row.redCards}
+          {rows.length > 0 ? (
+            rows.map((row) => (
+              <TableRow key={row.playerId}>
+                <TableCell>{row.playerName}</TableCell>
+                <TableCell>{row.teamName}</TableCell>
+                <TableCell>{row.shortPassSuccess}</TableCell>
+                <TableCell>{row.shortPassFail}</TableCell>
+                <TableCell>{row.longPassSuccess}</TableCell>
+                <TableCell>{row.longPassFail}</TableCell>
+                <TableCell>{row.crossSuccess}</TableCell>
+                <TableCell>{row.crossFail}</TableCell>
+                <TableCell>{row.dribbleSuccess}</TableCell>
+                <TableCell>{row.dribbleFail}</TableCell>
+                <TableCell>{row.shotsOnTarget}</TableCell>
+                <TableCell>{row.shotsOffTarget}</TableCell>
+                <TableCell>{row.recoveries}</TableCell>
+                <TableCell>{row.interceptions}</TableCell>
+                <TableCell>
+                  {row.yellowCards}/{row.redCards}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={15} className="py-8 text-center text-sm text-muted-foreground">
+                Sem jogadores para os filtros selecionados.
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

@@ -405,7 +405,7 @@ export function buildOffensiveDistributionData(totals: OutfieldTotals) {
     { name: "Passes Curtos Certos", value: totals.shortPassSuccess },
     { name: "Passes Longos Certos", value: totals.longPassSuccess },
     { name: "Cruzamentos Certos", value: totals.crossSuccess },
-    { name: "Dribles Certos", value: totals.dribbleSuccess },
+    { name: "Ações Individuais Certas", value: totals.dribbleSuccess },
     { name: "Remates à Baliza", value: totals.shotsOnTarget },
   ];
 }
@@ -421,12 +421,12 @@ export function buildRadarProfileData(totals: OutfieldTotals) {
   const finishingVolume = per90(totals.goals + totals.shotsOnTarget, totals.minutesPlayed);
 
   return [
-    { metric: "Passing", value: clamp(metrics.passAccuracy) },
-    { metric: "Crossing", value: clamp(metrics.crossAccuracy) },
-    { metric: "Dribbling", value: clamp(metrics.dribbleSuccess) },
-    { metric: "Duels", value: clamp(metrics.duelSuccess) },
-    { metric: "Defense", value: clamp((defenseImpact / 20) * 100) },
-    { metric: "Finishing", value: clamp(shotAccuracy * 0.6 + ((finishingVolume / 6) * 100) * 0.4) },
+    { metric: "Passe", value: clamp(metrics.passAccuracy) },
+    { metric: "Cruzamento", value: clamp(metrics.crossAccuracy) },
+    { metric: "Ação Individual", value: clamp(metrics.dribbleSuccess) },
+    { metric: "Duelos", value: clamp(metrics.duelSuccess) },
+    { metric: "Defesa", value: clamp((defenseImpact / 20) * 100) },
+    { metric: "Finalização", value: clamp(shotAccuracy * 0.6 + ((finishingVolume / 6) * 100) * 0.4) },
   ];
 }
 
@@ -443,7 +443,7 @@ export function buildRadarComparisonData(primary: OutfieldTotals, secondary: Out
 
 export function buildEvolutionChartData(rows: OutfieldMatchRow[]) {
   return rows.map((row) => ({
-    matchLabel: `Feirense vs ${row.opponentTeamName} (Jornada ${row.matchdayNumber})`,
+    matchLabel: `Feirense x ${row.opponentTeamName} (Jornada ${row.matchdayNumber})`,
     remates: row.shotsOnTarget + row.shotsOffTarget,
     assists: row.assists,
     goals: row.goals,

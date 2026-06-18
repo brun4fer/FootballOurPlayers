@@ -32,11 +32,11 @@ export default async function ActionProfilePage({
     return (
       <section className="space-y-6">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Perfil de Acoes
+          Perfil de Ações
         </h1>
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para visualizar a distribuicao de acoes por jogador."
+          title="Sem competições disponíveis"
+          description="Crie uma competição para visualizar a distribuição de ações por jogador."
         />
       </section>
     );
@@ -57,7 +57,7 @@ export default async function ActionProfilePage({
     return (
       <section className="space-y-6">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Perfil de Acoes
+          Perfil de Ações
         </h1>
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
@@ -66,11 +66,11 @@ export default async function ActionProfilePage({
           selectedPlayerIds={selectedPlayerIds}
           playerMode="multiple"
           playerLabel="Jogadores (1 ou mais)"
-          description="Vista nao temporal para distribuicao agregada de acoes."
+          description="Vista não temporal para distribuição agregada de ações."
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponiveis"
-          description="Associe jogadores a esta competicao para consultar o perfil de acoes."
+          title="Sem jogadores disponíveis"
+          description="Associe jogadores a esta competição para consultar o perfil de ações."
         />
       </section>
     );
@@ -102,11 +102,11 @@ export default async function ActionProfilePage({
     <section className="space-y-6">
       <div className="space-y-2">
         <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Perfil de Acoes
+          Perfil de Ações
         </h1>
         <p className="text-sm text-muted-foreground">
-          Distribuicao agregada de passes, cruzamentos, acoes individuais, remates e
-          duelos. Esta vista nao usa jornada.
+          Distribuição agregada de passes, cruzamentos, ações individuais, remates e
+          duelos. Esta vista não usa jornada.
         </p>
       </div>
 
@@ -117,19 +117,19 @@ export default async function ActionProfilePage({
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
         playerLabel="Jogadores (1 ou mais)"
-        description="Selecione um jogador para perfil individual ou varios para comparacao direta."
+        description="Selecione um jogador para perfil individual ou vários para comparação direta."
       />
 
       <Card>
         <CardHeader>
           <CardTitle>
-            {scopes.length === 1 ? "Radar de Perfil" : "Comparacao de Perfil de Acoes"}
+            {scopes.length === 1 ? "Radar de Perfil" : "Comparação de Perfil de Ações"}
           </CardTitle>
           <CardDescription>
             {scopes.length === 1
               ? singleScope?.label ?? "Jogador"
               : shouldShowComparisonChart
-                ? "Grouped bars apenas para comparacoes curtas entre 2 e 3 jogadores."
+                ? "Barras agrupadas disponíveis apenas para comparações curtas entre 2 e 3 jogadores."
                 : "Com mais de 3 jogadores, o chart e ocultado para evitar poluicao visual."}
           </CardDescription>
         </CardHeader>
@@ -147,7 +147,7 @@ export default async function ActionProfilePage({
             />
           ) : (
             <div className="rounded-xl border border-border/60 bg-card/40 px-4 py-6 text-sm text-muted-foreground">
-              Selecione ate 3 jogadores para visualizar graficos comparativos.
+              Selecione até 3 jogadores para visualizar gráficos comparativos.
             </div>
           )}
         </CardContent>
@@ -155,7 +155,7 @@ export default async function ActionProfilePage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Totais por Tipo de Acao</CardTitle>
+          <CardTitle>Totais por Tipo de Ação</CardTitle>
         </CardHeader>
         <CardContent>
           {scopes.length === 1 && singleScope ? (

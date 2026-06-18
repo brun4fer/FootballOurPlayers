@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -77,7 +77,7 @@ export function formatMatchLabel(match: {
   matchdayNumber: number;
   homeAway: "home" | "away";
 }) {
-  return `Feirense vs ${match.opponentTeamName} - Jornada ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+  return `Feirense x ${match.opponentTeamName} - Jornada ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {
@@ -430,6 +430,39 @@ export async function getDashboardPlayersByCompetition(competitionId?: number) {
     .orderBy(asc(players.name));
 }
 
+export async function getUsedOutfieldPlayersByMatch(competitionId?: number, matchId?: number) {
+  if (!competitionId || !matchId) {
+    return [] as Array<{ id: number; name: string; teamName: string; isGoalkeeper: boolean }>;
+  }
+
+  const analyzedTeamIds = await getScopedAnalyzedTeamIds(competitionId);
+  if (analyzedTeamIds.length === 0) {
+    return [] as Array<{ id: number; name: string; teamName: string; isGoalkeeper: boolean }>;
+  }
+
+  return db
+    .select({
+      id: players.id,
+      name: players.name,
+      teamName: teams.name,
+      isGoalkeeper: players.isGoalkeeper,
+    })
+    .from(playerMatchStats)
+    .innerJoin(players, eq(playerMatchStats.playerId, players.id))
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
+    .where(
+      and(
+        eq(matches.competitionId, competitionId),
+        eq(matches.id, matchId),
+        inArray(players.teamId, analyzedTeamIds),
+        eq(players.isGoalkeeper, false),
+        gt(playerMatchStats.minutesPlayed, 0),
+      ),
+    )
+    .orderBy(asc(players.name));
+}
+
 export async function getPlayerCompetitionMatchStats(
   playerId?: number,
   competitionId?: number,
@@ -535,6 +568,7 @@ export async function getCompetitionPlayerTotals(competitionId?: number, matchId
     .select({
       playerId: players.id,
       playerName: players.name,
+      teamId: teams.id,
       teamName: teams.name,
       shortPassSuccess: sql<number>`coalesce(sum(${playerMatchStats.shortPassSuccess}), 0)`,
       shortPassFail: sql<number>`coalesce(sum(${playerMatchStats.shortPassFail}), 0)`,
@@ -565,7 +599,7 @@ export async function getCompetitionPlayerTotals(competitionId?: number, matchId
     .innerJoin(playerMatchStats, eq(playerMatchStats.playerId, players.id))
     .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
     .where(whereCondition)
-    .groupBy(players.id, players.name, teams.name)
+    .groupBy(players.id, players.name, teams.id, teams.name)
     .orderBy(sql`coalesce(sum(${playerMatchStats.goals}), 0) desc`, asc(players.name));
 }
 
