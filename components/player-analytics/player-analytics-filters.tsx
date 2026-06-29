@@ -33,6 +33,7 @@ type PlayerAnalyticsFiltersProps = {
   submitLabel?: string;
   resetHref?: string;
   resetLabel?: string;
+  searchQuery?: string;
 };
 
 export function PlayerAnalyticsFilters({
@@ -56,6 +57,7 @@ export function PlayerAnalyticsFilters({
   submitLabel = "Aplicar Filtros",
   resetHref,
   resetLabel = "Limpar Filtros",
+  searchQuery = "",
 }: PlayerAnalyticsFiltersProps) {
   const visibleFields =
     1 +
@@ -75,6 +77,8 @@ export function PlayerAnalyticsFilters({
       </CardHeader>
       <CardContent>
         <form className={`grid gap-3 ${formColumns}`}>
+          {searchQuery ? <input type="hidden" name="q" value={searchQuery} /> : null}
+
           <div className="space-y-2">
             <Label htmlFor="competitionId">Competição</Label>
             <NativeSelect

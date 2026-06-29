@@ -1,9 +1,18 @@
+import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerEvolutionChartPanel } from "@/components/player-analytics/player-evolution-chart-panel";
 import { PlayerOverviewStats } from "@/components/player-analytics/player-overview-stats";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  describeList,
+  filterBySearch,
+  formatMatchLabel,
+  getMatchSearchValues,
+  getSearchQuery,
+  matchesSearch,
+} from "@/lib/analytics-search";
 import { aggregateOutfieldTotals } from "@/lib/dashboardMetrics";
 import {
   buildMetricEvolutionData,
@@ -23,20 +32,27 @@ type EvolutionPageProps = {
 
 export default async function EvolutionPage({ searchParams }: EvolutionPageProps) {
   const params = (await searchParams) ?? {};
+  const searchQuery = getSearchQuery(params);
   const baseData = await getPlayerAnalyticsBaseData(params);
 
   if (!baseData.selectedCompetitionId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
+      <AnalyticsPageShell
+        title="Evolucao"
+        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        searchQuery={searchQuery}
+      >
         <PlayerEmptyStateCard
-          title="Sem competições disponíveis"
-          description="Crie uma competição para acompanhar a evolução do jogador ao longo das jornadas."
+          title="Sem competicoes disponiveis"
+          description="Crie uma competicao para acompanhar a evolucao do jogador ao longo das jornadas."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
+  const selectedCompetition = baseData.competitions.find(
+    (competition) => competition.id === baseData.selectedCompetitionId,
+  );
   const selectedPlayerId = resolveSingleId(
     params.playerId,
     baseData.playerIdSet,
@@ -45,20 +61,28 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
   if (!selectedPlayerId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
+      <AnalyticsPageShell
+        title="Evolucao"
+        description="Vista de linhas por jornada para um unico jogador."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          { label: "Jogador", value: "Sem jogadores disponiveis" },
+        ]}
+        searchQuery={searchQuery}
+      >
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           playerMode="single"
           description="Vista de linhas por jornada para um unico jogador."
+          searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponíveis"
-          description="Associe jogadores a esta competição para consultar a evolução."
+          title="Sem jogadores disponiveis"
+          description="Associe jogadores a esta competicao para consultar a evolucao."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
@@ -70,11 +94,28 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
   const player = loadedData.playerMap.get(selectedPlayerId);
   const outfieldRows = loadedData.outfieldRowsByPlayer.get(selectedPlayerId) ?? [];
+  const searchMatchesScope = matchesSearch(searchQuery, [
+    selectedCompetition?.name,
+    player?.name,
+    player?.teamName,
+  ]);
+  const visibleOutfieldRows = searchMatchesScope
+    ? outfieldRows
+    : filterBySearch(outfieldRows, searchQuery, getMatchSearchValues);
 
-  if (outfieldRows.length === 0) {
+  if (visibleOutfieldRows.length === 0) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
+      <AnalyticsPageShell
+        title="Evolucao"
+        description="Graficos em linha para acompanhar a variacao da performance por jornada."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          { label: "Jogador", value: player?.name },
+          { label: "Equipa", value: player?.teamName },
+          { label: "Jogos", value: searchQuery ? "Sem jogos no filtro atual" : "Sem dados" },
+        ]}
+        searchQuery={searchQuery}
+      >
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
@@ -82,19 +123,20 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
           selectedPlayerId={selectedPlayerId}
           playerMode="single"
           description="Vista de linhas por jornada para um unico jogador."
+          searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
           title="Sem dados para o jogador selecionado"
-          description="Não existem jornadas suficientes com registo para apresentar a evolução."
+          description="Nao existem jornadas suficientes com registo para apresentar a evolucao."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
-  const totals = aggregateOutfieldTotals(outfieldRows);
+  const totals = aggregateOutfieldTotals(visibleOutfieldRows);
   const overviewStats = buildPlayerOverviewStats(
     totals,
-    new Set(outfieldRows.map((row) => row.matchId)).size,
+    new Set(visibleOutfieldRows.map((row) => row.matchId)).size,
   );
   const evolutionLines: EvolutionLine[] = [
     {
@@ -104,7 +146,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
       color: getSeriesColor(player?.name ?? selectedPlayerId),
     },
   ];
-  const chartRowsByPlayer = new Map([[selectedPlayerId, outfieldRows]]);
+  const chartRowsByPlayer = new Map([[selectedPlayerId, visibleOutfieldRows]]);
   const evolutionCharts = EVOLUTION_METRICS.map((metric) => ({
     key: metric.key,
     title: metric.label,
@@ -112,30 +154,37 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   }));
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Evolução</h1>
-        <p className="text-sm text-muted-foreground">
-          Gráficos em linha para acompanhar a variação da performance por jornada.
-        </p>
-      </div>
-
+    <AnalyticsPageShell
+      title="Evolucao"
+      description="Graficos em linha para acompanhar a variacao da performance por jornada."
+      filters={[
+        { label: "Competicao", value: selectedCompetition?.name },
+        { label: "Jogador", value: player?.name },
+        { label: "Equipa", value: player?.teamName },
+        {
+          label: "Jogos",
+          value: describeList(visibleOutfieldRows.map(formatMatchLabel), "Todas as jornadas"),
+        },
+      ]}
+      searchQuery={searchQuery}
+    >
       <PlayerAnalyticsFilters
         competitions={baseData.competitions}
         players={baseData.playerOptions}
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedPlayerId={selectedPlayerId}
         playerMode="single"
-        description="Esta vista aceita apenas um jogador e utiliza todas as jornadas da competição."
+        description="Esta vista aceita apenas um jogador e utiliza todas as jornadas da competicao."
+        searchQuery={searchQuery}
       />
 
       <PlayerOverviewStats stats={overviewStats} />
 
       <Card>
         <CardHeader>
-          <CardTitle>Gráficos de Evolução</CardTitle>
+          <CardTitle>Graficos de Evolucao</CardTitle>
           <CardDescription>
-            {player?.name ?? "Jogador"} jornada a jornada, com média, tendência e consistência.
+            {player?.name ?? "Jogador"} jornada a jornada, com media, tendencia e consistencia.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -159,13 +208,13 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
                 <TableHead>Adversario</TableHead>
                 <TableHead>Minutos</TableHead>
                 <TableHead>Golos</TableHead>
-                <TableHead>Assistências</TableHead>
-                <TableHead>Recuperações</TableHead>
-                <TableHead>Interceções</TableHead>
+                <TableHead>Assistencias</TableHead>
+                <TableHead>Recuperacoes</TableHead>
+                <TableHead>Intercecoes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {outfieldRows.map((row) => (
+              {visibleOutfieldRows.map((row) => (
                 <TableRow key={row.matchId}>
                   <TableCell>{row.matchdayNumber}</TableCell>
                   <TableCell>{row.opponentTeamName}</TableCell>
@@ -180,6 +229,6 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
           </Table>
         </CardContent>
       </Card>
-    </section>
+    </AnalyticsPageShell>
   );
 }

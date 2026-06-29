@@ -1,8 +1,17 @@
+import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerComparisonSummaryTable } from "@/components/player-analytics/player-comparison-summary-table";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerRankingInsights } from "@/components/player-analytics/player-ranking-insights";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  describeList,
+  filterBySearch,
+  formatMatchLabel,
+  getMatchSearchValues,
+  getSearchQuery,
+  matchesSearch,
+} from "@/lib/analytics-search";
 import { aggregateOutfieldTotals } from "@/lib/dashboardMetrics";
 import { getUsedOutfieldPlayersByMatch } from "@/lib/data";
 import {
@@ -21,22 +30,27 @@ export default async function ComparisonMatchdaysPage({
   searchParams,
 }: ComparisonMatchdaysPageProps) {
   const params = (await searchParams) ?? {};
+  const searchQuery = getSearchQuery(params);
   const baseData = await getPlayerAnalyticsBaseData(params);
 
   if (!baseData.selectedCompetitionId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparação por Jornada
-        </h1>
+      <AnalyticsPageShell
+        title="Comparacao por Jornada"
+        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        searchQuery={searchQuery}
+      >
         <PlayerEmptyStateCard
-          title="Sem competições disponíveis"
-          description="Crie uma competição para comparar jogadores por jornada."
+          title="Sem competicoes disponiveis"
+          description="Crie uma competicao para comparar jogadores por jornada."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
+  const selectedCompetition = baseData.competitions.find(
+    (competition) => competition.id === baseData.selectedCompetitionId,
+  );
   const selectedMatchId = resolveSingleId(
     params.matchId,
     baseData.matchIdSet,
@@ -46,13 +60,23 @@ export default async function ComparisonMatchdaysPage({
   const usedOutfieldPlayers = selectedMatchId
     ? await getUsedOutfieldPlayersByMatch(baseData.selectedCompetitionId, selectedMatchId)
     : [];
-  const usedOutfieldPlayerIds = usedOutfieldPlayers.map((player) => player.id);
+  const searchMatchesScope = matchesSearch(searchQuery, [
+    selectedCompetition?.name,
+    ...(selectedMatch ? getMatchSearchValues(selectedMatch) : []),
+  ]);
+  const visibleOutfieldPlayers = searchMatchesScope
+    ? usedOutfieldPlayers
+    : filterBySearch(usedOutfieldPlayers, searchQuery, (player) => [
+        player.name,
+        player.teamName,
+      ]);
+  const usedOutfieldPlayerIds = visibleOutfieldPlayers.map((player) => player.id);
   const hasValidSelection = Boolean(selectedMatchId && usedOutfieldPlayerIds.length > 0);
 
   const loadedData = hasValidSelection
     ? await loadPlayerAnalyticsData({
         competitionId: baseData.selectedCompetitionId,
-        playerOptions: usedOutfieldPlayers,
+        playerOptions: visibleOutfieldPlayers,
         playerIds: usedOutfieldPlayerIds,
         matchIds: selectedMatchId ? [selectedMatchId] : undefined,
       })
@@ -62,7 +86,7 @@ export default async function ComparisonMatchdaysPage({
     ? usedOutfieldPlayerIds.map((playerId) => ({
         label:
           loadedData?.playerMap.get(playerId)?.name ??
-          usedOutfieldPlayers.find((player) => player.id === playerId)?.name ??
+          visibleOutfieldPlayers.find((player) => player.id === playerId)?.name ??
           `Jogador ${playerId}`,
         totals: aggregateOutfieldTotals(loadedData?.outfieldRowsByPlayer.get(playerId) ?? []),
       }))
@@ -70,17 +94,23 @@ export default async function ComparisonMatchdaysPage({
   const comparisonRows = buildComparisonSummaryRows(comparisonScopes);
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparação por Jornada
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Compara automaticamente todos os jogadores de campo utilizados na jornada selecionada.
-          Guarda-redes ficam excluídos.
-        </p>
-      </div>
-
+    <AnalyticsPageShell
+      title="Comparacao por Jornada"
+      description="Compara automaticamente todos os jogadores de campo utilizados na jornada selecionada. Guarda-redes ficam excluidos."
+      filters={[
+        { label: "Competicao", value: selectedCompetition?.name },
+        { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Selecao incompleta" },
+        {
+          label: "Jogadores",
+          value: describeList(visibleOutfieldPlayers.map((player) => player.name), "Sem jogadores"),
+        },
+        {
+          label: "Equipas",
+          value: describeList(visibleOutfieldPlayers.map((player) => player.teamName), "Sem equipas"),
+        },
+      ]}
+      searchQuery={searchQuery}
+    >
       <PlayerAnalyticsFilters
         competitions={baseData.competitions}
         matches={baseData.matchOptions}
@@ -88,15 +118,24 @@ export default async function ComparisonMatchdaysPage({
         selectedMatchId={selectedMatchId}
         matchMode="single"
         matchLabel="Jornada"
-        description="Escolha a jornada; os jogadores de campo utilizados são carregados automaticamente."
+        description="Escolha a jornada; os jogadores de campo utilizados sao carregados automaticamente."
+        searchQuery={searchQuery}
       />
 
       {!hasValidSelection ? (
         <PlayerEmptyStateCard
-          title={selectedMatchId ? "Sem jogadores de campo utilizados" : "Seleção incompleta"}
+          title={
+            selectedMatchId
+              ? searchQuery
+                ? "Sem jogadores para a pesquisa atual"
+                : "Sem jogadores de campo utilizados"
+              : "Selecao incompleta"
+          }
           description={
             selectedMatchId
-              ? "Não existem jogadores de campo com minutos registados nesta jornada."
+              ? searchQuery
+                ? "A pesquisa atual nao encontrou jogadores de campo nesta jornada."
+                : "Nao existem jogadores de campo com minutos registados nesta jornada."
               : "Escolha uma jornada para comparar os jogadores utilizados."
           }
         />
@@ -104,11 +143,9 @@ export default async function ComparisonMatchdaysPage({
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Classificação da Jornada</CardTitle>
+              <CardTitle>Classificacao da Jornada</CardTitle>
               <CardDescription>
-                Jornada {selectedMatch?.matchdayNumber ?? "-"} x{" "}
-                {selectedMatch?.opponentTeamName ?? "-"} · {comparisonRows.length} jogadores de
-                campo
+                {selectedMatch ? formatMatchLabel(selectedMatch) : "Jornada -"} - {comparisonRows.length} jogadores de campo
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -119,6 +156,6 @@ export default async function ComparisonMatchdaysPage({
           {comparisonRows.length > 1 ? <PlayerRankingInsights rows={comparisonRows} /> : null}
         </>
       )}
-    </section>
+    </AnalyticsPageShell>
   );
 }

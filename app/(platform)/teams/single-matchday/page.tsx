@@ -1,3 +1,4 @@
+import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { TeamAnalyticsTable } from "@/components/dashboard/team-analytics-table";
 import { TeamNumericTable } from "@/components/dashboard/team-numeric-table";
 import { TeamOverviewStats } from "@/components/dashboard/team-overview-stats";
@@ -5,6 +6,13 @@ import { TeamPercentageTable } from "@/components/dashboard/team-percentage-tabl
 import { TeamAnalyticsFilters } from "@/components/team-analytics/team-analytics-filters";
 import { TeamEmptyStateCard } from "@/components/team-analytics/team-empty-state-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  filterBySearch,
+  formatMatchLabel,
+  getMatchSearchValues,
+  getSearchQuery,
+  matchesSearch,
+} from "@/lib/analytics-search";
 import { getAnalyzedTeamMatchAggregates } from "@/lib/data";
 import {
   aggregateTeamDashboardTotals,
@@ -28,42 +36,59 @@ export default async function TeamSingleMatchdayPage({
   searchParams,
 }: SingleMatchdayPageProps) {
   const params = (await searchParams) ?? {};
+  const searchQuery = getSearchQuery(params);
   const baseData = await getTeamAnalyticsBaseData(params);
 
   if (!baseData.selectedCompetitionId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
+      <AnalyticsPageShell
+        title="Por Jornada"
+        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        searchQuery={searchQuery}
+      >
         <TeamEmptyStateCard
-          title="Sem competições disponíveis"
-          description="Crie uma competição para consultar o detalhe da equipa por jornada."
+          title="Sem competicoes disponiveis"
+          description="Crie uma competicao para consultar o detalhe da equipa por jornada."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
+  const selectedCompetition = baseData.competitions.find(
+    (competition) => competition.id === baseData.selectedCompetitionId,
+  );
   const selectedMatchId = resolveSingleId(
     params.matchId,
     baseData.matchIdSet,
     baseData.matchOptions[0]?.id,
   );
+  const selectedMatch = baseData.matchOptions.find((match) => match.id === selectedMatchId);
 
   if (!selectedMatchId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
+      <AnalyticsPageShell
+        title="Por Jornada"
+        description="Vista isolada de uma unica jornada da equipa."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          { label: "Equipa", value: "Feirense" },
+          { label: "Jogo", value: "Selecao incompleta" },
+        ]}
+        searchQuery={searchQuery}
+      >
         <TeamAnalyticsFilters
           competitions={baseData.competitions}
           matches={baseData.matchOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           matchMode="single"
           description="Vista isolada de uma unica jornada da equipa."
+          searchQuery={searchQuery}
         />
         <TeamEmptyStateCard
-          title="Seleção incompleta"
-          description="Escolha uma jornada para visualizar as estatísticas da equipa nesse jogo."
+          title="Selecao incompleta"
+          description="Escolha uma jornada para visualizar as estatisticas da equipa nesse jogo."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
@@ -73,8 +98,16 @@ export default async function TeamSingleMatchdayPage({
 
   if (matchAggregates.length === 0) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
+      <AnalyticsPageShell
+        title="Por Jornada"
+        description="Foco na performance da equipa numa unica jornada."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          { label: "Equipa", value: "Feirense" },
+          { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
+        ]}
+        searchQuery={searchQuery}
+      >
         <TeamAnalyticsFilters
           competitions={baseData.competitions}
           matches={baseData.matchOptions}
@@ -82,12 +115,13 @@ export default async function TeamSingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           matchMode="single"
           description="Vista isolada de uma unica jornada da equipa."
+          searchQuery={searchQuery}
         />
         <TeamEmptyStateCard
           title="Sem registo para esta jornada"
-          description="Não existem dados registados para a equipa nesta jornada."
+          description="Nao existem dados registados para a equipa nesta jornada."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
@@ -97,17 +131,39 @@ export default async function TeamSingleMatchdayPage({
   const percentageRows = buildTeamPercentageRows(totals);
   const numericRows = buildTeamNumericRows(totals);
   const goalkeeperSummary = buildGoalkeeperSummary(totals);
-  const selectedMatch = baseData.matchOptions.find((match) => match.id === selectedMatchId);
+  const searchMatchesScope = matchesSearch(searchQuery, [
+    selectedCompetition?.name,
+    "Feirense",
+    ...(selectedMatch ? getMatchSearchValues(selectedMatch) : []),
+  ]);
+  const visibleOverviewStats = searchMatchesScope
+    ? overviewStats
+    : filterBySearch(overviewStats, searchQuery, (row) => [
+        row.title,
+        row.value,
+        row.description,
+      ]);
+  const visibleAnalyticsRows = searchMatchesScope
+    ? analyticsRows
+    : filterBySearch(analyticsRows, searchQuery, (row) => [row.metric]);
+  const visiblePercentageRows = searchMatchesScope
+    ? percentageRows
+    : filterBySearch(percentageRows, searchQuery, (row) => [row.metric]);
+  const visibleNumericRows = searchMatchesScope
+    ? numericRows
+    : filterBySearch(numericRows, searchQuery, (row) => [row.metric, row.total]);
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
-        <p className="text-sm text-muted-foreground">
-          Foco na performance da equipa numa unica jornada.
-        </p>
-      </div>
-
+    <AnalyticsPageShell
+      title="Por Jornada"
+      description="Foco na performance da equipa numa unica jornada."
+      filters={[
+        { label: "Competicao", value: selectedCompetition?.name },
+        { label: "Equipa", value: "Feirense" },
+        { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
+      ]}
+      searchQuery={searchQuery}
+    >
       <TeamAnalyticsFilters
         competitions={baseData.competitions}
         matches={baseData.matchOptions}
@@ -115,17 +171,18 @@ export default async function TeamSingleMatchdayPage({
         selectedMatchId={selectedMatchId}
         matchMode="single"
         description="A jornada e obrigatoria nesta vista."
+        searchQuery={searchQuery}
       />
 
       <Card>
         <CardHeader>
           <CardTitle>Resumo da Jornada</CardTitle>
           <CardDescription>
-            Jornada {selectedMatch?.matchdayNumber ?? "-"} x {selectedMatch?.opponentTeamName ?? "-"}
+            {selectedMatch ? formatMatchLabel(selectedMatch) : "Jornada -"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TeamOverviewStats stats={overviewStats} />
+          <TeamOverviewStats stats={visibleOverviewStats} />
         </CardContent>
       </Card>
 
@@ -134,27 +191,27 @@ export default async function TeamSingleMatchdayPage({
           <CardTitle>Totais da Jornada</CardTitle>
         </CardHeader>
         <CardContent>
-          <TeamAnalyticsTable rows={analyticsRows} />
+          <TeamAnalyticsTable rows={visibleAnalyticsRows} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Ações Percentuais</CardTitle>
+          <CardTitle>Acoes Percentuais</CardTitle>
         </CardHeader>
         <CardContent>
-          <TeamPercentageTable rows={percentageRows} goalkeeper={goalkeeperSummary} />
+          <TeamPercentageTable rows={visiblePercentageRows} goalkeeper={goalkeeperSummary} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Ações Numéricas</CardTitle>
+          <CardTitle>Acoes Numericas</CardTitle>
         </CardHeader>
         <CardContent>
-          <TeamNumericTable rows={numericRows} />
+          <TeamNumericTable rows={visibleNumericRows} />
         </CardContent>
       </Card>
-    </section>
+    </AnalyticsPageShell>
   );
 }

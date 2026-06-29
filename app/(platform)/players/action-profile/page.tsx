@@ -1,9 +1,11 @@
+import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { ActionProfileComparisonChart } from "@/components/charts/action-profile-comparison-chart";
 import { RadarProfileChart } from "@/components/charts/radar-profile-chart";
 import { PlayerActionProfileTable } from "@/components/player-analytics/player-action-profile-table";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { describeList, filterBySearch, getSearchQuery, matchesSearch } from "@/lib/analytics-search";
 import {
   buildActionProfileComparisonData,
   buildActionProfileRadarData,
@@ -26,22 +28,27 @@ export default async function ActionProfilePage({
   searchParams,
 }: ActionProfilePageProps) {
   const params = (await searchParams) ?? {};
+  const searchQuery = getSearchQuery(params);
   const baseData = await getPlayerAnalyticsBaseData(params);
 
   if (!baseData.selectedCompetitionId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Perfil de Ações
-        </h1>
+      <AnalyticsPageShell
+        title="Perfil de Acoes"
+        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        searchQuery={searchQuery}
+      >
         <PlayerEmptyStateCard
-          title="Sem competições disponíveis"
-          description="Crie uma competição para visualizar a distribuição de ações por jogador."
+          title="Sem competicoes disponiveis"
+          description="Crie uma competicao para visualizar a distribuicao de acoes por jogador."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
+  const selectedCompetition = baseData.competitions.find(
+    (competition) => competition.id === baseData.selectedCompetitionId,
+  );
   const requestedPlayerIds = filterValidIds(
     mergeSelectedIds(parseOptionalId(params.playerId), parseIdList(params.playerIds)),
     baseData.playerIdSet,
@@ -52,13 +59,36 @@ export default async function ActionProfilePage({
       : baseData.playerOptions[0]
         ? [baseData.playerOptions[0].id]
         : [];
+  const selectedPlayerOptions = baseData.playerOptions.filter((player) =>
+    selectedPlayerIds.includes(player.id),
+  );
+  const visiblePlayerOptions = matchesSearch(searchQuery, [selectedCompetition?.name])
+    ? selectedPlayerOptions
+    : filterBySearch(selectedPlayerOptions, searchQuery, (player) => [
+        player.name,
+        player.teamName,
+      ]);
+  const visiblePlayerIds = visiblePlayerOptions.map((player) => player.id);
 
-  if (selectedPlayerIds.length === 0) {
+  if (selectedPlayerIds.length === 0 || visiblePlayerIds.length === 0) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Perfil de Ações
-        </h1>
+      <AnalyticsPageShell
+        title="Perfil de Acoes"
+        description="Distribuicao agregada de passes, cruzamentos, acoes individuais, remates e duelos."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          {
+            label: "Jogadores",
+            value: selectedPlayerIds.length === 0 ? "Sem jogadores disponiveis" : "Sem resultados",
+          },
+          {
+            label: "Equipas",
+            value: describeList(visiblePlayerOptions.map((player) => player.teamName), "Sem equipas"),
+          },
+          { label: "Jogos", value: "Todas as jornadas" },
+        ]}
+        searchQuery={searchQuery}
+      >
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
@@ -66,23 +96,32 @@ export default async function ActionProfilePage({
           selectedPlayerIds={selectedPlayerIds}
           playerMode="multiple"
           playerLabel="Jogadores (1 ou mais)"
-          description="Vista não temporal para distribuição agregada de ações."
+          description="Vista nao temporal para distribuicao agregada de acoes."
+          searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponíveis"
-          description="Associe jogadores a esta competição para consultar o perfil de ações."
+          title={
+            selectedPlayerIds.length === 0
+              ? "Sem jogadores disponiveis"
+              : "Sem jogadores para a pesquisa atual"
+          }
+          description={
+            selectedPlayerIds.length === 0
+              ? "Associe jogadores a esta competicao para consultar o perfil de acoes."
+              : "A pesquisa atual nao encontrou jogadores dentro da selecao feita."
+          }
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
   const loadedData = await loadPlayerAnalyticsData({
     competitionId: baseData.selectedCompetitionId,
     playerOptions: baseData.playerOptions,
-    playerIds: selectedPlayerIds,
+    playerIds: visiblePlayerIds,
   });
 
-  const scopes = selectedPlayerIds.map((playerId) =>
+  const scopes = visiblePlayerIds.map((playerId) =>
     buildPlayerActionProfileScope(
       playerId,
       loadedData.playerMap.get(playerId)?.name ??
@@ -99,17 +138,23 @@ export default async function ActionProfilePage({
   const shouldShowComparisonChart = scopes.length >= 2 && scopes.length <= 3;
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Perfil de Ações
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Distribuição agregada de passes, cruzamentos, ações individuais, remates e
-          duelos. Esta vista não usa jornada.
-        </p>
-      </div>
-
+    <AnalyticsPageShell
+      title="Perfil de Acoes"
+      description="Distribuicao agregada de passes, cruzamentos, acoes individuais, remates e duelos. Esta vista nao usa jornada."
+      filters={[
+        { label: "Competicao", value: selectedCompetition?.name },
+        {
+          label: "Jogadores",
+          value: describeList(visiblePlayerOptions.map((player) => player.name), "Sem jogadores"),
+        },
+        {
+          label: "Equipas",
+          value: describeList(visiblePlayerOptions.map((player) => player.teamName), "Sem equipas"),
+        },
+        { label: "Jogos", value: "Todas as jornadas" },
+      ]}
+      searchQuery={searchQuery}
+    >
       <PlayerAnalyticsFilters
         competitions={baseData.competitions}
         players={baseData.playerOptions}
@@ -117,19 +162,20 @@ export default async function ActionProfilePage({
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
         playerLabel="Jogadores (1 ou mais)"
-        description="Selecione um jogador para perfil individual ou vários para comparação direta."
+        description="Selecione um jogador para perfil individual ou varios para comparacao direta."
+        searchQuery={searchQuery}
       />
 
       <Card>
         <CardHeader>
           <CardTitle>
-            {scopes.length === 1 ? "Radar de Perfil" : "Comparação de Perfil de Ações"}
+            {scopes.length === 1 ? "Radar de Perfil" : "Comparacao de Perfil de Acoes"}
           </CardTitle>
           <CardDescription>
             {scopes.length === 1
               ? singleScope?.label ?? "Jogador"
               : shouldShowComparisonChart
-                ? "Barras agrupadas disponíveis apenas para comparações curtas entre 2 e 3 jogadores."
+                ? "Barras agrupadas disponiveis apenas para comparacoes curtas entre 2 e 3 jogadores."
                 : "Com mais de 3 jogadores, o chart e ocultado para evitar poluicao visual."}
           </CardDescription>
         </CardHeader>
@@ -147,7 +193,7 @@ export default async function ActionProfilePage({
             />
           ) : (
             <div className="rounded-xl border border-border/60 bg-card/40 px-4 py-6 text-sm text-muted-foreground">
-              Selecione até 3 jogadores para visualizar gráficos comparativos.
+              Selecione ate 3 jogadores para visualizar graficos comparativos.
             </div>
           )}
         </CardContent>
@@ -155,7 +201,7 @@ export default async function ActionProfilePage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Totais por Tipo de Ação</CardTitle>
+          <CardTitle>Totais por Tipo de Acao</CardTitle>
         </CardHeader>
         <CardContent>
           {scopes.length === 1 && singleScope ? (
@@ -165,6 +211,6 @@ export default async function ActionProfilePage({
           )}
         </CardContent>
       </Card>
-    </section>
+    </AnalyticsPageShell>
   );
 }

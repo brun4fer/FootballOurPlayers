@@ -1,3 +1,4 @@
+import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { PlayerMetricFocusChart } from "@/components/charts/player-metric-focus-chart";
 import { RadarComparisonChart } from "@/components/charts/radar-comparison-chart";
 import { RadarProfileChart } from "@/components/charts/radar-profile-chart";
@@ -6,6 +7,7 @@ import { PlayerComparisonSummaryTable } from "@/components/player-analytics/play
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerRankingInsights } from "@/components/player-analytics/player-ranking-insights";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { describeList, filterBySearch, getSearchQuery, matchesSearch } from "@/lib/analytics-search";
 import {
   aggregateOutfieldTotals,
   buildRadarProfileData,
@@ -29,36 +31,53 @@ export default async function ComparisonTotalPage({
   searchParams,
 }: ComparisonTotalPageProps) {
   const params = (await searchParams) ?? {};
+  const searchQuery = getSearchQuery(params);
   const baseData = await getPlayerAnalyticsBaseData(params);
 
   if (!baseData.selectedCompetitionId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparação Geral
-        </h1>
+      <AnalyticsPageShell
+        title="Comparacao Geral"
+        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        searchQuery={searchQuery}
+      >
         <PlayerEmptyStateCard
-          title="Sem competições disponíveis"
-          description="Crie uma competição para comparar totais agregados entre jogadores."
+          title="Sem competicoes disponiveis"
+          description="Crie uma competicao para comparar totais agregados entre jogadores."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
+  const selectedCompetition = baseData.competitions.find(
+    (competition) => competition.id === baseData.selectedCompetitionId,
+  );
   const selectedPlayerIds = filterValidIds(parseIdList(params.playerIds), baseData.playerIdSet);
-  const hasValidSelection = selectedPlayerIds.length >= 1;
-  const shouldShowCharts = selectedPlayerIds.length >= 1 && selectedPlayerIds.length <= 3;
+  const selectedPlayerOptions = baseData.playerOptions.filter((player) =>
+    selectedPlayerIds.includes(player.id),
+  );
+  const visibleSelectedPlayerOptions = matchesSearch(searchQuery, [selectedCompetition?.name])
+    ? selectedPlayerOptions
+    : filterBySearch(selectedPlayerOptions, searchQuery, (player) => [
+        player.name,
+        player.teamName,
+      ]);
+  const visibleSelectedPlayerIds = visibleSelectedPlayerOptions.map((player) => player.id);
+  const hasPlayerSelection = selectedPlayerIds.length >= 1;
+  const hasValidSelection = visibleSelectedPlayerIds.length >= 1;
+  const shouldShowCharts =
+    visibleSelectedPlayerIds.length >= 1 && visibleSelectedPlayerIds.length <= 3;
 
   const loadedData = hasValidSelection
     ? await loadPlayerAnalyticsData({
         competitionId: baseData.selectedCompetitionId,
         playerOptions: baseData.playerOptions,
-        playerIds: selectedPlayerIds,
+        playerIds: visibleSelectedPlayerIds,
       })
     : undefined;
 
   const comparisonScopes = hasValidSelection
-    ? selectedPlayerIds.map((playerId) => ({
+    ? visibleSelectedPlayerIds.map((playerId) => ({
         label:
           loadedData?.playerMap.get(playerId)?.name ??
           baseData.playerOptions.find((player) => player.id === playerId)?.name ??
@@ -78,16 +97,26 @@ export default async function ComparisonTotalPage({
       : [];
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">
-          Comparação Geral
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Totais agregados de vários jogadores em todas as jornadas da competição.
-        </p>
-      </div>
-
+    <AnalyticsPageShell
+      title="Comparacao Geral"
+      description="Totais agregados de varios jogadores em todas as jornadas da competicao."
+      filters={[
+        { label: "Competicao", value: selectedCompetition?.name },
+        {
+          label: "Jogadores",
+          value: describeList(
+            visibleSelectedPlayerOptions.map((player) => player.name),
+            hasPlayerSelection ? "Sem resultados" : "Selecao insuficiente",
+          ),
+        },
+        {
+          label: "Equipas",
+          value: describeList(visibleSelectedPlayerOptions.map((player) => player.teamName), "Sem equipas"),
+        },
+        { label: "Jogos", value: "Todas as jornadas" },
+      ]}
+      searchQuery={searchQuery}
+    >
       <PlayerAnalyticsFilters
         competitions={baseData.competitions}
         players={baseData.playerOptions}
@@ -95,21 +124,30 @@ export default async function ComparisonTotalPage({
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
         playerLabel="Jogadores"
-        description="Selecione até 3 jogadores para visualizar gráficos comparativos. Acima disso, a análise fica centrada no ranking."
+        description="Selecione ate 3 jogadores para visualizar graficos comparativos. Acima disso, a analise fica centrada no ranking."
+        searchQuery={searchQuery}
       />
 
-      {!hasValidSelection ? (
+      {!hasPlayerSelection || !hasValidSelection ? (
         <PlayerEmptyStateCard
-          title="Seleção insuficiente"
-          description="Escolha pelo menos um jogador para ativar o ranking e a comparação geral."
+          title={
+            hasPlayerSelection
+              ? "Sem jogadores para a pesquisa atual"
+              : "Selecao insuficiente"
+          }
+          description={
+            hasPlayerSelection
+              ? "A pesquisa atual nao encontrou jogadores dentro da selecao feita."
+              : "Escolha pelo menos um jogador para ativar o ranking e a comparacao geral."
+          }
         />
       ) : (
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Classificação Comparativa</CardTitle>
+              <CardTitle>Classificacao Comparativa</CardTitle>
               <CardDescription>
-                Vista principal para comparação escalável, com ordenação por qualquer coluna e destaque automático dos melhores valores.
+                Vista principal para comparacao escalavel, com ordenacao por qualquer coluna e destaque automatico dos melhores valores.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -123,9 +161,9 @@ export default async function ComparisonTotalPage({
             <div className="grid gap-4 xl:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Chart por Métrica</CardTitle>
+                  <CardTitle>Chart por Metrica</CardTitle>
                   <CardDescription>
-                    Comparação simplificada para 1 a 3 jogadores, mostrando apenas uma metrica de cada vez.
+                    Comparacao simplificada para 1 a 3 jogadores, mostrando apenas uma metrica de cada vez.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -142,7 +180,7 @@ export default async function ComparisonTotalPage({
                     {comparisonScopes.length === 1
                       ? "Perfil completo do jogador selecionado."
                       : comparisonScopes.length === 2
-                        ? "Disponível quando existem exatamente dois jogadores selecionados."
+                        ? "Disponivel quando existem exatamente dois jogadores selecionados."
                         : "Com tres jogadores, o radar e omitido para evitar ruido visual."}
                   </CardDescription>
                 </CardHeader>
@@ -163,7 +201,7 @@ export default async function ComparisonTotalPage({
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      O radar fica disponível apenas para um jogador isolado ou para comparação direta entre dois jogadores.
+                      O radar fica disponivel apenas para um jogador isolado ou para comparacao direta entre dois jogadores.
                     </p>
                   )}
                 </CardContent>
@@ -174,13 +212,13 @@ export default async function ComparisonTotalPage({
               <CardHeader>
                 <CardTitle>Charts Ocultos</CardTitle>
                 <CardDescription>
-                  Selecione até 3 jogadores para visualizar gráficos comparativos.
+                  Selecione ate 3 jogadores para visualizar graficos comparativos.
                 </CardDescription>
               </CardHeader>
             </Card>
           )}
         </>
       )}
-    </section>
+    </AnalyticsPageShell>
   );
 }

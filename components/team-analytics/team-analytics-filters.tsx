@@ -17,6 +17,7 @@ type TeamAnalyticsFiltersProps = {
   description?: string;
   matchLabel?: string;
   submitLabel?: string;
+  searchQuery?: string;
 };
 
 export function TeamAnalyticsFilters({
@@ -30,6 +31,7 @@ export function TeamAnalyticsFilters({
   description,
   matchLabel = "Jornada",
   submitLabel = "Aplicar Filtros",
+  searchQuery = "",
 }: TeamAnalyticsFiltersProps) {
   const visibleFields = 1 + (matchMode === "none" ? 0 : 1);
   const formColumns = visibleFields === 2 ? "lg:grid-cols-3" : "lg:grid-cols-2";
@@ -43,6 +45,8 @@ export function TeamAnalyticsFilters({
       </CardHeader>
       <CardContent>
         <form className={`grid gap-3 ${formColumns}`}>
+          {searchQuery ? <input type="hidden" name="q" value={searchQuery} /> : null}
+
           <div className="space-y-2">
             <Label htmlFor="competitionId">Competição</Label>
             <NativeSelect

@@ -1,3 +1,4 @@
+import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerNumericTable } from "@/components/player-analytics/player-numeric-table";
@@ -5,6 +6,13 @@ import { PlayerOverviewStats } from "@/components/player-analytics/player-overvi
 import { PlayerPercentageTable } from "@/components/player-analytics/player-percentage-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  filterBySearch,
+  formatMatchLabel,
+  getMatchSearchValues,
+  getSearchQuery,
+  matchesSearch,
+} from "@/lib/analytics-search";
 import { aggregateOutfieldTotals } from "@/lib/dashboardMetrics";
 import { goalkeeperStatFields, outfieldStatFields } from "@/lib/stat-fields";
 import {
@@ -26,20 +34,27 @@ export default async function SingleMatchdayPage({
   searchParams,
 }: SingleMatchdayPageProps) {
   const params = (await searchParams) ?? {};
+  const searchQuery = getSearchQuery(params);
   const baseData = await getPlayerAnalyticsBaseData(params);
 
   if (!baseData.selectedCompetitionId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
+      <AnalyticsPageShell
+        title="Por Jornada"
+        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        searchQuery={searchQuery}
+      >
         <PlayerEmptyStateCard
-          title="Sem competições disponíveis"
-          description="Crie uma competição para consultar o detalhe do jogador por jornada."
+          title="Sem competicoes disponiveis"
+          description="Crie uma competicao para consultar o detalhe do jogador por jornada."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
+  const selectedCompetition = baseData.competitions.find(
+    (competition) => competition.id === baseData.selectedCompetitionId,
+  );
   const selectedPlayerId = resolveSingleId(
     params.playerId,
     baseData.playerIdSet,
@@ -50,11 +65,21 @@ export default async function SingleMatchdayPage({
     baseData.matchIdSet,
     baseData.matchOptions[0]?.id,
   );
+  const selectedPlayer = baseData.playerOptions.find((player) => player.id === selectedPlayerId);
+  const selectedMatch = baseData.matchOptions.find((match) => match.id === selectedMatchId);
 
   if (!selectedPlayerId || !selectedMatchId) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
+      <AnalyticsPageShell
+        title="Por Jornada"
+        description="Analise isolada de uma unica jornada para um unico jogador."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          { label: "Jogador", value: selectedPlayer?.name ?? "Selecao incompleta" },
+          { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Selecao incompleta" },
+        ]}
+        searchQuery={searchQuery}
+      >
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
@@ -64,13 +89,14 @@ export default async function SingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           playerMode="single"
           matchMode="single"
-          description="Análise isolada de uma unica jornada para um unico jogador."
+          description="Analise isolada de uma unica jornada para um unico jogador."
+          searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Seleção incompleta"
+          title="Selecao incompleta"
           description="Escolha um jogador e uma jornada para visualizar o detalhe do jogo."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
@@ -87,8 +113,17 @@ export default async function SingleMatchdayPage({
 
   if (outfieldRows.length === 0 && goalkeeperRows.length === 0) {
     return (
-      <section className="space-y-6">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
+      <AnalyticsPageShell
+        title="Por Jornada"
+        description="Foco na performance do jogador numa jornada especifica."
+        filters={[
+          { label: "Competicao", value: selectedCompetition?.name },
+          { label: "Jogador", value: player?.name },
+          { label: "Equipa", value: player?.teamName },
+          { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
+        ]}
+        searchQuery={searchQuery}
+      >
         <PlayerAnalyticsFilters
           competitions={baseData.competitions}
           players={baseData.playerOptions}
@@ -98,13 +133,14 @@ export default async function SingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           playerMode="single"
           matchMode="single"
-          description="Análise isolada de uma unica jornada para um unico jogador."
+          description="Analise isolada de uma unica jornada para um unico jogador."
+          searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
           title="Sem registo para esta jornada"
-          description="Não existem estatísticas registadas para o jogador nesta jornada."
+          description="Nao existem estatisticas registadas para o jogador nesta jornada."
         />
-      </section>
+      </AnalyticsPageShell>
     );
   }
 
@@ -121,17 +157,44 @@ export default async function SingleMatchdayPage({
   const goalkeeperSummary = player?.isGoalkeeper
     ? buildGoalkeeperSummary(goalkeeperRows)
     : undefined;
-  const selectedMatch = baseData.matchOptions.find((match) => match.id === selectedMatchId);
+  const searchMatchesScope = matchesSearch(searchQuery, [
+    selectedCompetition?.name,
+    player?.name,
+    player?.teamName,
+    ...(selectedMatch ? getMatchSearchValues(selectedMatch) : []),
+  ]);
+  const visibleOverviewStats = searchMatchesScope
+    ? overviewStats
+    : filterBySearch(overviewStats, searchQuery, (row) => [
+        row.title,
+        row.value,
+        row.description,
+      ]);
+  const visiblePercentageRows = searchMatchesScope
+    ? percentageRows
+    : filterBySearch(percentageRows, searchQuery, (row) => [row.metric]);
+  const visibleNumericRows = searchMatchesScope
+    ? numericRows
+    : filterBySearch(numericRows, searchQuery, (row) => [row.metric, row.total]);
+  const visibleOutfieldStatFields = searchMatchesScope
+    ? outfieldStatFields
+    : filterBySearch(outfieldStatFields, searchQuery, (field) => [field.label, field.key]);
+  const visibleGoalkeeperStatFields = searchMatchesScope
+    ? goalkeeperStatFields
+    : filterBySearch(goalkeeperStatFields, searchQuery, (field) => [field.label, field.key]);
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Por Jornada</h1>
-        <p className="text-sm text-muted-foreground">
-          Foco na performance do jogador numa jornada especifica.
-        </p>
-      </div>
-
+    <AnalyticsPageShell
+      title="Por Jornada"
+      description="Foco na performance do jogador numa jornada especifica."
+      filters={[
+        { label: "Competicao", value: selectedCompetition?.name },
+        { label: "Jogador", value: player?.name },
+        { label: "Equipa", value: player?.teamName },
+        { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
+      ]}
+      searchQuery={searchQuery}
+    >
       <PlayerAnalyticsFilters
         competitions={baseData.competitions}
         players={baseData.playerOptions}
@@ -142,28 +205,28 @@ export default async function SingleMatchdayPage({
         playerMode="single"
         matchMode="single"
         description="A jornada e obrigatoria nesta vista."
+        searchQuery={searchQuery}
       />
 
       <Card>
         <CardHeader>
           <CardTitle>Resumo da Jornada</CardTitle>
           <CardDescription>
-            {player?.name ?? "Jogador"} | Jornada {selectedMatch?.matchdayNumber ?? "-"} vs{" "}
-            {selectedMatch?.opponentTeamName ?? "-"}
+            {player?.name ?? "Jogador"} | {selectedMatch ? formatMatchLabel(selectedMatch) : "Jornada -"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PlayerOverviewStats stats={overviewStats} />
+          <PlayerOverviewStats stats={visibleOverviewStats} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Ações Percentuais</CardTitle>
+          <CardTitle>Acoes Percentuais</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerPercentageTable
-            rows={percentageRows}
+            rows={visiblePercentageRows}
             goalkeeperSummary={goalkeeperSummary}
           />
         </CardContent>
@@ -171,10 +234,10 @@ export default async function SingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Ações Numéricas</CardTitle>
+          <CardTitle>Acoes Numericas</CardTitle>
         </CardHeader>
         <CardContent>
-          <PlayerNumericTable rows={numericRows} />
+          <PlayerNumericTable rows={visibleNumericRows} />
         </CardContent>
       </Card>
 
@@ -187,17 +250,25 @@ export default async function SingleMatchdayPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Métrica</TableHead>
+                  <TableHead>Metrica</TableHead>
                   <TableHead>Valor</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {outfieldStatFields.map((field) => (
-                  <TableRow key={field.key}>
-                    <TableCell>{field.label}</TableCell>
-                    <TableCell>{String(outfieldRow[field.key] ?? 0)}</TableCell>
+                {visibleOutfieldStatFields.length > 0 ? (
+                  visibleOutfieldStatFields.map((field) => (
+                    <TableRow key={field.key}>
+                      <TableCell>{field.label}</TableCell>
+                      <TableCell>{String(outfieldRow[field.key] ?? 0)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} className="py-8 text-center text-sm text-muted-foreground">
+                      Sem metricas para a pesquisa atual.
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -213,22 +284,30 @@ export default async function SingleMatchdayPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Métrica</TableHead>
+                  <TableHead>Metrica</TableHead>
                   <TableHead>Valor</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {goalkeeperStatFields.map((field) => (
-                  <TableRow key={field.key}>
-                    <TableCell>{field.label}</TableCell>
-                    <TableCell>{String(goalkeeperRow[field.key] ?? 0)}</TableCell>
+                {visibleGoalkeeperStatFields.length > 0 ? (
+                  visibleGoalkeeperStatFields.map((field) => (
+                    <TableRow key={field.key}>
+                      <TableCell>{field.label}</TableCell>
+                      <TableCell>{String(goalkeeperRow[field.key] ?? 0)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} className="py-8 text-center text-sm text-muted-foreground">
+                      Sem metricas para a pesquisa atual.
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
       ) : null}
-    </section>
+    </AnalyticsPageShell>
   );
 }
