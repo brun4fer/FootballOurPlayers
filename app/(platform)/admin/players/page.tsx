@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { createPlayerAction, deletePlayerAction, updatePlayerAction } from "@/actions/admin";
-import { ImageUploadPreview } from "@/components/forms/image-upload-preview";
+import { ImageUrlInput } from "@/components/forms/image-url-input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,11 +57,7 @@ export default async function AdminPlayersPage({
           <CardTitle>Criar Jogador</CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            action={createPlayerAction}
-            encType="multipart/form-data"
-            className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
-          >
+          <form action={createPlayerAction} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
               <Input id="name" name="name" required />
@@ -112,10 +108,10 @@ export default async function AdminPlayersPage({
                 ))}
               </NativeSelect>
             </div>
-            <ImageUploadPreview
-              id="photoFile"
-              name="photoFile"
-              label="Upload Foto do Jogador"
+            <ImageUrlInput
+              id="photo"
+              name="photo"
+              label="URL da Foto do Jogador"
             />
             <div className="space-y-2">
               <Label htmlFor="nationality">Nacionalidade</Label>
@@ -205,13 +201,8 @@ export default async function AdminPlayersPage({
                       )}
                     </TableCell>
                     <TableCell>
-                      <form
-                        action={updatePlayerAction}
-                        encType="multipart/form-data"
-                        className="space-y-2"
-                      >
+                      <form action={updatePlayerAction} className="space-y-2">
                         <input type="hidden" name="id" value={player.id} />
-                        <input type="hidden" name="existingPhoto" value={player.photo ?? ""} />
                         <Input name="name" defaultValue={player.name} minLength={2} required />
                         <NativeSelect name="teamId" defaultValue={String(player.teamId)} required>
                           {teamList.map((team) => (
@@ -275,10 +266,10 @@ export default async function AdminPlayersPage({
                             Guarda-redes
                           </label>
                         </div>
-                        <ImageUploadPreview
-                          id={`photoFile-${player.id}`}
-                          name="photoFile"
-                          label="Upload Foto do Jogador"
+                        <ImageUrlInput
+                          id={`photo-${player.id}`}
+                          name="photo"
+                          label="URL da Foto do Jogador"
                           defaultImageUrl={player.photo}
                         />
                         <Button variant="outline" size="sm">

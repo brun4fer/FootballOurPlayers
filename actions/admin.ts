@@ -15,7 +15,6 @@ import {
   teamMatchStats,
   teams,
 } from "@/db/schema";
-import { saveImageUpload } from "@/lib/upload";
 import { parseGoalkeeperStats, parseOutfieldStats } from "@/lib/validators";
 
 function optionalText(value: FormDataEntryValue | null, max = 255) {
@@ -24,6 +23,28 @@ function optionalText(value: FormDataEntryValue | null, max = 255) {
   }
   const parsed = String(value).trim();
   return parsed.length ? parsed.slice(0, max) : null;
+}
+
+function optionalImageUrl(value: FormDataEntryValue | null, label: string) {
+  const parsed = optionalText(value, 2000);
+  if (!parsed) {
+    return null;
+  }
+
+  if (parsed.startsWith("/") && !parsed.startsWith("//")) {
+    return parsed;
+  }
+
+  try {
+    const url = new URL(parsed);
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.toString();
+    }
+  } catch {
+    // Fall through to the friendly validation message below.
+  }
+
+  throw new Error(`${label} deve ser um link http(s) valido.`);
 }
 
 function optionalInt(value: FormDataEntryValue | null) {
@@ -128,7 +149,7 @@ export async function createTeamAction(formData: FormData) {
     throw new Error("O nome da equipa deve ter pelo menos 2 caracteres.");
   }
 
-  const emblemUrl = await saveImageUpload(formData.get("emblemFile"), "teams");
+  const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "O emblema");
 
   await db.insert(teams).values({ name, emblemUrl }).onConflictDoNothing();
   revalidatePath("/admin/teams");
@@ -141,14 +162,13 @@ export async function updateTeamAction(formData: FormData) {
     throw new Error("O nome da equipa deve ter pelo menos 2 caracteres.");
   }
 
-  const existingEmblemUrl = optionalText(formData.get("existingEmblemUrl"), 2000);
-  const uploadedEmblemUrl = await saveImageUpload(formData.get("emblemFile"), "teams");
+  const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "O emblema");
 
   await db
     .update(teams)
     .set({
       name,
-      emblemUrl: uploadedEmblemUrl ?? existingEmblemUrl,
+      emblemUrl,
     })
     .where(eq(teams.id, id));
   revalidatePath("/admin/teams");
@@ -195,7 +215,7 @@ export async function createPlayerAction(formData: FormData) {
     throw new Error("O nome do jogador deve ter pelo menos 2 caracteres.");
   }
 
-  const photo = await saveImageUpload(formData.get("photoFile"), "players");
+  const photo = optionalImageUrl(formData.get("photo"), "A foto");
 
   await db.insert(players).values({
     name,
@@ -223,15 +243,14 @@ export async function updatePlayerAction(formData: FormData) {
     throw new Error("O nome do jogador deve ter pelo menos 2 caracteres.");
   }
 
-  const existingPhoto = optionalText(formData.get("existingPhoto"), 2000);
-  const uploadedPhoto = await saveImageUpload(formData.get("photoFile"), "players");
+  const photo = optionalImageUrl(formData.get("photo"), "A foto");
 
   await db
     .update(players)
     .set({
       name,
       teamId,
-      photo: uploadedPhoto ?? existingPhoto,
+      photo,
       height: optionalInt(formData.get("height")),
       weight: optionalInt(formData.get("weight")),
       nationality: optionalText(formData.get("nationality"), 100),

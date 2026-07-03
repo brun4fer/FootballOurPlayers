@@ -5,7 +5,7 @@ import {
   removeTeamCompetitionAction,
   updateTeamAction,
 } from "@/actions/admin";
-import { ImageUploadPreview } from "@/components/forms/image-upload-preview";
+import { ImageUrlInput } from "@/components/forms/image-url-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,15 +31,15 @@ export default async function AdminTeamsPage() {
             <CardTitle>Criar Equipa</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={createTeamAction} encType="multipart/form-data" className="grid gap-3">
+            <form action={createTeamAction} className="grid gap-3">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome da Equipa</Label>
                 <Input id="name" name="name" required placeholder="CD Feirense" />
               </div>
-              <ImageUploadPreview
-                id="emblemFile"
-                name="emblemFile"
-                label="Upload Emblema da Equipa"
+              <ImageUrlInput
+                id="emblemUrl"
+                name="emblemUrl"
+                label="URL do Emblema da Equipa"
               />
               <Button>Guardar</Button>
             </form>
@@ -114,18 +114,13 @@ export default async function AdminTeamsPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <form
-                      action={updateTeamAction}
-                      encType="multipart/form-data"
-                      className="grid gap-2"
-                    >
+                    <form action={updateTeamAction} className="grid gap-2">
                       <input type="hidden" name="id" value={team.id} />
-                      <input type="hidden" name="existingEmblemUrl" value={team.emblemUrl ?? ""} />
                       <Input name="name" defaultValue={team.name} minLength={2} required />
-                      <ImageUploadPreview
-                        id={`emblemFile-${team.id}`}
-                        name="emblemFile"
-                        label="Upload Emblema da Equipa"
+                      <ImageUrlInput
+                        id={`emblemUrl-${team.id}`}
+                        name="emblemUrl"
+                        label="URL do Emblema da Equipa"
                         defaultImageUrl={team.emblemUrl}
                       />
                       <Button variant="outline" size="sm">
