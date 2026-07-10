@@ -23,40 +23,40 @@ export default async function AdminTeamsPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Equipas</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Teams</h1>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Criar Equipa</CardTitle>
+            <CardTitle>Create Team</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={createTeamAction} className="grid gap-3">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome da Equipa</Label>
+                <Label htmlFor="name">Team Name</Label>
                 <Input id="name" name="name" required placeholder="CD Feirense" />
               </div>
               <ImageUrlInput
                 id="emblemUrl"
                 name="emblemUrl"
-                label="URL do Emblema da Equipa"
+                label="Team Crest URL"
               />
-              <Button>Guardar</Button>
+              <Button>Save</Button>
             </form>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Associar Equipa à Competição</CardTitle>
+            <CardTitle>Link Team to Competition</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={assignTeamCompetitionAction} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="teamId">Equipa</Label>
+                <Label htmlFor="teamId">Team</Label>
                 <NativeSelect id="teamId" name="teamId" defaultValue="" required>
                   <option value="" disabled>
-                    Selecionar equipa
+                    Select team
                   </option>
                   {teamList.map((team) => (
                     <option key={team.id} value={team.id}>
@@ -66,10 +66,10 @@ export default async function AdminTeamsPage() {
                 </NativeSelect>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="competitionId">Competição</Label>
+                <Label htmlFor="competitionId">Competition</Label>
                 <NativeSelect id="competitionId" name="competitionId" defaultValue="" required>
                   <option value="" disabled>
-                    Selecionar competição
+                    Select competition
                   </option>
                   {competitionList.map((competition) => (
                     <option key={competition.id} value={competition.id}>
@@ -78,7 +78,7 @@ export default async function AdminTeamsPage() {
                   ))}
                 </NativeSelect>
               </div>
-              <Button className="w-full">Guardar Associação</Button>
+              <Button className="w-full">Save Associaction</Button>
             </form>
           </CardContent>
         </Card>
@@ -86,7 +86,7 @@ export default async function AdminTeamsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Equipas</CardTitle>
+          <CardTitle>Team List</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -94,8 +94,8 @@ export default async function AdminTeamsPage() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Emblema</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead className="w-[260px]">Ações</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead className="w-[260px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -110,7 +110,7 @@ export default async function AdminTeamsPage() {
                         className="h-10 w-10 rounded-md border border-border/60 object-cover"
                       />
                     ) : (
-                      <span className="text-xs text-muted-foreground">Sem emblema</span>
+                      <span className="text-xs text-muted-foreground">No crest</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -120,11 +120,11 @@ export default async function AdminTeamsPage() {
                       <ImageUrlInput
                         id={`emblemUrl-${team.id}`}
                         name="emblemUrl"
-                        label="URL do Emblema da Equipa"
+                        label="Team Crest URL"
                         defaultImageUrl={team.emblemUrl}
                       />
                       <Button variant="outline" size="sm">
-                        Atualizar
+                        Update
                       </Button>
                     </form>
                   </TableCell>
@@ -132,7 +132,7 @@ export default async function AdminTeamsPage() {
                     <form action={deleteTeamAction}>
                       <input type="hidden" name="id" value={team.id} />
                       <Button variant="danger" size="sm">
-                        Eliminar
+                        Delete
                       </Button>
                     </form>
                   </TableCell>
@@ -145,16 +145,16 @@ export default async function AdminTeamsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Associações de Competição</CardTitle>
+          <CardTitle>Competition Links</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Equipa</TableHead>
-                <TableHead>Competição</TableHead>
-                <TableHead>Época</TableHead>
-                <TableHead className="w-[110px]">Ações</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead>Competition</TableHead>
+                <TableHead>Season</TableHead>
+                <TableHead className="w-[110px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -167,7 +167,7 @@ export default async function AdminTeamsPage() {
                     <form action={removeTeamCompetitionAction}>
                       <input type="hidden" name="id" value={link.id} />
                       <Button variant="danger" size="sm">
-                        Eliminar
+                        Delete
                       </Button>
                     </form>
                   </TableCell>

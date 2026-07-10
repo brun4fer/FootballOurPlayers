@@ -14,7 +14,7 @@ export function PlayerActionProfileTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ação</TableHead>
+              <TableHead>Action</TableHead>
               <TableHead>Total</TableHead>
             </TableRow>
           </TableHeader>
@@ -40,15 +40,15 @@ export function PlayerActionProfileTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Jogador</TableHead>
-            <TableHead>Passes Curtos</TableHead>
-            <TableHead>Passes Longos</TableHead>
+            <TableHead>Player</TableHead>
+            <TableHead>Short Passes</TableHead>
+            <TableHead>Long Passes</TableHead>
             <TableHead>Cruzamentos</TableHead>
-            <TableHead>Ações Individuais</TableHead>
-            <TableHead>Lançamentos</TableHead>
-            <TableHead>Remates</TableHead>
-            <TableHead>Duelos Aéreos</TableHead>
-            <TableHead>Duelos Defensivos</TableHead>
+            <TableHead>Individual Actions</TableHead>
+            <TableHead>Throw-ins</TableHead>
+            <TableHead>Shots</TableHead>
+            <TableHead>Aerial Duels</TableHead>
+            <TableHead>Duels Defensivos</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

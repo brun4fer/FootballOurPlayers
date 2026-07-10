@@ -33,7 +33,7 @@ export function LinePerformanceChart({ data }: { data: PerformancePoint[] }) {
           <Line
             type="monotone"
             dataKey="shotAccuracy"
-            name="Precisão de Remate %"
+            name="Shot Accuracy %"
             stroke="#84cc16"
             strokeWidth={2}
             dot={false}

@@ -223,7 +223,7 @@ export function computePer90Metrics(totals: PlayerMetricsTotals) {
 
 export function buildMatchEvolutionSeries(rows: PlayerMatchMetricsRow[]) {
   return rows.map((row) => ({
-    matchLabel: `Feirense x ${row.opponentTeamName} (Jornada ${row.matchdayNumber})`,
+    matchLabel: `Feirense x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`,
     remates: row.shotsOnTarget + row.shotsOffTarget,
     assists: row.assists,
     goals: row.goals,
@@ -234,11 +234,11 @@ export function buildMatchEvolutionSeries(rows: PlayerMatchMetricsRow[]) {
 
 export function buildOffensiveDistributionSeries(totals: PlayerMetricsTotals) {
   return [
-    { name: "Passes Curtos Certos", value: totals.shortPassSuccess },
-    { name: "Passes Longos Certos", value: totals.longPassSuccess },
-    { name: "Cruzamentos Certos", value: totals.crossSuccess },
-    { name: "Ações Individuais Certas", value: totals.dribbleSuccess },
-    { name: "Remates à Baliza", value: totals.shotsOnTarget },
+    { name: "Successful Short Passes", value: totals.shortPassSuccess },
+    { name: "Successful Long Passes", value: totals.longPassSuccess },
+    { name: "Successful Crosses", value: totals.crossSuccess },
+    { name: "Successful Individual Actions", value: totals.dribbleSuccess },
+    { name: "Shots on Target", value: totals.shotsOnTarget },
   ];
 }
 
@@ -255,11 +255,11 @@ export function buildRadarNormalizedMetrics(totals: PlayerMetricsTotals) {
       value: clamp0to100((accuracy.shortPassAccuracy + accuracy.longPassAccuracy) / 2),
     },
     { metric: "Cruzamento", value: clamp0to100(accuracy.crossAccuracy) },
-    { metric: "Ação Individual", value: clamp0to100(accuracy.dribbleAccuracy) },
-    { metric: "Duelos", value: clamp0to100(duelAccuracy) },
+    { metric: "Action Individual", value: clamp0to100(accuracy.dribbleAccuracy) },
+    { metric: "Duels", value: clamp0to100(duelAccuracy) },
     { metric: "Defesa", value: normalizeByCap(defensiveActionsPer90, 20) },
     {
-      metric: "Finalização",
+      metric: "Finalizaction",
       value: clamp0to100((accuracy.shotAccuracy + normalizeByCap(finishingVolumePer90, 6)) / 2),
     },
   ];

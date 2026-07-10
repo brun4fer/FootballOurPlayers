@@ -39,13 +39,13 @@ export default async function TotalAllMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Totais (Todas as Jornadas)"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Totals (All Matchdays)"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar os totais do jogador ao longo da epoca."
+          title="No competitions available"
+          description="Create a competition to view player totals throughout the season."
         />
       </AnalyticsPageShell>
     );
@@ -63,11 +63,11 @@ export default async function TotalAllMatchdaysPage({
   if (!selectedPlayerId) {
     return (
       <AnalyticsPageShell
-        title="Totais (Todas as Jornadas)"
-        description="Analise consolidada de um jogador em todas as jornadas da competicao."
+        title="Totals (All Matchdays)"
+        description="Consolidated analysis of one player across all competition matchdays."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Jogador", value: "Sem jogadores disponiveis" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Player", value: "No players available" },
         ]}
         searchQuery={searchQuery}
       >
@@ -76,12 +76,12 @@ export default async function TotalAllMatchdaysPage({
           players={baseData.playerOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           playerMode="single"
-          description="Analise consolidada de um jogador em todas as jornadas da competicao."
+          description="Consolidated analysis of one player across all competition matchdays."
           searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponiveis"
-          description="Associe jogadores a esta competicao para visualizar os totais agregados."
+          title="No players available"
+          description="Assign players to this competition to view aggregated totals."
         />
       </AnalyticsPageShell>
     );
@@ -117,19 +117,19 @@ export default async function TotalAllMatchdaysPage({
       ...visibleOutfieldRows.map(formatMatchLabel),
       ...visibleGoalkeeperRows.map(formatMatchLabel),
     ],
-    "Todas as jornadas",
+    "All matchdays",
   );
 
   if (searchQuery && matchesPlayed === 0) {
     return (
       <AnalyticsPageShell
-        title="Totais (Todas as Jornadas)"
-        description="Totais e percentagens derivadas do jogador selecionado ao longo da epoca."
+        title="Totals (All Matchdays)"
+        description="Totals and derived percentages for the selected player throughout the season."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Jogador", value: player?.name },
-          { label: "Equipa", value: player?.teamName },
-          { label: "Jogos", value: "Sem jogos no filtro atual" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Player", value: player?.name },
+          { label: "Team", value: player?.teamName },
+          { label: "Matches", value: "No matches in the current filter" },
         ]}
         searchQuery={searchQuery}
       >
@@ -139,12 +139,12 @@ export default async function TotalAllMatchdaysPage({
           selectedCompetitionId={baseData.selectedCompetitionId}
           selectedPlayerId={selectedPlayerId}
           playerMode="single"
-          description="Sem filtro de jornada. O objetivo desta vista e a consistencia do jogador ao longo da competicao."
+          description="No matchday filter. This view focuses on player consistency throughout the competition."
           searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem resultados para a pesquisa"
-          description="A pesquisa atual nao encontrou jogos para o jogador selecionado."
+          title="No search results"
+          description="The current search did not find any matches for the selected player."
         />
       </AnalyticsPageShell>
     );
@@ -164,13 +164,13 @@ export default async function TotalAllMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Totais (Todas as Jornadas)"
-      description="Totais e percentagens derivadas do jogador selecionado ao longo de toda a epoca."
+      title="Totals (All Matchdays)"
+      description="Totals and derived percentages for the selected player throughout the entire season."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
-        { label: "Jogador", value: player?.name },
-        { label: "Equipa", value: player?.teamName },
-        { label: "Jogos", value: matchSummary },
+        { label: "Competition", value: selectedCompetition?.name },
+        { label: "Player", value: player?.name },
+        { label: "Team", value: player?.teamName },
+        { label: "Matches", value: matchSummary },
       ]}
       searchQuery={searchQuery}
     >
@@ -180,7 +180,7 @@ export default async function TotalAllMatchdaysPage({
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedPlayerId={selectedPlayerId}
         playerMode="single"
-        description="Sem filtro de jornada. O objetivo desta vista e a consistencia do jogador ao longo da competicao."
+        description="No matchday filter. This view focuses on player consistency throughout the competition."
         searchQuery={searchQuery}
       />
 
@@ -188,9 +188,9 @@ export default async function TotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Percentage Metrics</CardTitle>
           <CardDescription>
-            {player?.name ?? "Jogador"} em {matchesPlayed} jornada(s) com registo.
+            {player?.name ?? "Player"} across {matchesPlayed} recorded matchday(s).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -203,7 +203,7 @@ export default async function TotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Volume Metrics</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerNumericTable rows={numericRows} />

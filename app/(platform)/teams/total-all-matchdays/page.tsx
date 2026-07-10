@@ -42,13 +42,13 @@ export default async function TeamTotalAllMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Totais (Todas as Jornadas)"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Totals (All Matchdays)"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <TeamEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar os totais agregados da equipa."
+          title="No competitions available"
+          description="Create a competition to view aggregated team totals."
         />
       </AnalyticsPageShell>
     );
@@ -65,27 +65,27 @@ export default async function TeamTotalAllMatchdaysPage({
   if (visibleMatchAggregates.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Totais (Todas as Jornadas)"
-        description="Vista consolidada da equipa em todas as jornadas da competicao."
+        title="Totals (All Matchdays)"
+        description="Consolidated team view across all competition matchdays."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Equipa", value: "Feirense" },
-          { label: "Jogos", value: searchQuery ? "Sem jogos no filtro atual" : "Sem dados" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Team", value: "Feirense" },
+          { label: "Matches", value: searchQuery ? "No matches in the current filter" : "No data" },
         ]}
         searchQuery={searchQuery}
       >
         <TeamAnalyticsFilters
           competitions={baseData.competitions}
           selectedCompetitionId={baseData.selectedCompetitionId}
-          description="Vista consolidada da equipa em todas as jornadas da competicao."
+          description="Consolidated team view across all competition matchdays."
           searchQuery={searchQuery}
         />
         <TeamEmptyStateCard
-          title={searchQuery ? "Sem resultados para a pesquisa" : "Sem dados para esta competicao"}
+          title={searchQuery ? "No search results" : "No data for this competition"}
           description={
             searchQuery
-              ? "A pesquisa atual nao encontrou jogos para a equipa."
-              : "Ainda nao existem jornadas com registo para apresentar totais agregados."
+              ? "The current search did not find matches for the team."
+              : "There are not are matchdays with records to display totals aggregated."
           }
         />
       </AnalyticsPageShell>
@@ -101,14 +101,14 @@ export default async function TeamTotalAllMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Totais (Todas as Jornadas)"
-      description="Leitura consolidada da equipa ao longo de toda a competicao, sem filtro por jornada."
+      title="Totals (All Matchdays)"
+      description="Leitura consolidada of the team throughout the entire competition, without filtering per matchday."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
-        { label: "Equipa", value: "Feirense" },
+        { label: "Competition", value: selectedCompetition?.name },
+        { label: "Team", value: "Feirense" },
         {
-          label: "Jogos",
-          value: describeList(visibleMatchAggregates.map(formatMatchLabel), "Todas as jornadas"),
+          label: "Matches",
+          value: describeList(visibleMatchAggregates.map(formatMatchLabel), "All matchdays"),
         },
       ]}
       searchQuery={searchQuery}
@@ -116,7 +116,7 @@ export default async function TeamTotalAllMatchdaysPage({
       <TeamAnalyticsFilters
         competitions={baseData.competitions}
         selectedCompetitionId={baseData.selectedCompetitionId}
-        description="Sem filtro de jornada. Esta vista resume toda a competicao."
+        description="No matchday filter. This view resume the entire competition."
         searchQuery={searchQuery}
       />
 
@@ -124,9 +124,9 @@ export default async function TeamTotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Totais Estruturados</CardTitle>
+          <CardTitle>Totals Estruturados</CardTitle>
           <CardDescription>
-            Totais, percentagens e volume por 90 em {visibleMatchAggregates.length} jornada(s).
+            Totals, percentages and per-90 volume across {visibleMatchAggregates.length} matchday(s).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -136,7 +136,7 @@ export default async function TeamTotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Percentage Metrics</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamPercentageTable rows={percentageRows} goalkeeper={goalkeeperSummary} />
@@ -145,7 +145,7 @@ export default async function TeamTotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Volume Metrics</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamNumericTable rows={numericRows} />

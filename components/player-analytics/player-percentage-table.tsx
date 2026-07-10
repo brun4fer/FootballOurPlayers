@@ -23,10 +23,10 @@ export function PlayerPercentageTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Métrica</TableHead>
-              <TableHead>Sucesso</TableHead>
+              <TableHead>Metric</TableHead>
+              <TableHead>Success</TableHead>
               <TableHead>Insucesso</TableHead>
-              <TableHead>Percentagem</TableHead>
+              <TableHead>Percentage</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -45,19 +45,19 @@ export function PlayerPercentageTable({
       {goalkeeperSummary ? (
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg border border-border/70 bg-card/40 px-3 py-2">
-            <p className="text-xs text-muted-foreground">Totais de Defesas</p>
+            <p className="text-xs text-muted-foreground">Total Saves</p>
             <p className="mt-1 text-lg font-semibold text-cyan-200">
               {goalkeeperSummary.totalSaves}
             </p>
           </div>
           <div className="rounded-lg border border-border/70 bg-card/40 px-3 py-2">
-            <p className="text-xs text-muted-foreground">Totais de Defesas Incompletas</p>
+            <p className="text-xs text-muted-foreground">Total Incomplete Saves</p>
             <p className="mt-1 text-lg font-semibold text-cyan-200">
               {goalkeeperSummary.totalIncompleteSaves}
             </p>
           </div>
           <div className="rounded-lg border border-border/70 bg-card/40 px-3 py-2">
-            <p className="text-xs text-muted-foreground">Percentagem de Defesas</p>
+            <p className="text-xs text-muted-foreground">Save Percentage</p>
             <p className="mt-1 text-lg font-semibold text-cyan-200">
               {formatMetric(goalkeeperSummary.savePercentage)}%
             </p>

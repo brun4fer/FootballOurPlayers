@@ -1,5 +1,5 @@
-export const APP_NAME = "AP - Mapa Ações";
+export const APP_NAME = "AP - Action Map";
 export const APP_SHORT_NAME = "AP";
 export const APP_DESCRIPTION =
-  "Plataforma de análise de futebol para estatísticas agregadas de jogadores e equipas por jogo.";
-export const APP_MANIFEST_VERSION = "ap-mapa-acoes-v1";
+  "Football analytics platform for aggregated player and team statistics by match.";
+export const APP_MANIFEST_VERSION = "ap-action-map-v2";

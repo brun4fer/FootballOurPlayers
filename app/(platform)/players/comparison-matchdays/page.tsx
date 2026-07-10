@@ -36,13 +36,13 @@ export default async function ComparisonMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Comparacao por Jornada"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Matchday Comparison"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para comparar jogadores por jornada."
+          title="No competitions available"
+          description="Create a competition to compare players by matchday."
         />
       </AnalyticsPageShell>
     );
@@ -87,7 +87,7 @@ export default async function ComparisonMatchdaysPage({
         label:
           loadedData?.playerMap.get(playerId)?.name ??
           visibleOutfieldPlayers.find((player) => player.id === playerId)?.name ??
-          `Jogador ${playerId}`,
+          `Player ${playerId}`,
         totals: aggregateOutfieldTotals(loadedData?.outfieldRowsByPlayer.get(playerId) ?? []),
       }))
     : [];
@@ -95,18 +95,18 @@ export default async function ComparisonMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Comparacao por Jornada"
-      description="Compara automaticamente todos os jogadores de campo utilizados na jornada selecionada. Guarda-redes ficam excluidos."
+      title="Matchday Comparison"
+      description="Automatically compares all outfield players used on the selected matchday. Goalkeepers are excluded."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
-        { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Selecao incompleta" },
+        { label: "Competition", value: selectedCompetition?.name },
+        { label: "Match", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Incomplete selection" },
         {
-          label: "Jogadores",
-          value: describeList(visibleOutfieldPlayers.map((player) => player.name), "Sem jogadores"),
+          label: "Players",
+          value: describeList(visibleOutfieldPlayers.map((player) => player.name), "No players"),
         },
         {
-          label: "Equipas",
-          value: describeList(visibleOutfieldPlayers.map((player) => player.teamName), "Sem equipas"),
+          label: "Teams",
+          value: describeList(visibleOutfieldPlayers.map((player) => player.teamName), "No teams"),
         },
       ]}
       searchQuery={searchQuery}
@@ -117,8 +117,8 @@ export default async function ComparisonMatchdaysPage({
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedMatchId={selectedMatchId}
         matchMode="single"
-        matchLabel="Jornada"
-        description="Escolha a jornada; os jogadores de campo utilizados sao carregados automaticamente."
+        matchLabel="Matchday"
+        description="Choose a matchday; the outfield players used are loaded automatically."
         searchQuery={searchQuery}
       />
 
@@ -127,25 +127,25 @@ export default async function ComparisonMatchdaysPage({
           title={
             selectedMatchId
               ? searchQuery
-                ? "Sem jogadores para a pesquisa atual"
-                : "Sem jogadores de campo utilizados"
-              : "Selecao incompleta"
+                ? "No players match the current search"
+                : "No players outfield used"
+              : "Incomplete selection"
           }
           description={
             selectedMatchId
               ? searchQuery
-                ? "A pesquisa atual nao encontrou jogadores de campo nesta jornada."
-                : "Nao existem jogadores de campo com minutos registados nesta jornada."
-              : "Escolha uma jornada para comparar os jogadores utilizados."
+                ? "The current search did not find any outfield players on this matchday."
+                : "There are no players outfield with recorded minutes on this matchday."
+              : "Choose a matchday to compare the players used."
           }
         />
       ) : (
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Classificacao da Jornada</CardTitle>
+              <CardTitle>Matchday Ranking</CardTitle>
               <CardDescription>
-                {selectedMatch ? formatMatchLabel(selectedMatch) : "Jornada -"} - {comparisonRows.length} jogadores de campo
+                {selectedMatch ? formatMatchLabel(selectedMatch) : "Matchday -"} - {comparisonRows.length} outfield players
               </CardDescription>
             </CardHeader>
             <CardContent>

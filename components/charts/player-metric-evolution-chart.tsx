@@ -70,12 +70,12 @@ function parseMatchMeta(point: EvolutionPoint) {
   }
 
   const label = String(point.matchLabel ?? "");
-  const jornadaMatch = label.match(/Jornada\s+(\d+)/i);
+  const jornadaMatch = label.match(/Matchday\s+(\d+)/i);
   const opponentMatch =
-    label.match(/x\s+(.+?)\s+-\s+Jornada/i) ??
-    label.match(/x\s+(.+?)\s+\(Jornada/i) ??
-    label.match(/vs\s+(.+?)\s+-\s+Jornada/i) ??
-    label.match(/vs\s+(.+?)\s+\(Jornada/i);
+    label.match(/x\s+(.+?)\s+-\s+Matchday/i) ??
+    label.match(/x\s+(.+?)\s+\(Matchday/i) ??
+    label.match(/vs\s+(.+?)\s+-\s+Matchday/i) ??
+    label.match(/vs\s+(.+?)\s+\(Matchday/i);
 
   return {
     matchday: jornadaMatch ? Number(jornadaMatch[1]) : 0,
@@ -87,7 +87,7 @@ function computeTrend(values: number[]) {
   const recentValues = values.filter((value) => Number.isFinite(value)).slice(-3);
 
   if (recentValues.length < 3) {
-    return "Estável";
+    return "Stable";
   }
 
   const first = recentValues[0];
@@ -96,14 +96,14 @@ function computeTrend(values: number[]) {
   const tolerance = baseline * 0.08;
 
   if (last - first > tolerance) {
-    return "Em subida";
+    return "Rising";
   }
 
   if (first - last > tolerance) {
-    return "Em queda";
+    return "Falling";
   }
 
-  return "Estável";
+  return "Stable";
 }
 
 function computeConsistency(values: number[]) {
@@ -246,7 +246,7 @@ export function PlayerMetricEvolutionChart({
                 </div>
                 <div className="text-right">
                   <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                    Média
+                    Average
                   </p>
                   <p className="text-sm font-semibold text-cyan-200">
                     {formatValue(summary.average, displayMode)}
@@ -296,7 +296,7 @@ export function PlayerMetricEvolutionChart({
                 const meta = parseMatchMeta(point);
                 const currentEntries = payload
                   .map((entry) => ({
-                    name: String(entry.name ?? entry.dataKey ?? "Série"),
+                    name: String(entry.name ?? entry.dataKey ?? "Series"),
                     value: Number(entry.value ?? 0),
                     color: String(entry.color ?? "#00e7ff"),
                   }))
@@ -305,7 +305,7 @@ export function PlayerMetricEvolutionChart({
                 return (
                   <div className="min-w-[220px] rounded-xl border border-border/70 bg-card/95 p-3 shadow-xl backdrop-blur">
                     <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                      Jornada {meta.matchday || "-"}
+                      Matchday {meta.matchday || "-"}
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
                       Feirense x {meta.opponent || "-"}

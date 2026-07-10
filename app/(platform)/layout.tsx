@@ -23,7 +23,7 @@ export default function PlatformLayout({
             />
             <div className="min-w-0">
               <p className="truncate font-[var(--font-heading)] text-lg tracking-wide">{APP_NAME}</p>
-              <p className="text-xs text-muted-foreground">Plataforma de análise de futebol</p>
+              <p className="text-xs text-muted-foreground">Football analytics platform</p>
             </div>
           </div>
           <ThemeToggle />

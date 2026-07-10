@@ -22,11 +22,11 @@ export const COMPARISON_RANKING_METRICS: Array<{
 }> = [
   { key: "shortPassAccuracy", label: "Passe Curto %" },
   { key: "longPassAccuracy", label: "Passe Longo %" },
-  { key: "crossAccuracy", label: "Cruzamentos %" },
-  { key: "individualActionAccuracy", label: "Ações Individuais %" },
-  { key: "throwAccuracy", label: "Lançamentos %" },
-  { key: "shotAccuracy", label: "Remates %" },
-  { key: "duelAccuracy", label: "Duelos %" },
+  { key: "crossAccuracy", label: "Crosses %" },
+  { key: "individualActionAccuracy", label: "Individual Actions %" },
+  { key: "throwAccuracy", label: "Throw-ins %" },
+  { key: "shotAccuracy", label: "Shots %" },
+  { key: "duelAccuracy", label: "Duels %" },
 ];
 
 export const EVOLUTION_COLORS = SERIES_COLORS;

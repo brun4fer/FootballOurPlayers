@@ -42,7 +42,7 @@ export function ImageUrlInput({
           className="h-14 w-14 rounded-md border border-border/60 object-cover"
         />
       ) : (
-        <p className="text-xs text-muted-foreground">Sem imagem</p>
+        <p className="text-xs text-muted-foreground">No image</p>
       )}
     </div>
   );

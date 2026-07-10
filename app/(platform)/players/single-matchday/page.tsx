@@ -40,13 +40,13 @@ export default async function SingleMatchdayPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Por Jornada"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="By Matchday"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar o detalhe do jogador por jornada."
+          title="No competitions available"
+          description="Create a competition to view player details by matchday."
         />
       </AnalyticsPageShell>
     );
@@ -71,12 +71,12 @@ export default async function SingleMatchdayPage({
   if (!selectedPlayerId || !selectedMatchId) {
     return (
       <AnalyticsPageShell
-        title="Por Jornada"
-        description="Analise isolada de uma unica jornada para um unico jogador."
+        title="By Matchday"
+        description="Focused analysis of one player on a single matchday."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Jogador", value: selectedPlayer?.name ?? "Selecao incompleta" },
-          { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Selecao incompleta" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Player", value: selectedPlayer?.name ?? "Incomplete selection" },
+          { label: "Match", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Incomplete selection" },
         ]}
         searchQuery={searchQuery}
       >
@@ -89,12 +89,12 @@ export default async function SingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           playerMode="single"
           matchMode="single"
-          description="Analise isolada de uma unica jornada para um unico jogador."
+          description="Focused analysis of one player on a single matchday."
           searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Selecao incompleta"
-          description="Escolha um jogador e uma jornada para visualizar o detalhe do jogo."
+          title="Incomplete selection"
+          description="Choose a player and matchday to view the match details."
         />
       </AnalyticsPageShell>
     );
@@ -114,13 +114,13 @@ export default async function SingleMatchdayPage({
   if (outfieldRows.length === 0 && goalkeeperRows.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Por Jornada"
-        description="Foco na performance do jogador numa jornada especifica."
+        title="By Matchday"
+        description="Focus on the player performance on a specific matchday."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Jogador", value: player?.name },
-          { label: "Equipa", value: player?.teamName },
-          { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Player", value: player?.name },
+          { label: "Team", value: player?.teamName },
+          { label: "Match", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
         ]}
         searchQuery={searchQuery}
       >
@@ -133,12 +133,12 @@ export default async function SingleMatchdayPage({
           selectedMatchId={selectedMatchId}
           playerMode="single"
           matchMode="single"
-          description="Analise isolada de uma unica jornada para um unico jogador."
+          description="Focused analysis of one player on a single matchday."
           searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem registo para esta jornada"
-          description="Nao existem estatisticas registadas para o jogador nesta jornada."
+          title="No record for this matchday"
+          description="There are no recorded statistics for the player on this matchday."
         />
       </AnalyticsPageShell>
     );
@@ -185,13 +185,13 @@ export default async function SingleMatchdayPage({
 
   return (
     <AnalyticsPageShell
-      title="Por Jornada"
-      description="Foco na performance do jogador numa jornada especifica."
+      title="By Matchday"
+      description="Focus on the player performance on a specific matchday."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
-        { label: "Jogador", value: player?.name },
-        { label: "Equipa", value: player?.teamName },
-        { label: "Jogo", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
+        { label: "Competition", value: selectedCompetition?.name },
+        { label: "Player", value: player?.name },
+        { label: "Team", value: player?.teamName },
+        { label: "Match", value: selectedMatch ? formatMatchLabel(selectedMatch) : undefined },
       ]}
       searchQuery={searchQuery}
     >
@@ -204,15 +204,15 @@ export default async function SingleMatchdayPage({
         selectedMatchId={selectedMatchId}
         playerMode="single"
         matchMode="single"
-        description="A jornada e obrigatoria nesta vista."
+        description="A matchday is required in this view."
         searchQuery={searchQuery}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Resumo da Jornada</CardTitle>
+          <CardTitle>Matchday Summary</CardTitle>
           <CardDescription>
-            {player?.name ?? "Jogador"} | {selectedMatch ? formatMatchLabel(selectedMatch) : "Jornada -"}
+            {player?.name ?? "Player"} | {selectedMatch ? formatMatchLabel(selectedMatch) : "Matchday -"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -222,7 +222,7 @@ export default async function SingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Percentuais</CardTitle>
+          <CardTitle>Percentage Metrics</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerPercentageTable
@@ -234,7 +234,7 @@ export default async function SingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Acoes Numericas</CardTitle>
+          <CardTitle>Volume Metrics</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerNumericTable rows={visibleNumericRows} />
@@ -244,7 +244,7 @@ export default async function SingleMatchdayPage({
       {outfieldRow ? (
         <Card>
           <CardHeader>
-            <CardTitle>Detalhe Bruto do Jogo</CardTitle>
+            <CardTitle>Raw Match Details</CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>
@@ -265,7 +265,7 @@ export default async function SingleMatchdayPage({
                 ) : (
                   <TableRow>
                     <TableCell colSpan={2} className="py-8 text-center text-sm text-muted-foreground">
-                      Sem metricas para a pesquisa atual.
+                      No metrics match the current search.
                     </TableCell>
                   </TableRow>
                 )}
@@ -278,7 +278,7 @@ export default async function SingleMatchdayPage({
       {goalkeeperRow ? (
         <Card>
           <CardHeader>
-            <CardTitle>Detalhe Guarda-Redes</CardTitle>
+            <CardTitle>Goalkeeper Details</CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>
@@ -299,7 +299,7 @@ export default async function SingleMatchdayPage({
                 ) : (
                   <TableRow>
                     <TableCell colSpan={2} className="py-8 text-center text-sm text-muted-foreground">
-                      Sem metricas para a pesquisa atual.
+                      No metrics match the current search.
                     </TableCell>
                   </TableRow>
                 )}

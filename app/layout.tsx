@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt" suppressHydrationWarning>
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
         <link rel="manifest" href={`/manifest.json?v=${APP_MANIFEST_VERSION}`} />
       </head>

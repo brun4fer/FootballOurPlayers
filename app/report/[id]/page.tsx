@@ -127,7 +127,7 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
       outfieldRowsAll.push(
         ...normalizeOutfieldRows(rawOutfieldRows as Array<Record<string, unknown>>, {
           id: playerId,
-          name: player?.name ?? `Jogador ${playerId}`,
+          name: player?.name ?? `Player ${playerId}`,
         }),
       );
 
@@ -154,11 +154,11 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
 
   const competitionName =
     competitions.find((competition) => competition.id === selectedCompetitionId)?.name ??
-    `Competição ${selectedCompetitionId}`;
+    `Competition ${selectedCompetitionId}`;
   const selectedPlayerNames = selectedPlayerIdsInScope
     .map((playerId) => playerMap.get(playerId)?.name)
     .filter((name): name is string => Boolean(name));
-  const playerLabel = selectedPlayerNames.length > 0 ? selectedPlayerNames.join(", ") : "Todos os jogadores";
+  const playerLabel = selectedPlayerNames.length > 0 ? selectedPlayerNames.join(", ") : "All players";
 
   const matchScope = matchOptions.filter((match) => selectedMatchIdsInScope.includes(match.id));
   const matchdaysLabel =
@@ -167,14 +167,14 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
           .sort((a, b) => a - b)
           .map((matchday) => `J${matchday}`)
           .join(", ")
-      : "Sem jornadas";
+      : "No matchdays";
 
   const metricCharts: MetricChart[] = [
-    { title: "Passes Curtos", color: "#00e7ff", data: [] },
-    { title: "Passes Longos", color: "#ff2ea6", data: [] },
-    { title: "Cruzamentos", color: "#22d3ee", data: [] },
-    { title: "Ações Individuais", color: "#84cc16", data: [] },
-    { title: "Remates", color: "#f59e0b", data: [] },
+    { title: "Short Passes", color: "#00e7ff", data: [] },
+    { title: "Long Passes", color: "#ff2ea6", data: [] },
+    { title: "Crosses", color: "#22d3ee", data: [] },
+    { title: "Individual Actions", color: "#84cc16", data: [] },
+    { title: "Shots", color: "#f59e0b", data: [] },
   ];
 
   const rowsByMatch = new Map<number, MatchAggregationRow>(
@@ -254,22 +254,22 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
   const percentualRows = [
     { label: "Passe Curto", success: percentualActions.shortPass.success, fail: percentualActions.shortPass.fail, percentage: percentualActions.shortPass.percentage },
     { label: "Passe Longo", success: percentualActions.longPass.success, fail: percentualActions.longPass.fail, percentage: percentualActions.longPass.percentage },
-    { label: "Cruzamentos", success: percentualActions.cross.success, fail: percentualActions.cross.fail, percentage: percentualActions.cross.percentage },
-    { label: "Ações Individuais", success: percentualActions.dribble.success, fail: percentualActions.dribble.fail, percentage: percentualActions.dribble.percentage },
-    { label: "Lançamentos", success: percentualActions.throw.success, fail: percentualActions.throw.fail, percentage: percentualActions.throw.percentage },
-    { label: "Remates", success: percentualActions.shot.success, fail: percentualActions.shot.fail, percentage: percentualActions.shot.percentage },
-    { label: "Duelos Aéreos", success: percentualActions.aerialDuel.success, fail: percentualActions.aerialDuel.fail, percentage: percentualActions.aerialDuel.percentage },
-    { label: "Duelos Defensivos", success: percentualActions.defensiveDuel.success, fail: percentualActions.defensiveDuel.fail, percentage: percentualActions.defensiveDuel.percentage },
+    { label: "Crosses", success: percentualActions.cross.success, fail: percentualActions.cross.fail, percentage: percentualActions.cross.percentage },
+    { label: "Individual Actions", success: percentualActions.dribble.success, fail: percentualActions.dribble.fail, percentage: percentualActions.dribble.percentage },
+    { label: "Throw-ins", success: percentualActions.throw.success, fail: percentualActions.throw.fail, percentage: percentualActions.throw.percentage },
+    { label: "Shots", success: percentualActions.shot.success, fail: percentualActions.shot.fail, percentage: percentualActions.shot.percentage },
+    { label: "Aerial Duels", success: percentualActions.aerialDuel.success, fail: percentualActions.aerialDuel.fail, percentage: percentualActions.aerialDuel.percentage },
+    { label: "Defensive Duels", success: percentualActions.defensiveDuel.success, fail: percentualActions.defensiveDuel.fail, percentage: percentualActions.defensiveDuel.percentage },
   ];
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">{"Relat\u00f3rio P\u00fablico"}</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">"Public Report"</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>{"Resumo do Relat\u00f3rio"}</CardTitle>
-          <CardDescription>Relatório em modo de apenas leitura baseado nos filtros do painel.</CardDescription>
+          <CardTitle>Report Summary</CardTitle>
+          <CardDescription>Read-only report based on the dashboard filters.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg border border-border/70 bg-card/40 px-3 py-2">
@@ -295,10 +295,10 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Métrica</TableHead>
-                <TableHead>Sucesso</TableHead>
+                <TableHead>Metric</TableHead>
+                <TableHead>Success</TableHead>
                 <TableHead>Insucesso</TableHead>
-                <TableHead>Percentagem</TableHead>
+                <TableHead>Percentage</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -311,7 +311,7 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell>Defesas (GR)</TableCell>
+                <TableCell>Saves (GK)</TableCell>
                 <TableCell>{goalkeeperPercentual.totalSaves}</TableCell>
                 <TableCell>{goalkeeperPercentual.totalIncompleteSaves}</TableCell>
                 <TableCell>{formatMetric(goalkeeperPercentual.savePercentage)}%</TableCell>
@@ -323,31 +323,31 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
 
       <Card>
         <CardHeader>
-          <CardTitle>{"A\u00e7\u00f5es Num\u00e9ricas"}</CardTitle>
+          <CardTitle>"Volume Metrics"</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Métrica</TableHead>
+                <TableHead>Metric</TableHead>
                 <TableHead>Total</TableHead>
-                <TableHead>Por 90</TableHead>
+                <TableHead>Per 90</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow><TableCell>Faltas Sofridas</TableCell><TableCell>{numericActions.foulsSufferedTotal}</TableCell><TableCell>{formatMetric(numericActions.foulsSufferedPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Faltas Cometidas</TableCell><TableCell>{numericActions.foulsCommittedTotal}</TableCell><TableCell>{formatMetric(numericActions.foulsCommittedPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Recuperações</TableCell><TableCell>{numericActions.recoveriesTotal}</TableCell><TableCell>{formatMetric(numericActions.recoveriesPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Interceções</TableCell><TableCell>{numericActions.interceptionsTotal}</TableCell><TableCell>{formatMetric(numericActions.interceptionsPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Foras de Jogo</TableCell><TableCell>{numericActions.offsidesTotal}</TableCell><TableCell>{formatMetric(numericActions.offsidesPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Perdas de Posse</TableCell><TableCell>{numericActions.possessionLossesTotal}</TableCell><TableCell>{formatMetric(numericActions.possessionLossesPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Cartões Amarelos</TableCell><TableCell>{numericActions.yellowCardsTotal}</TableCell><TableCell>{formatMetric(numericActions.yellowCardsPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Cartões Vermelhos</TableCell><TableCell>{numericActions.redCardsTotal}</TableCell><TableCell>{formatMetric(numericActions.redCardsPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Responsabilidade em Golos</TableCell><TableCell>{numericActions.responsibilityGoalTotal}</TableCell><TableCell>{formatMetric(numericActions.responsibilityGoalPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Remates Sofridos</TableCell><TableCell>{numericActions.shotsConcededTotal}</TableCell><TableCell>{formatMetric(numericActions.shotsConcededPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Remates</TableCell><TableCell>{totals.shotsOnTarget + totals.shotsOffTarget}</TableCell><TableCell>{formatMetric(safePer90(totals.shotsOnTarget + totals.shotsOffTarget, totals.minutesPlayed))}</TableCell></TableRow>
-              <TableRow><TableCell>Golos Sofridos</TableCell><TableCell>{numericActions.goalsConcededTotal}</TableCell><TableCell>{formatMetric(numericActions.goalsConcededPer90)}</TableCell></TableRow>
-              <TableRow><TableCell>Golos Marcados</TableCell><TableCell>{totals.goals}</TableCell><TableCell>{formatMetric(safePer90(totals.goals, totals.minutesPlayed))}</TableCell></TableRow>
+              <TableRow><TableCell>Fouls Won</TableCell><TableCell>{numericActions.foulsSufferedTotal}</TableCell><TableCell>{formatMetric(numericActions.foulsSufferedPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Fouls Committed</TableCell><TableCell>{numericActions.foulsCommittedTotal}</TableCell><TableCell>{formatMetric(numericActions.foulsCommittedPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Recoveries</TableCell><TableCell>{numericActions.recoveriesTotal}</TableCell><TableCell>{formatMetric(numericActions.recoveriesPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Interceptions</TableCell><TableCell>{numericActions.interceptionsTotal}</TableCell><TableCell>{formatMetric(numericActions.interceptionsPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Offsides</TableCell><TableCell>{numericActions.offsidesTotal}</TableCell><TableCell>{formatMetric(numericActions.offsidesPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Possession Losses</TableCell><TableCell>{numericActions.possessionLossesTotal}</TableCell><TableCell>{formatMetric(numericActions.possessionLossesPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Yellow Cards</TableCell><TableCell>{numericActions.yellowCardsTotal}</TableCell><TableCell>{formatMetric(numericActions.yellowCardsPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Red Cards</TableCell><TableCell>{numericActions.redCardsTotal}</TableCell><TableCell>{formatMetric(numericActions.redCardsPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Errors Leading to Goals</TableCell><TableCell>{numericActions.responsibilityGoalTotal}</TableCell><TableCell>{formatMetric(numericActions.responsibilityGoalPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Shots Faced</TableCell><TableCell>{numericActions.shotsConcededTotal}</TableCell><TableCell>{formatMetric(numericActions.shotsConcededPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Shots</TableCell><TableCell>{totals.shotsOnTarget + totals.shotsOffTarget}</TableCell><TableCell>{formatMetric(safePer90(totals.shotsOnTarget + totals.shotsOffTarget, totals.minutesPlayed))}</TableCell></TableRow>
+              <TableRow><TableCell>Goals Conceded</TableCell><TableCell>{numericActions.goalsConcededTotal}</TableCell><TableCell>{formatMetric(numericActions.goalsConcededPer90)}</TableCell></TableRow>
+              <TableRow><TableCell>Goals Scored</TableCell><TableCell>{totals.goals}</TableCell><TableCell>{formatMetric(safePer90(totals.goals, totals.minutesPlayed))}</TableCell></TableRow>
             </TableBody>
           </Table>
         </CardContent>
@@ -356,7 +356,7 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
       <Card>
         <CardHeader>
           <CardTitle>{"Gr\u00e1ficos"}</CardTitle>
-          <CardDescription>Passes Curtos, Passes Longos, Cruzamentos, {"A\u00e7\u00f5es Individuais"} e Remates.</CardDescription>
+          <CardDescription>Short passes, long passes, crosses, individual actions and shots.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 lg:grid-cols-2">
@@ -373,7 +373,7 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
                       displayMode="per90"
                     />
                   ) : (
-                    <p className="text-sm text-muted-foreground">Sem dados para este grafico.</p>
+                    <p className="text-sm text-muted-foreground">No data available for this chart.</p>
                   )}
                 </CardContent>
               </Card>

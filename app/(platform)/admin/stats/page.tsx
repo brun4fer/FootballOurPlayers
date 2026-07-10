@@ -94,32 +94,32 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Inserir Estatísticas</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Enter Statistics</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Fluxo de Administração</CardTitle>
+          <CardTitle>Administration Workflow</CardTitle>
           <CardDescription>
-            1. Selecionar competição 2. Selecionar jogo 3. Selecionar jogador 4. Inserir totais
+            1. Select competition 2. Select jogo 3. Select player 4. Enter totais
           </CardDescription>
           <p className="text-xs text-muted-foreground">
-            A equipa analisada é sempre o <strong>Feirense</strong>.
+            The analysed team is always <strong>Feirense</strong>.
           </p>
           <p className="text-xs text-muted-foreground">
-            Se alterar a competição, clique em <strong>Carregar Seleção</strong> para atualizar
-            jogos e jogadores.
+            After changing the competition, click <strong>Load Selection</strong> to update
+            matches and players.
           </p>
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="competitionId">Competição</Label>
+              <Label htmlFor="competitionId">Competition</Label>
               <NativeSelect
                 id="competitionId"
                 name="competitionId"
                 defaultValue={String(selectedCompetitionId ?? "")}
               >
-                <option value="">Selecionar competição</option>
+                <option value="">Select competition</option>
                 {competitionOptions.map((competition) => (
                   <option key={competition.id} value={competition.id}>
                     {competition.name}
@@ -130,10 +130,10 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
             <div className="space-y-2">
               <Label htmlFor="matchId">Jogo</Label>
               <NativeSelect id="matchId" name="matchId" defaultValue={String(selectedMatchId ?? "")}>
-                <option value="">Selecionar jogo</option>
+                <option value="">Select jogo</option>
                 {matchOptions.length === 0 ? (
                   <option value="" disabled>
-                    Sem jogos disponíveis
+                    No matches available
                   </option>
                 ) : null}
                 {matchOptions.map((match) => (
@@ -148,12 +148,12 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="playerId">Jogador</Label>
+              <Label htmlFor="playerId">Player</Label>
               <NativeSelect id="playerId" name="playerId" defaultValue={String(selectedPlayerId ?? "")}>
-                <option value="">Selecionar jogador</option>
+                <option value="">Select player</option>
                 {playerOptions.length === 0 ? (
                   <option value="" disabled>
-                    Sem jogadores do Feirense disponíveis
+                    No Feirense players available
                   </option>
                 ) : null}
                 {playerOptions.map((player) => (
@@ -163,7 +163,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
                 ))}
               </NativeSelect>
             </div>
-            <Button className="sm:col-span-2 xl:col-span-3">Carregar Seleção</Button>
+            <Button className="sm:col-span-2 xl:col-span-3">Load Selection</Button>
           </form>
         </CardContent>
       </Card>
@@ -171,10 +171,10 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
       {selectedMatchId ? (
         <Card>
           <CardHeader>
-            <CardTitle>Totais da Equipa por Jogo</CardTitle>
+            <CardTitle>Team Totals per Match</CardTitle>
             <CardDescription>
-              Totais agregados do Feirense calculados automaticamente a partir das estatísticas dos
-              jogadores do jogo selecionado.
+              Feirense totals calculated automatically from the selected match statistics for
+              players.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -193,19 +193,19 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
       {selectedMatchId && selectedPlayerId ? (
         <Card>
           <CardHeader>
-            <CardTitle>Totais do Jogador por Jogo</CardTitle>
+            <CardTitle>Player Totals per Match</CardTitle>
             <CardDescription>
-              Guardar os totais do jogador de campo para o jogo selecionado.
+              Save the outfield player totals for the selected match.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mb-4 flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href={`/report/player/${selectedPlayerId}`}>Abrir Relatório Público</Link>
+                <Link href={`/report/player/${selectedPlayerId}`}>Open Public Report</Link>
               </Button>
               <Button asChild variant="secondary" size="sm">
                 <Link href={`/dashboard/jogadores?competitionId=${selectedCompetitionId ?? ""}&playerId=${selectedPlayerId}`}>
-                  Abrir Painel do Jogador
+                  Open Player Dashboard
                 </Link>
               </Button>
             </div>
@@ -213,7 +213,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
               <input type="hidden" name="matchId" value={selectedMatchId} />
               <input type="hidden" name="playerId" value={selectedPlayerId} />
               <NumericStatFields fields={outfieldStatFields} values={existingPlayerStats ?? undefined} />
-              <Button>Guardar Estatísticas do Jogador</Button>
+              <Button>Save Player Statistics</Button>
             </form>
           </CardContent>
         </Card>
@@ -222,9 +222,9 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
       {selectedMatchId && selectedPlayerId && selectedPlayer?.isGoalkeeper ? (
         <Card>
           <CardHeader>
-            <CardTitle>Totais do Guarda-Redes por Jogo</CardTitle>
+            <CardTitle>Goalkeeper Totals per Match</CardTitle>
             <CardDescription>
-              As métricas de guarda-redes são visíveis apenas para jogadores marcados como
+              Goalkeeper metrics are only visible for players marked as
               guarda-redes.
             </CardDescription>
           </CardHeader>
@@ -236,7 +236,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
                 fields={goalkeeperStatFields}
                 values={existingGoalkeeperStats ?? undefined}
               />
-              <Button>Guardar Estatísticas de Guarda-Redes</Button>
+              <Button>Save Goalkeeper Statistics</Button>
             </form>
           </CardContent>
         </Card>

@@ -77,7 +77,7 @@ export function formatMatchLabel(match: {
   matchdayNumber: number;
   homeAway: "home" | "away";
 }) {
-  return `Feirense x ${match.opponentTeamName} - Jornada ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+  return `Feirense x ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {

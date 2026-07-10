@@ -34,13 +34,13 @@ export function TeamDashboardFilters({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Filtros</CardTitle>
+        <CardTitle>Filters</CardTitle>
         <CardDescription>{modeLabel}</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="grid gap-3 lg:grid-cols-4">
           <div className="space-y-2">
-            <Label htmlFor="competitionId">Competição</Label>
+            <Label htmlFor="competitionId">Competition</Label>
             <NativeSelect id="competitionId" name="competitionId" defaultValue={String(selectedCompetitionId ?? "")}>
               {competitions.map((competition) => (
                 <option key={competition.id} value={competition.id}>
@@ -51,19 +51,19 @@ export function TeamDashboardFilters({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="matchId">Jornada (opcional)</Label>
+            <Label htmlFor="matchId">Matchday (opcional)</Label>
             <NativeSelect id="matchId" name="matchId" defaultValue={String(selectedMatchId ?? "")}>
-              <option value="">Todas as jornadas</option>
+              <option value="">All matchdays</option>
               {matches.map((match) => (
                 <option key={match.id} value={match.id}>
-                  Jornada {match.matchdayNumber} x {match.opponentTeamName}
+                  Matchday {match.matchdayNumber} x {match.opponentTeamName}
                 </option>
               ))}
             </NativeSelect>
           </div>
 
           <div className="space-y-2 lg:col-span-2">
-            <Label htmlFor="matchIds">Selecionar múltiplas jornadas</Label>
+            <Label htmlFor="matchIds">Select multiple matchdays</Label>
             <select
               id="matchIds"
               name="matchIds"
@@ -73,13 +73,13 @@ export function TeamDashboardFilters({
             >
               {matches.map((match) => (
                 <option key={match.id} value={match.id}>
-                  Feirense x {match.opponentTeamName} (Jornada {match.matchdayNumber})
+                  Feirense x {match.opponentTeamName} (Matchday {match.matchdayNumber})
                 </option>
               ))}
             </select>
           </div>
 
-          <Button className="lg:col-span-4">Aplicar Filtros</Button>
+          <Button className="lg:col-span-4">Apply Filters</Button>
         </form>
       </CardContent>
     </Card>

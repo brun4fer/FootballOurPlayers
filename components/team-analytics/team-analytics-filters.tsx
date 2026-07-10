@@ -27,10 +27,10 @@ export function TeamAnalyticsFilters({
   selectedMatchId,
   selectedMatchIds = [],
   matchMode = "none",
-  title = "Filtros",
+  title = "Filters",
   description,
-  matchLabel = "Jornada",
-  submitLabel = "Aplicar Filtros",
+  matchLabel = "Matchday",
+  submitLabel = "Apply Filters",
   searchQuery = "",
 }: TeamAnalyticsFiltersProps) {
   const visibleFields = 1 + (matchMode === "none" ? 0 : 1);
@@ -48,7 +48,7 @@ export function TeamAnalyticsFilters({
           {searchQuery ? <input type="hidden" name="q" value={searchQuery} /> : null}
 
           <div className="space-y-2">
-            <Label htmlFor="competitionId">Competição</Label>
+            <Label htmlFor="competitionId">Competition</Label>
             <NativeSelect
               id="competitionId"
               name="competitionId"
@@ -72,7 +72,7 @@ export function TeamAnalyticsFilters({
               >
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    Jornada {match.matchdayNumber} x {match.opponentTeamName}
+                    Matchday {match.matchdayNumber} x {match.opponentTeamName}
                   </option>
                 ))}
               </NativeSelect>
@@ -91,7 +91,7 @@ export function TeamAnalyticsFilters({
               >
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    Jornada {match.matchdayNumber} x {match.opponentTeamName}
+                    Matchday {match.matchdayNumber} x {match.opponentTeamName}
                   </option>
                 ))}
               </select>

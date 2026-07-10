@@ -30,13 +30,13 @@ export default async function TotalCompetitionPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Totais por Competicao"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Competition Totals"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para consultar os totais agregados de jogadores."
+          title="No competitions available"
+          description="Create a competition to view aggregated player totals."
         />
       </AnalyticsPageShell>
     );
@@ -83,12 +83,12 @@ export default async function TotalCompetitionPage({
 
   return (
     <AnalyticsPageShell
-      title="Totais por Competicao"
-      description="Visao agregada de todos os jogadores na competicao selecionada, sem filtro de jornada."
+      title="Competition Totals"
+      description="Aggregated view of all players in the selected competition, without matchday filtering."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
+        { label: "Competition", value: selectedCompetition?.name },
         {
-          label: "Equipas",
+          label: "Teams",
           value: describeList(
             teamOptions
               .filter((team) => selectedTeamIdSet.has(team.id))
@@ -96,8 +96,8 @@ export default async function TotalCompetitionPage({
           ),
         },
         {
-          label: "Jogadores",
-          value: `${visibleCompetitionPlayerTotals.length} de ${allCompetitionPlayerTotals.length}`,
+          label: "Players",
+          value: `${visibleCompetitionPlayerTotals.length} of ${allCompetitionPlayerTotals.length}`,
         },
       ]}
       searchQuery={searchQuery}
@@ -107,7 +107,7 @@ export default async function TotalCompetitionPage({
         teams={teamOptions}
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedTeamIds={selectedTeamIds}
-        description="Analise global do rendimento dos jogadores dentro da competicao."
+        description="Overall analysis of player performance within the competition."
         resetHref={resetFiltersHref}
         searchQuery={searchQuery}
       />
@@ -116,7 +116,7 @@ export default async function TotalCompetitionPage({
         <CardHeader>
           <CardTitle>Classificacao Comparativa</CardTitle>
           <CardDescription>
-            Charts agregados foram removidos nesta vista para manter legibilidade com muitos jogadores.
+            Aggregated charts are hidden in this view to preserve readability with many players.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -128,9 +128,9 @@ export default async function TotalCompetitionPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Totais Agregados de Jogadores</CardTitle>
+          <CardTitle>Aggregated Player Totals</CardTitle>
           <CardDescription>
-            {visibleCompetitionPlayerTotals.length} de {allCompetitionPlayerTotals.length} jogadores visiveis.
+            {visibleCompetitionPlayerTotals.length} of {allCompetitionPlayerTotals.length} players visible.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getPlayers, getTeams } from "@/lib/data";
-import { playerPositionOptions } from "@/lib/player-positions";
+import { formatPlayerPosition, playerPositionOptions } from "@/lib/player-positions";
 
 type AdminPlayersPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -50,23 +50,23 @@ export default async function AdminPlayersPage({
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Jogadores</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Players</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Criar Jogador</CardTitle>
+          <CardTitle>Create Player</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createPlayerAction} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name">Name</Label>
               <Input id="name" name="name" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="teamId">Equipa</Label>
+              <Label htmlFor="teamId">Team</Label>
               <NativeSelect id="teamId" name="teamId" defaultValue="" required>
                 <option value="" disabled>
-                  Selecionar equipa
+                  Select team
                 </option>
                 {teamList.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -76,34 +76,34 @@ export default async function AdminPlayersPage({
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="position1">Posição 1</Label>
+              <Label htmlFor="position1">Position 1</Label>
               <NativeSelect id="position1" name="position1" defaultValue="">
-                <option value="">Selecionar posição</option>
+                <option value="">Select position</option>
                 {playerPositionOptions.map((position) => (
                   <option key={position} value={position}>
-                    {position}
+                    {formatPlayerPosition(position)}
                   </option>
                 ))}
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="position2">Posição 2</Label>
+              <Label htmlFor="position2">Position 2</Label>
               <NativeSelect id="position2" name="position2" defaultValue="">
-                <option value="">Selecionar posição</option>
+                <option value="">Select position</option>
                 {playerPositionOptions.map((position) => (
                   <option key={position} value={position}>
-                    {position}
+                    {formatPlayerPosition(position)}
                   </option>
                 ))}
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="position3">Posição 3</Label>
+              <Label htmlFor="position3">Position 3</Label>
               <NativeSelect id="position3" name="position3" defaultValue="">
-                <option value="">Selecionar posição</option>
+                <option value="">Select position</option>
                 {playerPositionOptions.map((position) => (
                   <option key={position} value={position}>
-                    {position}
+                    {formatPlayerPosition(position)}
                   </option>
                 ))}
               </NativeSelect>
@@ -111,44 +111,44 @@ export default async function AdminPlayersPage({
             <ImageUrlInput
               id="photo"
               name="photo"
-              label="URL da Foto do Jogador"
+              label="Player Photo URL"
             />
             <div className="space-y-2">
-              <Label htmlFor="nationality">Nacionalidade</Label>
+              <Label htmlFor="nationality">Nationality</Label>
               <Input id="nationality" name="nationality" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="agent">Agente</Label>
+              <Label htmlFor="agent">Agent</Label>
               <Input id="agent" name="agent" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="height">Altura (cm)</Label>
+              <Label htmlFor="height">Height (cm)</Label>
               <Input id="height" name="height" type="number" min={0} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="weight">Peso (kg)</Label>
+              <Label htmlFor="weight">Weight (kg)</Label>
               <Input id="weight" name="weight" type="number" min={0} />
             </div>
             <label className="flex items-center gap-2 rounded-lg border border-border/70 px-3 py-2 text-sm">
               <input type="checkbox" name="isGoalkeeper" className="h-4 w-4 accent-cyan-400" />
-              Guarda-redes
+              Goalkeeper
             </label>
-            <Button className="xl:col-span-1">Guardar</Button>
+            <Button className="xl:col-span-1">Save</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Jogadores</CardTitle>
+          <CardTitle>Player List</CardTitle>
           <CardDescription>
-            {visiblePlayerList.length} de {playerList.length} jogadores visíveis.
+            {visiblePlayerList.length} of {playerList.length} players visible.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
             <div className="space-y-2">
-              <Label htmlFor="teamIds">Equipas</Label>
+              <Label htmlFor="teamIds">Teams</Label>
               <select
                 id="teamIds"
                 name="teamIds"
@@ -164,10 +164,10 @@ export default async function AdminPlayersPage({
               </select>
             </div>
             <div className="flex items-end gap-2">
-              <Button>Aplicar Filtros</Button>
+              <Button>Apply Filters</Button>
               {selectedTeamIds.length > 0 ? (
                 <Button asChild variant="outline">
-                  <Link href="/admin/players">Limpar Filtros</Link>
+                  <Link href="/admin/players">Clear Filters</Link>
                 </Button>
               ) : null}
             </div>
@@ -176,13 +176,13 @@ export default async function AdminPlayersPage({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Foto</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>Equipa</TableHead>
-                <TableHead>Nacionalidade</TableHead>
-                <TableHead>Posições</TableHead>
-                <TableHead>Função</TableHead>
-                <TableHead className="w-[290px]">Ações</TableHead>
+                <TableHead>Photo</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead>Nationality</TableHead>
+                <TableHead>Positions</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="w-[290px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,7 +197,7 @@ export default async function AdminPlayersPage({
                           className="h-12 w-12 rounded-md border border-border/60 object-cover"
                         />
                       ) : (
-                        <span className="text-xs text-muted-foreground">Sem foto</span>
+                        <span className="text-xs text-muted-foreground">No photo</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -213,33 +213,33 @@ export default async function AdminPlayersPage({
                         </NativeSelect>
                         <div className="grid gap-2 sm:grid-cols-3">
                           <NativeSelect name="position1" defaultValue={player.position1 ?? ""}>
-                            <option value="">Selecionar posição</option>
+                            <option value="">Select position</option>
                             {playerPositionOptions.map((position) => (
                               <option key={position} value={position}>
-                                {position}
+                                {formatPlayerPosition(position)}
                               </option>
                             ))}
                           </NativeSelect>
                           <NativeSelect name="position2" defaultValue={player.position2 ?? ""}>
-                            <option value="">Selecionar posição</option>
+                            <option value="">Select position</option>
                             {playerPositionOptions.map((position) => (
                               <option key={position} value={position}>
-                                {position}
+                                {formatPlayerPosition(position)}
                               </option>
                             ))}
                           </NativeSelect>
                           <NativeSelect name="position3" defaultValue={player.position3 ?? ""}>
-                            <option value="">Selecionar posição</option>
+                            <option value="">Select position</option>
                             {playerPositionOptions.map((position) => (
                               <option key={position} value={position}>
-                                {position}
+                                {formatPlayerPosition(position)}
                               </option>
                             ))}
                           </NativeSelect>
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2">
-                          <Input name="nationality" defaultValue={player.nationality ?? ""} placeholder="Nacionalidade" />
-                          <Input name="agent" defaultValue={player.agent ?? ""} placeholder="Agente" />
+                          <Input name="nationality" defaultValue={player.nationality ?? ""} placeholder="Nationality" />
+                          <Input name="agent" defaultValue={player.agent ?? ""} placeholder="Agent" />
                         </div>
                         <div className="grid gap-2 sm:grid-cols-3">
                           <Input
@@ -247,14 +247,14 @@ export default async function AdminPlayersPage({
                             type="number"
                             min={0}
                             defaultValue={player.height ?? undefined}
-                            placeholder="Altura"
+                            placeholder="Height"
                           />
                           <Input
                             name="weight"
                             type="number"
                             min={0}
                             defaultValue={player.weight ?? undefined}
-                            placeholder="Peso"
+                            placeholder="Weight"
                           />
                           <label className="flex items-center gap-2 rounded-lg border border-border/70 px-2 text-xs">
                             <input
@@ -263,31 +263,34 @@ export default async function AdminPlayersPage({
                               defaultChecked={player.isGoalkeeper}
                               className="h-4 w-4 accent-cyan-400"
                             />
-                            Guarda-redes
+                            Goalkeeper
                           </label>
                         </div>
                         <ImageUrlInput
                           id={`photo-${player.id}`}
                           name="photo"
-                          label="URL da Foto do Jogador"
+                          label="Player Photo URL"
                           defaultImageUrl={player.photo}
                         />
                         <Button variant="outline" size="sm">
-                          Atualizar
+                          Update
                         </Button>
                       </form>
                     </TableCell>
                     <TableCell>{player.teamName}</TableCell>
                     <TableCell>{player.nationality ?? "-"}</TableCell>
                     <TableCell>
-                      {[player.position1, player.position2, player.position3].filter(Boolean).join(", ") || "-"}
+                      {[player.position1, player.position2, player.position3]
+                        .filter(Boolean)
+                        .map((position) => formatPlayerPosition(position))
+                        .join(", ") || "-"}
                     </TableCell>
                     <TableCell>
                       {player.isGoalkeeper ? (
-                        <Badge className="w-fit">Guarda-redes</Badge>
+                        <Badge className="w-fit">Goalkeeper</Badge>
                       ) : (
                         <Badge variant="secondary" className="w-fit">
-                          Jogador de campo
+                          Outfield Player
                         </Badge>
                       )}
                     </TableCell>
@@ -295,14 +298,14 @@ export default async function AdminPlayersPage({
                       <form action={deletePlayerAction}>
                         <input type="hidden" name="id" value={player.id} />
                         <Button variant="danger" size="sm">
-                          Eliminar
+                          Delete
                         </Button>
                       </form>
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/report/player/${player.id}`}>Relatório</Link>
+                        <Link href={`/report/player/${player.id}`}>Report</Link>
                       </Button>
                       <Button asChild variant="secondary" size="sm">
-                        <Link href={`/dashboard/jogadores?playerId=${player.id}`}>Painel</Link>
+                        <Link href={`/dashboard/jogadores?playerId=${player.id}`}>Dashboard</Link>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -310,7 +313,7 @@ export default async function AdminPlayersPage({
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
-                    Sem jogadores para os filtros selecionados.
+                    No players match the selected filters.
                   </TableCell>
                 </TableRow>
               )}

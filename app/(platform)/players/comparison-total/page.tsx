@@ -37,13 +37,13 @@ export default async function ComparisonTotalPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Comparacao Geral"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Comparison Geral"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para comparar totais agregados entre jogadores."
+          title="No competitions available"
+          description="Create a competition to compare aggregated player totals."
         />
       </AnalyticsPageShell>
     );
@@ -81,7 +81,7 @@ export default async function ComparisonTotalPage({
         label:
           loadedData?.playerMap.get(playerId)?.name ??
           baseData.playerOptions.find((player) => player.id === playerId)?.name ??
-          `Jogador ${playerId}`,
+          `Player ${playerId}`,
         totals: aggregateOutfieldTotals(loadedData?.outfieldRowsByPlayer.get(playerId) ?? []),
       }))
     : [];
@@ -98,22 +98,22 @@ export default async function ComparisonTotalPage({
 
   return (
     <AnalyticsPageShell
-      title="Comparacao Geral"
-      description="Totais agregados de varios jogadores em todas as jornadas da competicao."
+      title="Comparison Geral"
+      description="Aggregated totals for several players across all competition matchdays."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
+        { label: "Competition", value: selectedCompetition?.name },
         {
-          label: "Jogadores",
+          label: "Players",
           value: describeList(
             visibleSelectedPlayerOptions.map((player) => player.name),
-            hasPlayerSelection ? "Sem resultados" : "Selecao insuficiente",
+            hasPlayerSelection ? "No results" : "Selecao insuficiente",
           ),
         },
         {
-          label: "Equipas",
-          value: describeList(visibleSelectedPlayerOptions.map((player) => player.teamName), "Sem equipas"),
+          label: "Teams",
+          value: describeList(visibleSelectedPlayerOptions.map((player) => player.teamName), "No teams"),
         },
-        { label: "Jogos", value: "Todas as jornadas" },
+        { label: "Matches", value: "All matchdays" },
       ]}
       searchQuery={searchQuery}
     >
@@ -123,8 +123,8 @@ export default async function ComparisonTotalPage({
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
-        playerLabel="Jogadores"
-        description="Selecione ate 3 jogadores para visualizar graficos comparativos. Acima disso, a analise fica centrada no ranking."
+        playerLabel="Players"
+        description="Select up to three players to view comparison charts. With more players, the analysis focuses on the ranking."
         searchQuery={searchQuery}
       />
 
@@ -132,13 +132,13 @@ export default async function ComparisonTotalPage({
         <PlayerEmptyStateCard
           title={
             hasPlayerSelection
-              ? "Sem jogadores para a pesquisa atual"
+              ? "No players match the current search"
               : "Selecao insuficiente"
           }
           description={
             hasPlayerSelection
-              ? "A pesquisa atual nao encontrou jogadores dentro da selecao feita."
-              : "Escolha pelo menos um jogador para ativar o ranking e a comparacao geral."
+              ? "The current search did not find any players within the selection."
+              : "Choose at least one player to enable the ranking and overall comparison."
           }
         />
       ) : (
@@ -147,7 +147,7 @@ export default async function ComparisonTotalPage({
             <CardHeader>
               <CardTitle>Classificacao Comparativa</CardTitle>
               <CardDescription>
-                Vista principal para comparacao escalavel, com ordenacao por qualquer coluna e destaque automatico dos melhores valores.
+                Scalable comparison table with sorting by any column and automatic highlighting of the best values.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -161,9 +161,9 @@ export default async function ComparisonTotalPage({
             <div className="grid gap-4 xl:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Chart por Metrica</CardTitle>
+                  <CardTitle>Chart by Metric</CardTitle>
                   <CardDescription>
-                    Comparacao simplificada para 1 a 3 jogadores, mostrando apenas uma metrica de cada vez.
+                    Simplified comparison for one to three players, showing one metric at a time.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -174,34 +174,34 @@ export default async function ComparisonTotalPage({
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {comparisonScopes.length === 1 ? "Radar do Jogador" : "Radar Comparativo"}
+                    {comparisonScopes.length === 1 ? "Player Radar" : "Comparison Radar"}
                   </CardTitle>
                   <CardDescription>
                     {comparisonScopes.length === 1
-                      ? "Perfil completo do jogador selecionado."
+                      ? "Complete profile of the selected player."
                       : comparisonScopes.length === 2
-                        ? "Disponivel quando existem exatamente dois jogadores selecionados."
-                        : "Com tres jogadores, o radar e omitido para evitar ruido visual."}
+                        ? "Available when exactly two players are selected."
+                        : "With three players, the radar is omitted to avoid visual clutter."}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {comparisonScopes.length === 1 ? (
                     <RadarProfileChart
                       data={singlePlayerRadarData}
-                      color={getSeriesColor(comparisonScopes[0]?.label ?? "Jogador")}
-                      name={comparisonScopes[0]?.label ?? "Jogador"}
+                      color={getSeriesColor(comparisonScopes[0]?.label ?? "Player")}
+                      name={comparisonScopes[0]?.label ?? "Player"}
                     />
                   ) : radarComparisonData.length > 0 ? (
                     <RadarComparisonChart
                       data={radarComparisonData}
-                      primaryLabel={comparisonScopes[0]?.label ?? "Jogador A"}
-                      secondaryLabel={comparisonScopes[1]?.label ?? "Jogador B"}
-                      primaryColor={getSeriesColor(comparisonScopes[0]?.label ?? "Jogador A")}
-                      secondaryColor={getSeriesColor(comparisonScopes[1]?.label ?? "Jogador B")}
+                      primaryLabel={comparisonScopes[0]?.label ?? "Player A"}
+                      secondaryLabel={comparisonScopes[1]?.label ?? "Player B"}
+                      primaryColor={getSeriesColor(comparisonScopes[0]?.label ?? "Player A")}
+                      secondaryColor={getSeriesColor(comparisonScopes[1]?.label ?? "Player B")}
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      O radar fica disponivel apenas para um jogador isolado ou para comparacao direta entre dois jogadores.
+                      The radar is available for one player or a direct comparison between two players.
                     </p>
                   )}
                 </CardContent>
@@ -212,7 +212,7 @@ export default async function ComparisonTotalPage({
               <CardHeader>
                 <CardTitle>Charts Ocultos</CardTitle>
                 <CardDescription>
-                  Selecione ate 3 jogadores para visualizar graficos comparativos.
+                  Select up to three players to view comparison charts.
                 </CardDescription>
               </CardHeader>
             </Card>

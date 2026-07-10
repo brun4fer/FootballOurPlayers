@@ -49,7 +49,7 @@ export function getMatchSearchValues(match: {
     match.opponentTeamName,
     match.date,
     match.matchdayNumber,
-    `Jornada ${match.matchdayNumber ?? ""}`,
+    `Matchday ${match.matchdayNumber ?? ""}`,
     `Jogo ${match.matchdayNumber ?? ""}`,
     `Feirense x ${match.opponentTeamName ?? ""}`,
   ];
@@ -59,10 +59,10 @@ export function formatMatchLabel(match: {
   matchdayNumber?: number | string;
   opponentTeamName?: string;
 }) {
-  return `Jornada ${match.matchdayNumber ?? "-"} x ${match.opponentTeamName ?? "-"}`;
+  return `Matchday ${match.matchdayNumber ?? "-"} x ${match.opponentTeamName ?? "-"}`;
 }
 
-export function describeList(values: string[], fallback = "Todos", limit = 4) {
+export function describeList(values: string[], fallback = "All", limit = 4) {
   const cleanValues = values.map((value) => value.trim()).filter(Boolean);
 
   if (cleanValues.length === 0) {

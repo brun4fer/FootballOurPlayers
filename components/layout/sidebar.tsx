@@ -8,38 +8,38 @@ import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/app-config";
 
 const links = [
-  { href: "/", label: "Início", icon: Home },
+  { href: "/", label: "Home", icon: Home },
   {
     href: "/players",
-    label: "Análise de Jogadores",
+    label: "Player Analysis",
     icon: BarChart3,
     children: [
-      { href: "/players/total-competition", label: "Totais por Competição" },
-      { href: "/players/total-all-matchdays", label: "Totais (Todas as Jornadas)" },
-      { href: "/players/single-matchday", label: "Por Jornada" },
-      { href: "/players/evolution", label: "Evolução" },
-      { href: "/players/comparison-matchdays", label: "Comparação por Jornada" },
-      { href: "/players/comparison-total", label: "Comparação Geral" },
-      { href: "/players/action-profile", label: "Perfil de Ações" },
+      { href: "/players/total-competition", label: "Competition Totals" },
+      { href: "/players/total-all-matchdays", label: "Totals (All Matchdays)" },
+      { href: "/players/single-matchday", label: "By Matchday" },
+      { href: "/players/evolution", label: "Evolution" },
+      { href: "/players/comparison-matchdays", label: "Matchday Comparison" },
+      { href: "/players/comparison-total", label: "Overall Comparison" },
+      { href: "/players/action-profile", label: "Action Profile" },
     ],
   },
   {
     href: "/teams",
-    label: "Análise de Equipas",
+    label: "Team Analysis",
     icon: BarChart3,
     children: [
-      { href: "/teams/total-all-matchdays", label: "Totais (Todas as Jornadas)" },
-      { href: "/teams/single-matchday", label: "Por Jornada" },
-      { href: "/teams/evolution", label: "Evolução" },
+      { href: "/teams/total-all-matchdays", label: "Totals (All Matchdays)" },
+      { href: "/teams/single-matchday", label: "By Matchday" },
+      { href: "/teams/evolution", label: "Evolution" },
     ],
   },
-  { href: "/admin", label: "Administração", icon: Shield },
-  { href: "/admin/seasons", label: "Épocas", icon: Database },
-  { href: "/admin/competitions", label: "Competições", icon: Database },
-  { href: "/admin/teams", label: "Equipas", icon: Users },
-  { href: "/admin/players", label: "Jogadores", icon: Users },
-  { href: "/admin/matches", label: "Jogos", icon: ClipboardPen },
-  { href: "/admin/stats", label: "Registar Ações", icon: ClipboardPen },
+  { href: "/admin", label: "Administration", icon: Shield },
+  { href: "/admin/seasons", label: "Seasons", icon: Database },
+  { href: "/admin/competitions", label: "Competitions", icon: Database },
+  { href: "/admin/teams", label: "Teams", icon: Users },
+  { href: "/admin/players", label: "Players", icon: Users },
+  { href: "/admin/matches", label: "Matches", icon: ClipboardPen },
+  { href: "/admin/stats", label: "Enter Statistics", icon: ClipboardPen },
 ];
 
 export function Sidebar() {
@@ -56,7 +56,7 @@ export function Sidebar() {
         />
         <div className="min-w-0">
           <p className="truncate font-semibold tracking-wide text-cyan-300">{APP_NAME}</p>
-          <p className="text-xs text-muted-foreground">Gestão e análise estatística</p>
+          <p className="text-xs text-muted-foreground">Management and performance analysis</p>
         </div>
       </div>
       <nav className="grid grid-cols-2 gap-1 p-2 md:grid-cols-1">

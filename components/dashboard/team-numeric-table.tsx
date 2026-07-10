@@ -11,9 +11,9 @@ export function TeamNumericTable({ rows }: TeamNumericTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Métrica</TableHead>
+            <TableHead>Metric</TableHead>
             <TableHead>Total</TableHead>
-            <TableHead>Por 90</TableHead>
+            <TableHead>Per 90</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

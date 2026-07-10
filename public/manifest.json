@@ -1,6 +1,6 @@
 {
-  "id": "ap-mapa-acoes",
-  "name": "AP - Mapa Ações",
+  "id": "ap-mapa-actions",
+  "name": "AP - Action Map",
   "short_name": "AP",
   "start_url": "/?source=pwa-ap-mapa-acoes",
   "scope": "/",

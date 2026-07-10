@@ -11,34 +11,34 @@ export default async function AdminSeasonsPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Épocas</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Seasons</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Criar Época</CardTitle>
+          <CardTitle>Create Season</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createSeasonAction} className="flex flex-col gap-3 sm:flex-row">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="name">Nome da Época</Label>
+              <Label htmlFor="name">Season Name</Label>
               <Input id="name" name="name" required placeholder="2025/2026" />
             </div>
-            <Button className="sm:mt-7">Guardar</Button>
+            <Button className="sm:mt-7">Save</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Épocas Registadas</CardTitle>
+          <CardTitle>Registered Seasons</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead className="w-[220px]">Ações</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead className="w-[220px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -50,7 +50,7 @@ export default async function AdminSeasonsPage() {
                       <input type="hidden" name="id" value={season.id} />
                       <Input name="name" defaultValue={season.name} minLength={2} required />
                       <Button variant="outline" size="sm">
-                        Atualizar
+                        Update
                       </Button>
                     </form>
                   </TableCell>
@@ -58,7 +58,7 @@ export default async function AdminSeasonsPage() {
                     <form action={deleteSeasonAction}>
                       <input type="hidden" name="id" value={season.id} />
                       <Button variant="danger" size="sm">
-                        Eliminar
+                        Delete
                       </Button>
                     </form>
                   </TableCell>

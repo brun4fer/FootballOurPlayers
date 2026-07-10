@@ -39,13 +39,13 @@ export default async function TeamEvolutionPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Evolucao"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Evolution"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <TeamEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para acompanhar a evolucao da equipa ao longo das jornadas."
+          title="No competitions available"
+          description="Create a competition to track the team across matchdays."
         />
       </AnalyticsPageShell>
     );
@@ -68,12 +68,12 @@ export default async function TeamEvolutionPage({
   if (visibleMatchAggregates.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Evolucao"
-        description="Graficos por jornada com media, tendencia e destaque para melhores e piores momentos da equipa."
+        title="Evolution"
+        description="Charts by matchday with averages, trends, and best and worst periods highlighted."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Equipa", value: "Feirense" },
-          { label: "Jogos", value: searchQuery ? "Sem jogos no filtro atual" : "Sem dados" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Team", value: "Feirense" },
+          { label: "Matches", value: searchQuery ? "No matches in the current filter" : "No data" },
         ]}
         searchQuery={searchQuery}
       >
@@ -83,12 +83,12 @@ export default async function TeamEvolutionPage({
           selectedCompetitionId={baseData.selectedCompetitionId}
           selectedMatchIds={selectedMatchIds}
           matchMode="multiple"
-          description="Selecione varias jornadas para analisar a evolucao temporal da equipa."
+          description="Select several matchdays to analyse the team over time."
           searchQuery={searchQuery}
         />
         <TeamEmptyStateCard
-          title="Sem dados para o filtro atual"
-          description="Ajuste a competicao, a selecao de jornadas ou a pesquisa para gerar os graficos evolutivos."
+          title="No data for the current filter"
+          description="Adjust the competition, matchday selection or search to generate evolution charts."
         />
       </AnalyticsPageShell>
     );
@@ -97,14 +97,14 @@ export default async function TeamEvolutionPage({
   if (visibleMatchAggregates.length < 2) {
     return (
       <AnalyticsPageShell
-        title="Evolucao"
-        description="Graficos por jornada com media, tendencia e destaque para melhores e piores momentos da equipa."
+        title="Evolution"
+        description="Charts by matchday with averages, trends, and best and worst periods highlighted."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Equipa", value: "Feirense" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Team", value: "Feirense" },
           {
-            label: "Jogos",
-            value: describeList(visibleMatchAggregates.map(formatMatchLabel), "Sem jogos"),
+            label: "Matches",
+            value: describeList(visibleMatchAggregates.map(formatMatchLabel), "No matches"),
           },
         ]}
         searchQuery={searchQuery}
@@ -115,12 +115,12 @@ export default async function TeamEvolutionPage({
           selectedCompetitionId={baseData.selectedCompetitionId}
           selectedMatchIds={selectedMatchIds}
           matchMode="multiple"
-          description="Selecione varias jornadas para analisar a evolucao temporal da equipa."
+          description="Select several matchdays to analyse the team over time."
           searchQuery={searchQuery}
         />
         <TeamEmptyStateCard
-          title="Jornadas insuficientes para evolucao"
-          description="Selecione pelo menos duas jornadas, ou deixe a competicao completa para visualizar os graficos evolutivos."
+          title="Not enough matchdays for an evolution view"
+          description="Select at least two matchdays, or use the entire competition, to view evolution charts."
         />
       </AnalyticsPageShell>
     );
@@ -132,14 +132,14 @@ export default async function TeamEvolutionPage({
 
   return (
     <AnalyticsPageShell
-      title="Evolucao"
-      description="Graficos por jornada com media, tendencia e destaque para melhores e piores momentos da equipa."
+      title="Evolution"
+      description="Charts by matchday with averages, trends, and best and worst periods highlighted."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
-        { label: "Equipa", value: "Feirense" },
+        { label: "Competition", value: selectedCompetition?.name },
+        { label: "Team", value: "Feirense" },
         {
-          label: "Jogos",
-          value: describeList(visibleMatchAggregates.map(formatMatchLabel), "Todas as jornadas"),
+          label: "Matches",
+          value: describeList(visibleMatchAggregates.map(formatMatchLabel), "All matchdays"),
         },
       ]}
       searchQuery={searchQuery}
@@ -150,7 +150,7 @@ export default async function TeamEvolutionPage({
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedMatchIds={selectedMatchIds}
         matchMode="multiple"
-        description="Vista de evolucao por jornada. Se nao selecionar jornadas, a pagina usa toda a competicao."
+        description="Matchday evolution view. If no matchdays are selected, the entire competition is used."
         searchQuery={searchQuery}
       />
 
@@ -158,9 +158,9 @@ export default async function TeamEvolutionPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Graficos de Evolucao</CardTitle>
+          <CardTitle>Evolution Charts</CardTitle>
           <CardDescription>
-            Evolucao por jornada do Feirense nas metricas percentuais e acoes nao percentuais.
+            Feirense matchday evolution across percentage and volume metrics.
           </CardDescription>
         </CardHeader>
         <CardContent>

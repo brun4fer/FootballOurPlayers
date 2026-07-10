@@ -26,22 +26,22 @@ const columns: Array<{
   align?: "left" | "right";
   render: (row: ComparisonSummaryRow) => string | number;
 }> = [
-  { key: "label", label: "Jogador", render: (row) => row.label },
+  { key: "label", label: "Player", render: (row) => row.label },
   { key: "shortPassAccuracy", label: "Passe Curto %", render: (row) => `${formatMetric(row.shortPassAccuracy)}%` },
   { key: "longPassAccuracy", label: "Passe Longo %", render: (row) => `${formatMetric(row.longPassAccuracy)}%` },
-  { key: "crossAccuracy", label: "Cruzamentos %", render: (row) => `${formatMetric(row.crossAccuracy)}%` },
+  { key: "crossAccuracy", label: "Crosses %", render: (row) => `${formatMetric(row.crossAccuracy)}%` },
   {
     key: "individualActionAccuracy",
-    label: "Ações Individuais %",
+    label: "Individual Actions %",
     render: (row) => `${formatMetric(row.individualActionAccuracy)}%`,
   },
-  { key: "throwAccuracy", label: "Lançamentos %", render: (row) => `${formatMetric(row.throwAccuracy)}%` },
-  { key: "shotAccuracy", label: "Remates %", render: (row) => `${formatMetric(row.shotAccuracy)}%` },
-  { key: "duelAccuracy", label: "Duelos %", render: (row) => `${formatMetric(row.duelAccuracy)}%` },
-  { key: "goals", label: "Golos", render: (row) => row.goals },
-  { key: "assists", label: "Assistências", render: (row) => row.assists },
-  { key: "recoveries", label: "Recuperações", render: (row) => row.recoveries },
-  { key: "interceptions", label: "Interceções", render: (row) => row.interceptions },
+  { key: "throwAccuracy", label: "Throw-ins %", render: (row) => `${formatMetric(row.throwAccuracy)}%` },
+  { key: "shotAccuracy", label: "Shots %", render: (row) => `${formatMetric(row.shotAccuracy)}%` },
+  { key: "duelAccuracy", label: "Duels %", render: (row) => `${formatMetric(row.duelAccuracy)}%` },
+  { key: "goals", label: "Goals", render: (row) => row.goals },
+  { key: "assists", label: "Assists", render: (row) => row.assists },
+  { key: "recoveries", label: "Recoveries", render: (row) => row.recoveries },
+  { key: "interceptions", label: "Interceptions", render: (row) => row.interceptions },
   { key: "minutesPlayed", label: "Minutos", render: (row) => row.minutesPlayed },
 ];
 
@@ -59,8 +59,8 @@ function isNumericSortKey(key: SortKey): key is Exclude<SortKey, "label"> {
 
 export function PlayerComparisonSummaryTable({
   rows,
-  title = "Classificação de Comparação",
-  description = "Tabela ordenável para comparar percentagens e volume com melhor leitura em listas grandes.",
+  title = "Comparison Ranking",
+  description = "Sortable table for comparing percentages and volume in large lists.",
 }: {
   rows: ComparisonSummaryRow[];
   title?: string;

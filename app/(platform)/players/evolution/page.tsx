@@ -38,13 +38,13 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Evolucao"
-        filters={[{ label: "Competicao", value: "Sem competicoes disponiveis" }]}
+        title="Evolution"
+        filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
         <PlayerEmptyStateCard
-          title="Sem competicoes disponiveis"
-          description="Crie uma competicao para acompanhar a evolucao do jogador ao longo das jornadas."
+          title="No competitions available"
+          description="Create a competition to track player performance across matchdays."
         />
       </AnalyticsPageShell>
     );
@@ -62,11 +62,11 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!selectedPlayerId) {
     return (
       <AnalyticsPageShell
-        title="Evolucao"
-        description="Vista de linhas por jornada para um unico jogador."
+        title="Evolution"
+        description="Line-chart view by matchday for a single player."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Jogador", value: "Sem jogadores disponiveis" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Player", value: "No players available" },
         ]}
         searchQuery={searchQuery}
       >
@@ -75,12 +75,12 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
           players={baseData.playerOptions}
           selectedCompetitionId={baseData.selectedCompetitionId}
           playerMode="single"
-          description="Vista de linhas por jornada para um unico jogador."
+          description="Line-chart view by matchday for a single player."
           searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem jogadores disponiveis"
-          description="Associe jogadores a esta competicao para consultar a evolucao."
+          title="No players available"
+          description="Assign players to this competition to view their evolution."
         />
       </AnalyticsPageShell>
     );
@@ -106,13 +106,13 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (visibleOutfieldRows.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Evolucao"
-        description="Graficos em linha para acompanhar a variacao da performance por jornada."
+        title="Evolution"
+        description="Line charts tracking performance changes by matchday."
         filters={[
-          { label: "Competicao", value: selectedCompetition?.name },
-          { label: "Jogador", value: player?.name },
-          { label: "Equipa", value: player?.teamName },
-          { label: "Jogos", value: searchQuery ? "Sem jogos no filtro atual" : "Sem dados" },
+          { label: "Competition", value: selectedCompetition?.name },
+          { label: "Player", value: player?.name },
+          { label: "Team", value: player?.teamName },
+          { label: "Matches", value: searchQuery ? "No matches in the current filter" : "No data" },
         ]}
         searchQuery={searchQuery}
       >
@@ -122,12 +122,12 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
           selectedCompetitionId={baseData.selectedCompetitionId}
           selectedPlayerId={selectedPlayerId}
           playerMode="single"
-          description="Vista de linhas por jornada para um unico jogador."
+          description="Line-chart view by matchday for a single player."
           searchQuery={searchQuery}
         />
         <PlayerEmptyStateCard
-          title="Sem dados para o jogador selecionado"
-          description="Nao existem jornadas suficientes com registo para apresentar a evolucao."
+          title="No data for the selected player"
+          description="There are not enough recorded matchdays to display an evolution."
         />
       </AnalyticsPageShell>
     );
@@ -142,7 +142,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     {
       playerId: selectedPlayerId,
       dataKey: `player_${selectedPlayerId}`,
-      label: player?.name ?? `Jogador ${selectedPlayerId}`,
+      label: player?.name ?? `Player ${selectedPlayerId}`,
       color: getSeriesColor(player?.name ?? selectedPlayerId),
     },
   ];
@@ -155,15 +155,15 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
   return (
     <AnalyticsPageShell
-      title="Evolucao"
-      description="Graficos em linha para acompanhar a variacao da performance por jornada."
+      title="Evolution"
+      description="Line charts tracking performance changes by matchday."
       filters={[
-        { label: "Competicao", value: selectedCompetition?.name },
-        { label: "Jogador", value: player?.name },
-        { label: "Equipa", value: player?.teamName },
+        { label: "Competition", value: selectedCompetition?.name },
+        { label: "Player", value: player?.name },
+        { label: "Team", value: player?.teamName },
         {
-          label: "Jogos",
-          value: describeList(visibleOutfieldRows.map(formatMatchLabel), "Todas as jornadas"),
+          label: "Matches",
+          value: describeList(visibleOutfieldRows.map(formatMatchLabel), "All matchdays"),
         },
       ]}
       searchQuery={searchQuery}
@@ -174,7 +174,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
         selectedCompetitionId={baseData.selectedCompetitionId}
         selectedPlayerId={selectedPlayerId}
         playerMode="single"
-        description="Esta vista aceita apenas um jogador e utiliza todas as jornadas da competicao."
+        description="This view supports one player and uses all competition matchdays."
         searchQuery={searchQuery}
       />
 
@@ -182,9 +182,9 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Graficos de Evolucao</CardTitle>
+          <CardTitle>Evolution Charts</CardTitle>
           <CardDescription>
-            {player?.name ?? "Jogador"} jornada a jornada, com media, tendencia e consistencia.
+            {player?.name ?? "Player"} matchday by matchday, with averages, trends and consistency.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -198,16 +198,16 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Registo por Jornada</CardTitle>
+          <CardTitle>Matchday Record</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Jornada</TableHead>
-                <TableHead>Adversario</TableHead>
+                <TableHead>Matchday</TableHead>
+                <TableHead>Opponent</TableHead>
                 <TableHead>Minutos</TableHead>
-                <TableHead>Golos</TableHead>
+                <TableHead>Goals</TableHead>
                 <TableHead>Assistencias</TableHead>
                 <TableHead>Recuperacoes</TableHead>
                 <TableHead>Intercecoes</TableHead>

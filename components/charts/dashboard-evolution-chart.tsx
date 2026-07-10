@@ -30,7 +30,7 @@ export function DashboardEvolutionChart({ data }: { data: DashboardEvolutionPoin
           <YAxis stroke="rgba(148,163,184,0.8)" />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="remates" stroke="#22d3ee" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="shots" stroke="#22d3ee" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="goals" stroke="#00e7ff" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="assists" stroke="#ff2ea6" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="dribbles" stroke="#f97316" strokeWidth={2} dot={false} />

@@ -22,7 +22,7 @@ export function ImageUploadPreview({
   const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImageUrl ?? null);
 
   const fallbackText = useMemo(
-    () => (defaultImageUrl ? "Imagem atual" : "Sem imagem"),
+    () => (defaultImageUrl ? "Image current" : "No image"),
     [defaultImageUrl],
   );
 

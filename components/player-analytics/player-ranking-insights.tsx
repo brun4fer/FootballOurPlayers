@@ -17,12 +17,12 @@ export function PlayerRankingInsights({ rows }: { rows: ComparisonSummaryRow[] }
           <Card key={metric.key}>
             <CardHeader>
               <CardTitle>{metric.label}</CardTitle>
-              <CardDescription>5 melhores e 5 piores para leitura rápida.</CardDescription>
+              <CardDescription>Top five and bottom five at a glance.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-300">
-                  5 melhores
+                  Top five
                 </p>
                 <div className="space-y-2">
                   {topRows.map((row, index) => (
@@ -43,7 +43,7 @@ export function PlayerRankingInsights({ rows }: { rows: ComparisonSummaryRow[] }
 
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-secondary">
-                  5 piores
+                  Bottom five
                 </p>
                 <div className="space-y-2">
                   {bottomRows.map((row, index) => (

@@ -17,23 +17,23 @@ export default async function AdminMatchesPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Jogos</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Matches</h1>
 
         <Card>
           <CardHeader>
-          <CardTitle>Criar Jogo</CardTitle>
+          <CardTitle>Create Jogo</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={createMatchAction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <div className="space-y-2">
-              <Label htmlFor="matchdayNumber">Número da Jornada</Label>
+              <Label htmlFor="matchdayNumber">Matchday Number</Label>
               <Input id="matchdayNumber" name="matchdayNumber" type="number" min={1} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="competitionId">Competição</Label>
+              <Label htmlFor="competitionId">Competition</Label>
               <NativeSelect id="competitionId" name="competitionId" required defaultValue="">
                 <option value="" disabled>
-                  Selecionar competição
+                  Select competition
                 </option>
                 {competitionList.map((competition) => (
                   <option key={competition.id} value={competition.id}>
@@ -43,10 +43,10 @@ export default async function AdminMatchesPage() {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="opponentTeamId">Equipa Adversária</Label>
+              <Label htmlFor="opponentTeamId">Team Opponent</Label>
               <NativeSelect id="opponentTeamId" name="opponentTeamId" required defaultValue="">
                 <option value="" disabled>
-                  Selecionar adversário
+                  Select opponent
                 </option>
                 {opponentOptions.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -66,14 +66,14 @@ export default async function AdminMatchesPage() {
               <Label htmlFor="date">Data</Label>
               <Input id="date" name="date" type="date" required />
             </div>
-            <Button className="sm:col-span-2 xl:col-span-5">Guardar Jogo</Button>
+            <Button className="sm:col-span-2 xl:col-span-5">Save Jogo</Button>
           </form>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Jogos</CardTitle>
+          <CardTitle>Match List</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -81,10 +81,10 @@ export default async function AdminMatchesPage() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Jogo</TableHead>
-                <TableHead>Competição</TableHead>
-                <TableHead>Época</TableHead>
+                <TableHead>Competition</TableHead>
+                <TableHead>Season</TableHead>
                 <TableHead>Data</TableHead>
-                <TableHead className="w-[320px]">Ações</TableHead>
+                <TableHead className="w-[320px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,13 +134,13 @@ export default async function AdminMatchesPage() {
                         </NativeSelect>
                         <Input name="date" type="date" defaultValue={match.date} required />
                         <Button variant="outline" size="sm">
-                          Atualizar
+                          Update
                         </Button>
                       </form>
                       <form action={deleteMatchAction}>
                         <input type="hidden" name="id" value={match.id} />
                         <Button variant="danger" size="sm">
-                          Eliminar
+                          Delete
                         </Button>
                       </form>
                     </div>

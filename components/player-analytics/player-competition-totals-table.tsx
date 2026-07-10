@@ -31,21 +31,21 @@ export function PlayerCompetitionTotalsTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Jogador</TableHead>
-            <TableHead>Equipa</TableHead>
+            <TableHead>Player</TableHead>
+            <TableHead>Team</TableHead>
             <TableHead>PC Certos</TableHead>
             <TableHead>PC Falhados</TableHead>
             <TableHead>PL Certos</TableHead>
             <TableHead>PL Falhados</TableHead>
             <TableHead>Cruz. Certos</TableHead>
             <TableHead>Cruz. Falhados</TableHead>
-            <TableHead>Ações Individuais Certas</TableHead>
-            <TableHead>Ações Individuais Falhadas</TableHead>
-            <TableHead>Remates Baliza</TableHead>
-            <TableHead>Remates Fora</TableHead>
-            <TableHead>Recuperações</TableHead>
-            <TableHead>Interceções</TableHead>
-            <TableHead>Cartões</TableHead>
+            <TableHead>Individual Actions Certas</TableHead>
+            <TableHead>Individual Actions Falhadas</TableHead>
+            <TableHead>Shots Baliza</TableHead>
+            <TableHead>Shots Fora</TableHead>
+            <TableHead>Recoveries</TableHead>
+            <TableHead>Interceptions</TableHead>
+            <TableHead>Cards</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -74,7 +74,7 @@ export function PlayerCompetitionTotalsTable({
           ) : (
             <TableRow>
               <TableCell colSpan={15} className="py-8 text-center text-sm text-muted-foreground">
-                Sem jogadores para os filtros selecionados.
+                No players match the selected filters.
               </TableCell>
             </TableRow>
           )}

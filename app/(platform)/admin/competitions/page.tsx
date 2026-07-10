@@ -23,24 +23,24 @@ export default async function AdminCompetitionsPage() {
 
   return (
     <section className="space-y-6">
-      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Competições</h1>
+      <h1 className="font-[var(--font-heading)] text-2xl font-semibold">Competitions</h1>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Criar Competição</CardTitle>
+            <CardTitle>Create Competition</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={createCompetitionAction} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="name">Nome da Competição</Label>
+                <Label htmlFor="name">Competition Name</Label>
                 <Input id="name" name="name" required placeholder="Primeira Liga" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="seasonId">Época</Label>
+                <Label htmlFor="seasonId">Season</Label>
                 <NativeSelect id="seasonId" name="seasonId" required defaultValue="">
                   <option value="" disabled>
-                    Selecionar época
+                    Select season
                   </option>
                   {seasons.map((season) => (
                     <option key={season.id} value={season.id}>
@@ -49,22 +49,22 @@ export default async function AdminCompetitionsPage() {
                   ))}
                 </NativeSelect>
               </div>
-              <Button className="w-full">Guardar Competição</Button>
+              <Button className="w-full">Save Competition</Button>
             </form>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Associar Equipa à Competição</CardTitle>
+            <CardTitle>Link Team to Competition</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={assignTeamCompetitionAction} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="teamId">Equipa</Label>
+                <Label htmlFor="teamId">Team</Label>
                 <NativeSelect id="teamId" name="teamId" required defaultValue="">
                   <option value="" disabled>
-                    Selecionar equipa
+                    Select team
                   </option>
                   {teamList.map((team) => (
                     <option key={team.id} value={team.id}>
@@ -74,10 +74,10 @@ export default async function AdminCompetitionsPage() {
                 </NativeSelect>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="competitionId">Competição</Label>
+                <Label htmlFor="competitionId">Competition</Label>
                 <NativeSelect id="competitionId" name="competitionId" required defaultValue="">
                   <option value="" disabled>
-                    Selecionar competição
+                    Select competition
                   </option>
                   {competitionList.map((competition) => (
                     <option key={competition.id} value={competition.id}>
@@ -86,7 +86,7 @@ export default async function AdminCompetitionsPage() {
                   ))}
                 </NativeSelect>
               </div>
-              <Button className="w-full">Guardar Associação</Button>
+              <Button className="w-full">Save Associaction</Button>
             </form>
           </CardContent>
         </Card>
@@ -94,16 +94,16 @@ export default async function AdminCompetitionsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Competições</CardTitle>
+          <CardTitle>Competition List</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>Época</TableHead>
-                <TableHead className="w-[220px]">Ações</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Season</TableHead>
+                <TableHead className="w-[220px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -122,7 +122,7 @@ export default async function AdminCompetitionsPage() {
                         ))}
                       </NativeSelect>
                       <Button variant="outline" size="sm">
-                        Atualizar
+                        Update
                       </Button>
                     </form>
                   </TableCell>
@@ -131,7 +131,7 @@ export default async function AdminCompetitionsPage() {
                     <form action={deleteCompetitionAction}>
                       <input type="hidden" name="id" value={competition.id} />
                       <Button variant="danger" size="sm">
-                        Eliminar
+                        Delete
                       </Button>
                     </form>
                   </TableCell>
@@ -144,16 +144,16 @@ export default async function AdminCompetitionsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Associações Equipa-Competição</CardTitle>
+          <CardTitle>Associactions Team-Competition</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Equipa</TableHead>
-                <TableHead>Competição</TableHead>
-                <TableHead>Época</TableHead>
-                <TableHead className="w-[110px]">Ações</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead>Competition</TableHead>
+                <TableHead>Season</TableHead>
+                <TableHead className="w-[110px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -166,7 +166,7 @@ export default async function AdminCompetitionsPage() {
                     <form action={removeTeamCompetitionAction}>
                       <input type="hidden" name="id" value={link.id} />
                       <Button variant="danger" size="sm">
-                        Eliminar
+                        Delete
                       </Button>
                     </form>
                   </TableCell>

@@ -25,11 +25,11 @@ type AnalyticsPageShellProps = {
 
 function renderFilterValue(value: AnalyticsFilterItem["value"]) {
   if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(", ") : "Todos";
+    return value.length > 0 ? value.join(", ") : "All";
   }
 
   if (value === undefined || value === null || value === "") {
-    return "Todos";
+    return "All";
   }
 
   return String(value);
@@ -44,7 +44,7 @@ function buildPdfFilename(value: string) {
     .toLowerCase();
   const stamp = new Date().toISOString().slice(0, 10);
 
-  return `${base || "estatisticas"}-${stamp}.pdf`;
+  return `${base || "statistics"}-${stamp}.pdf`;
 }
 
 function waitForPaint() {
@@ -60,7 +60,7 @@ export function AnalyticsPageShell({
   description,
   filters = [],
   searchQuery = "",
-  searchPlaceholder = "Pesquisar por jogador, equipa, jornada, jogo ou metrica",
+  searchPlaceholder = "Search per player, team, matchday, match or metric",
   exportFileName,
   children,
 }: AnalyticsPageShellProps) {
@@ -165,7 +165,7 @@ export function AnalyticsPageShell({
       setExportError(
         error instanceof Error
           ? error.message
-          : "Nao foi possivel gerar o PDF. Tente novamente.",
+          : "The PDF could not be generated. Please try again.",
       );
     } finally {
       setIsExporting(false);
@@ -222,7 +222,7 @@ export function AnalyticsPageShell({
               onChange={(event) => setSearchValue(event.target.value)}
               className="pl-9"
               placeholder={searchPlaceholder}
-              aria-label="Pesquisar estatisticas"
+              aria-label="Search statistics"
             />
           </div>
           <div className="flex gap-2">
@@ -235,7 +235,7 @@ export function AnalyticsPageShell({
                 type="button"
                 variant="outline"
                 size="icon"
-                aria-label="Limpar pesquisa"
+                aria-label="Clear search"
                 onClick={() => {
                   setSearchValue("");
                   updateSearch("");
@@ -261,7 +261,7 @@ export function AnalyticsPageShell({
               ) : null}
             </div>
             <p className="text-xs text-muted-foreground">
-              Gerado em {new Date().toLocaleDateString("pt-PT")}
+              Generated on {new Date().toLocaleDateString("en-GB")}
             </p>
           </div>
 
