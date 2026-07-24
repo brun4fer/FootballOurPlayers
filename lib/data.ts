@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
+import { getWorkspaceId } from "@/lib/auth";
 import {
   competitions,
   goalkeeperMatchStats,
@@ -14,20 +15,6 @@ import {
   teams,
 } from "@/db/schema";
 
-const ANALYZED_TEAM_NAME = "Feirense";
-const ANALYZED_TEAM_ALIASES = ["Feirense", "CD Feirense", "C.D. Feirense"];
-
-function normalizeTeamName(name: string) {
-  return name
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/gi, "")
-    .toLowerCase();
-}
-
-const analyzedTeamNames = new Set(ANALYZED_TEAM_ALIASES.map(normalizeTeamName));
-
 export type PublicReportFilters = {
   competitionId?: number;
   playerId?: number;
@@ -39,24 +26,27 @@ export type PublicReportFilters = {
   selectedMatchdays?: number[];
 };
 
-function isAnalyzedTeam(name: string) {
-  return analyzedTeamNames.has(normalizeTeamName(name));
-}
-
-async function getAnalyzedTeamIds() {
-  const rows = await db.select({ id: teams.id, name: teams.name }).from(teams);
-  return Array.from(new Set(rows.filter((row) => isAnalyzedTeam(row.name)).map((row) => row.id)));
+export async function getAnalyzedTeamIds() {
+  const workspaceId = await getWorkspaceId();
+  const rows = await db
+    .selectDistinct({ id: teams.id })
+    .from(teams)
+    .innerJoin(players, eq(players.teamId, teams.id))
+    .where(eq(teams.workspaceId, workspaceId));
+  return rows.map((row) => row.id);
 }
 
 async function getCompetitionAnalyzedTeamIds(competitionId: number) {
+  const workspaceId = await getWorkspaceId();
   const rows = await db
     .select({ id: teams.id, name: teams.name })
     .from(teamCompetitions)
     .innerJoin(teams, eq(teamCompetitions.teamId, teams.id))
-    .where(eq(teamCompetitions.competitionId, competitionId))
+    .innerJoin(players, eq(players.teamId, teams.id))
+    .where(and(eq(teamCompetitions.competitionId, competitionId), eq(teams.workspaceId, workspaceId)))
     .orderBy(asc(teams.name));
 
-  return Array.from(new Set(rows.filter((row) => isAnalyzedTeam(row.name)).map((row) => row.id)));
+  return Array.from(new Set(rows.map((row) => row.id)));
 }
 
 async function getScopedAnalyzedTeamIds(competitionId?: number) {
@@ -77,16 +67,19 @@ export function formatMatchLabel(match: {
   matchdayNumber: number;
   homeAway: "home" | "away";
 }) {
-  return `Feirense x ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+  return `Equipa x ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {
+  const workspaceId = await getWorkspaceId();
   return db.query.seasons.findMany({
+    where: (table, { eq }) => eq(table.workspaceId, workspaceId),
     orderBy: (table, { desc }) => [desc(table.id)],
   });
 }
 
 export async function getCompetitions() {
+  const workspaceId = await getWorkspaceId();
   return db
     .select({
       id: competitions.id,
@@ -96,16 +89,20 @@ export async function getCompetitions() {
     })
     .from(competitions)
     .innerJoin(seasons, eq(competitions.seasonId, seasons.id))
+    .where(eq(competitions.workspaceId, workspaceId))
     .orderBy(desc(competitions.id));
 }
 
 export async function getTeams() {
+  const workspaceId = await getWorkspaceId();
   return db.query.teams.findMany({
+    where: (table, { eq }) => eq(table.workspaceId, workspaceId),
     orderBy: (table, { asc }) => [asc(table.name)],
   });
 }
 
 export async function getTeamCompetitionLinks() {
+  const workspaceId = await getWorkspaceId();
   return db
     .select({
       id: teamCompetitions.id,
@@ -117,10 +114,12 @@ export async function getTeamCompetitionLinks() {
     .innerJoin(teams, eq(teamCompetitions.teamId, teams.id))
     .innerJoin(competitions, eq(teamCompetitions.competitionId, competitions.id))
     .innerJoin(seasons, eq(competitions.seasonId, seasons.id))
+    .where(eq(teams.workspaceId, workspaceId))
     .orderBy(desc(teamCompetitions.id));
 }
 
 export async function getPlayers() {
+  const workspaceId = await getWorkspaceId();
   return db
     .select({
       id: players.id,
@@ -139,10 +138,12 @@ export async function getPlayers() {
     })
     .from(players)
     .innerJoin(teams, eq(players.teamId, teams.id))
+    .where(eq(teams.workspaceId, workspaceId))
     .orderBy(asc(players.name));
 }
 
 export async function getMatches() {
+  const workspaceId = await getWorkspaceId();
   return db
     .select({
       id: matches.id,
@@ -159,11 +160,14 @@ export async function getMatches() {
     .innerJoin(competitions, eq(matches.competitionId, competitions.id))
     .innerJoin(seasons, eq(competitions.seasonId, seasons.id))
     .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
+    .where(eq(competitions.workspaceId, workspaceId))
     .orderBy(desc(matches.date), desc(matches.id));
 }
 
 export async function getCompetitionOptions() {
+  const workspaceId = await getWorkspaceId();
   return db.query.competitions.findMany({
+    where: (table, { eq }) => eq(table.workspaceId, workspaceId),
     orderBy: (table, { asc }) => [asc(table.name)],
   });
 }
@@ -172,15 +176,17 @@ export async function getTeamOptionsByCompetition(competitionId?: number) {
   if (!competitionId) {
     return [] as Array<{ id: number; name: string }>;
   }
+  const workspaceId = await getWorkspaceId();
 
   const options = await db
     .select({ id: teams.id, name: teams.name })
     .from(teamCompetitions)
     .innerJoin(teams, eq(teamCompetitions.teamId, teams.id))
-    .where(eq(teamCompetitions.competitionId, competitionId))
+    .where(and(eq(teamCompetitions.competitionId, competitionId), eq(teams.workspaceId, workspaceId)))
     .orderBy(asc(teams.name));
 
-  const analyzedOptions = options.filter((team) => isAnalyzedTeam(team.name));
+  const analyzedIds = new Set(await getAnalyzedTeamIds());
+  const analyzedOptions = options.filter((team) => analyzedIds.has(team.id));
   return analyzedOptions.length ? analyzedOptions : options;
 }
 
@@ -194,6 +200,7 @@ export async function getMatchOptionsByCompetition(competitionId?: number) {
       date: string;
     }>;
   }
+  const workspaceId = await getWorkspaceId();
 
   return db
     .select({
@@ -205,7 +212,8 @@ export async function getMatchOptionsByCompetition(competitionId?: number) {
     })
     .from(matches)
     .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
-    .where(eq(matches.competitionId, competitionId))
+    .innerJoin(competitions, eq(matches.competitionId, competitions.id))
+    .where(and(eq(matches.competitionId, competitionId), eq(competitions.workspaceId, workspaceId)))
     .orderBy(asc(matches.matchdayNumber), asc(matches.date));
 }
 
@@ -217,6 +225,7 @@ export async function getPlayerOptionsByTeam(teamId?: number) {
       isGoalkeeper: boolean;
     }>;
   }
+  const workspaceId = await getWorkspaceId();
 
   return db
     .select({
@@ -225,7 +234,8 @@ export async function getPlayerOptionsByTeam(teamId?: number) {
       isGoalkeeper: players.isGoalkeeper,
     })
     .from(players)
-    .where(eq(players.teamId, teamId))
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .where(and(eq(players.teamId, teamId), eq(teams.workspaceId, workspaceId)))
     .orderBy(asc(players.name));
 }
 
@@ -747,9 +757,11 @@ export async function getCompetitionTeamTotals(competitionId?: number, matchIds?
 
 export async function createPublicReport(filters: PublicReportFilters) {
   const id = crypto.randomUUID();
+  const workspaceId = await getWorkspaceId();
 
   await db.insert(publicReports).values({
     id,
+    workspaceId,
     filters,
   });
 

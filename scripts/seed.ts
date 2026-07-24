@@ -11,9 +11,15 @@ import {
   teamCompetitions,
   teamMatchStats,
   teams,
+  workspaces,
 } from "../db/schema";
 
 async function seed() {
+  const [workspace] = await db
+    .insert(workspaces)
+    .values({ name: "Seed workspace", slug: "seed" })
+    .onConflictDoUpdate({ target: workspaces.slug, set: { name: "Seed workspace" } })
+    .returning({ id: workspaces.id });
   await db.delete(teamMatchStats);
   await db.delete(goalkeeperMatchStats);
   await db.delete(playerMatchStats);
@@ -26,7 +32,7 @@ async function seed() {
 
   const [season] = await db
     .insert(seasons)
-    .values({ name: "2025/2026" })
+    .values({ name: "2025/2026", workspaceId: workspace.id })
     .returning({ id: seasons.id });
 
   const insertedCompetitions = await db
@@ -34,7 +40,7 @@ async function seed() {
     .values([
       { name: "Primeira Liga", seasonId: season.id },
       { name: "Taça de Portugal", seasonId: season.id },
-    ])
+    ].map((competition) => ({ ...competition, workspaceId: workspace.id })))
     .returning({ id: competitions.id, name: competitions.name });
 
   const primeiraLiga = insertedCompetitions.find((item) => item.name === "Primeira Liga");
@@ -45,10 +51,10 @@ async function seed() {
   const insertedTeams = await db
     .insert(teams)
     .values([
-      { name: "Feirense" },
-      { name: "SL Benfica" },
-      { name: "FC Porto" },
-      { name: "Sporting CP" },
+      { name: "Feirense", workspaceId: workspace.id },
+      { name: "SL Benfica", workspaceId: workspace.id },
+      { name: "FC Porto", workspaceId: workspace.id },
+      { name: "Sporting CP", workspaceId: workspace.id },
     ])
     .returning({ id: teams.id, name: teams.name });
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -16,6 +16,39 @@ import {
   teams,
 } from "@/db/schema";
 import { parseGoalkeeperStats, parseOutfieldStats } from "@/lib/validators";
+import { getWorkspaceId } from "@/lib/auth";
+
+async function requireOwnedTeam(id: number) {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ id: teams.id }).from(teams)
+    .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
+  if (!row[0]) throw new Error("Invalid team.");
+  return workspaceId;
+}
+
+async function requireOwnedCompetition(id: number) {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ id: competitions.id }).from(competitions)
+    .where(and(eq(competitions.id, id), eq(competitions.workspaceId, workspaceId))).limit(1);
+  if (!row[0]) throw new Error("Invalid competition.");
+  return workspaceId;
+}
+
+async function requireOwnedPlayer(id: number) {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ id: players.id }).from(players)
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .where(and(eq(players.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
+  if (!row[0]) throw new Error("Invalid player.");
+}
+
+async function requireOwnedMatch(id: number) {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ id: matches.id }).from(matches)
+    .innerJoin(competitions, eq(matches.competitionId, competitions.id))
+    .where(and(eq(matches.id, id), eq(competitions.workspaceId, workspaceId))).limit(1);
+  if (!row[0]) throw new Error("Invalid match.");
+}
 
 function optionalText(value: FormDataEntryValue | null, max = 255) {
   if (!value) {
@@ -64,29 +97,32 @@ function toRequiredId(value: FormDataEntryValue | null) {
 }
 
 export async function createSeasonAction(formData: FormData) {
+  const workspaceId = await getWorkspaceId();
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The season name must be at least 2 characters long.");
   }
 
-  await db.insert(seasons).values({ name }).onConflictDoNothing();
+  await db.insert(seasons).values({ name, workspaceId }).onConflictDoNothing();
   revalidatePath("/admin/seasons");
 }
 
 export async function updateSeasonAction(formData: FormData) {
+  const workspaceId = await getWorkspaceId();
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The season name must be at least 2 characters long.");
   }
 
-  await db.update(seasons).set({ name }).where(eq(seasons.id, id));
+  await db.update(seasons).set({ name }).where(and(eq(seasons.id, id), eq(seasons.workspaceId, workspaceId)));
   revalidatePath("/admin/seasons");
 }
 
 export async function deleteSeasonAction(formData: FormData) {
+  const workspaceId = await getWorkspaceId();
   const id = toRequiredId(formData.get("id"));
-  await db.delete(seasons).where(eq(seasons.id, id));
+  await db.delete(seasons).where(and(eq(seasons.id, id), eq(seasons.workspaceId, workspaceId)));
   revalidatePath("/admin/seasons");
   revalidatePath("/admin/competitions");
   revalidatePath("/admin/matches");
@@ -96,6 +132,10 @@ export async function deleteSeasonAction(formData: FormData) {
 export async function createCompetitionAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 120);
   const seasonId = toRequiredId(formData.get("seasonId"));
+  const workspaceId = await getWorkspaceId();
+  const ownedSeason = await db.select({ id: seasons.id }).from(seasons)
+    .where(and(eq(seasons.id, seasonId), eq(seasons.workspaceId, workspaceId))).limit(1);
+  if (!ownedSeason[0]) throw new Error("Invalid season.");
   if (!name || name.length < 2) {
     throw new Error("The competition name must be at least 2 characters long.");
   }
@@ -105,6 +145,7 @@ export async function createCompetitionAction(formData: FormData) {
     .values({
       name,
       seasonId,
+      workspaceId,
     })
     .onConflictDoNothing();
 
@@ -116,6 +157,10 @@ export async function updateCompetitionAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 120);
   const seasonId = toRequiredId(formData.get("seasonId"));
+  const workspaceId = await requireOwnedCompetition(id);
+  const ownedSeason = await db.select({ id: seasons.id }).from(seasons)
+    .where(and(eq(seasons.id, seasonId), eq(seasons.workspaceId, workspaceId))).limit(1);
+  if (!ownedSeason[0]) throw new Error("Invalid season.");
   if (!name || name.length < 2) {
     throw new Error("The competition name must be at least 2 characters long.");
   }
@@ -126,7 +171,7 @@ export async function updateCompetitionAction(formData: FormData) {
       name,
       seasonId,
     })
-    .where(eq(competitions.id, id));
+    .where(and(eq(competitions.id, id), eq(competitions.workspaceId, workspaceId)));
 
   revalidatePath("/admin/competitions");
   revalidatePath("/admin/matches");
@@ -136,7 +181,8 @@ export async function updateCompetitionAction(formData: FormData) {
 
 export async function deleteCompetitionAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
-  await db.delete(competitions).where(eq(competitions.id, id));
+  const workspaceId = await requireOwnedCompetition(id);
+  await db.delete(competitions).where(and(eq(competitions.id, id), eq(competitions.workspaceId, workspaceId)));
   revalidatePath("/admin/competitions");
   revalidatePath("/admin/matches");
   revalidatePath("/admin/stats");
@@ -144,6 +190,7 @@ export async function deleteCompetitionAction(formData: FormData) {
 }
 
 export async function createTeamAction(formData: FormData) {
+  const workspaceId = await getWorkspaceId();
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The team name must be at least 2 characters long.");
@@ -151,12 +198,13 @@ export async function createTeamAction(formData: FormData) {
 
   const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "O emblema");
 
-  await db.insert(teams).values({ name, emblemUrl }).onConflictDoNothing();
+  await db.insert(teams).values({ name, emblemUrl, workspaceId }).onConflictDoNothing();
   revalidatePath("/admin/teams");
 }
 
 export async function updateTeamAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
+  const workspaceId = await requireOwnedTeam(id);
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The team name must be at least 2 characters long.");
@@ -170,7 +218,7 @@ export async function updateTeamAction(formData: FormData) {
       name,
       emblemUrl,
     })
-    .where(eq(teams.id, id));
+    .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId)));
   revalidatePath("/admin/teams");
   revalidatePath("/admin/players");
   revalidatePath("/admin/stats");
@@ -179,7 +227,8 @@ export async function updateTeamAction(formData: FormData) {
 
 export async function deleteTeamAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
-  await db.delete(teams).where(eq(teams.id, id));
+  const workspaceId = await requireOwnedTeam(id);
+  await db.delete(teams).where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId)));
   revalidatePath("/admin/teams");
   revalidatePath("/admin/players");
   revalidatePath("/admin/stats");
@@ -189,6 +238,7 @@ export async function deleteTeamAction(formData: FormData) {
 export async function assignTeamCompetitionAction(formData: FormData) {
   const teamId = toRequiredId(formData.get("teamId"));
   const competitionId = toRequiredId(formData.get("competitionId"));
+  await Promise.all([requireOwnedTeam(teamId), requireOwnedCompetition(competitionId)]);
 
   await db
     .insert(teamCompetitions)
@@ -201,6 +251,11 @@ export async function assignTeamCompetitionAction(formData: FormData) {
 
 export async function removeTeamCompetitionAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
+  const workspaceId = await getWorkspaceId();
+  const ownedLink = await db.select({ id: teamCompetitions.id }).from(teamCompetitions)
+    .innerJoin(teams, eq(teamCompetitions.teamId, teams.id))
+    .where(and(eq(teamCompetitions.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
+  if (!ownedLink[0]) throw new Error("Invalid association.");
   await db.delete(teamCompetitions).where(eq(teamCompetitions.id, id));
   revalidatePath("/admin/teams");
   revalidatePath("/admin/competitions");
@@ -211,6 +266,7 @@ export async function removeTeamCompetitionAction(formData: FormData) {
 export async function createPlayerAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 140);
   const teamId = toRequiredId(formData.get("teamId"));
+  await requireOwnedTeam(teamId);
   if (!name || name.length < 2) {
     throw new Error("The player name must be at least 2 characters long.");
   }
@@ -239,6 +295,7 @@ export async function updatePlayerAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 140);
   const teamId = toRequiredId(formData.get("teamId"));
+  await Promise.all([requireOwnedPlayer(id), requireOwnedTeam(teamId)]);
   if (!name || name.length < 2) {
     throw new Error("The player name must be at least 2 characters long.");
   }
@@ -269,6 +326,7 @@ export async function updatePlayerAction(formData: FormData) {
 
 export async function deletePlayerAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
+  await requireOwnedPlayer(id);
   await db.delete(players).where(eq(players.id, id));
   revalidatePath("/admin/players");
   revalidatePath("/admin/stats");
@@ -297,6 +355,7 @@ export async function createMatchAction(formData: FormData) {
   const matchdayNumber = toRequiredId(formData.get("matchdayNumber"));
   const competitionId = toRequiredId(formData.get("competitionId"));
   const opponentTeamId = toRequiredId(formData.get("opponentTeamId"));
+  await Promise.all([requireOwnedCompetition(competitionId), requireOwnedTeam(opponentTeamId)]);
   const homeAway = toRequiredHomeAway(formData.get("homeAway"));
   const date = toRequiredDateString(formData.get("date"));
 
@@ -315,6 +374,7 @@ export async function updateMatchAction(formData: FormData) {
   const matchdayNumber = toRequiredId(formData.get("matchdayNumber"));
   const competitionId = toRequiredId(formData.get("competitionId"));
   const opponentTeamId = toRequiredId(formData.get("opponentTeamId"));
+  await Promise.all([requireOwnedMatch(id), requireOwnedCompetition(competitionId), requireOwnedTeam(opponentTeamId)]);
   const homeAway = toRequiredHomeAway(formData.get("homeAway"));
   const date = toRequiredDateString(formData.get("date"));
 
@@ -330,6 +390,7 @@ export async function updateMatchAction(formData: FormData) {
 
 export async function deleteMatchAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
+  await requireOwnedMatch(id);
   await db.delete(matches).where(eq(matches.id, id));
   revalidatePath("/admin/matches");
   revalidatePath("/admin/stats");
@@ -341,6 +402,7 @@ export async function upsertPlayerStatsAction(formData: FormData) {
   if (!data.playerId) {
     throw new Error("A player is required.");
   }
+  await Promise.all([requireOwnedPlayer(data.playerId), requireOwnedMatch(data.matchId)]);
 
   await db
     .insert(playerMatchStats)
@@ -416,6 +478,7 @@ export async function upsertPlayerStatsAction(formData: FormData) {
 
 export async function upsertGoalkeeperStatsAction(formData: FormData) {
   const data = parseGoalkeeperStats(formData);
+  await Promise.all([requireOwnedPlayer(data.playerId), requireOwnedMatch(data.matchId)]);
 
   await db
     .insert(goalkeeperMatchStats)
@@ -448,6 +511,7 @@ export async function upsertTeamStatsAction(formData: FormData) {
   if (!data.teamId) {
     throw new Error("A team is required.");
   }
+  await Promise.all([requireOwnedTeam(data.teamId), requireOwnedMatch(data.matchId)]);
 
   await db
     .insert(teamMatchStats)

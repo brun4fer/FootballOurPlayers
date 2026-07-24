@@ -5,15 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatMatchLabel, getCompetitions, getMatches, getTeams } from "@/lib/data";
+import { formatMatchLabel, getAnalyzedTeamIds, getCompetitions, getMatches, getTeams } from "@/lib/data";
 
 export default async function AdminMatchesPage() {
-  const [competitionList, matchList, teamList] = await Promise.all([
+  const [competitionList, matchList, teamList, analyzedTeamIds] = await Promise.all([
     getCompetitions(),
     getMatches(),
     getTeams(),
+    getAnalyzedTeamIds(),
   ]);
-  const opponentOptions = teamList.filter((team) => team.name.trim().toLowerCase() !== "feirense");
+  const analyzedTeamIdSet = new Set(analyzedTeamIds);
+  const opponentOptions = teamList.filter((team) => !analyzedTeamIdSet.has(team.id));
 
   return (
     <section className="space-y-6">

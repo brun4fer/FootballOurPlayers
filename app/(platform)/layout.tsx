@@ -1,14 +1,17 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { APP_NAME } from "@/lib/app-config";
+import { requireUser } from "@/lib/auth";
+import { logoutAction } from "@/actions/auth";
 
 export const dynamic = "force-dynamic";
 
-export default function PlatformLayout({
+export default async function PlatformLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await requireUser({ allowPasswordChange: true });
   return (
     <div className="min-h-screen md:flex">
       <Sidebar />
@@ -26,7 +29,16 @@ export default function PlatformLayout({
               <p className="text-xs text-muted-foreground">Football analytics platform</p>
             </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            <a href="/account" className="text-right text-xs hover:text-cyan-300">
+              <span className="block font-medium">{user.username}</span>
+              <span className="block text-muted-foreground">{user.workspaceName}</span>
+            </a>
+            <ThemeToggle />
+            <form action={logoutAction}>
+              <button className="rounded-md border px-3 py-2 text-xs hover:bg-accent">Sair</button>
+            </form>
+          </div>
         </header>
         <div className="animate-fade-in px-4 py-5 sm:px-6">{children}</div>
       </main>

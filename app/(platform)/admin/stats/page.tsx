@@ -103,7 +103,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
             1. Select competition 2. Select jogo 3. Select player 4. Enter totais
           </CardDescription>
           <p className="text-xs text-muted-foreground">
-            The analysed team is always <strong>Feirense</strong>.
+            Os jogadores apresentados pertencem à equipa analisada deste workspace.
           </p>
           <p className="text-xs text-muted-foreground">
             After changing the competition, click <strong>Load Selection</strong> to update
@@ -153,7 +153,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
                 <option value="">Select player</option>
                 {playerOptions.length === 0 ? (
                   <option value="" disabled>
-                    No Feirense players available
+                    No players available
                   </option>
                 ) : null}
                 {playerOptions.map((player) => (
@@ -173,7 +173,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
           <CardHeader>
             <CardTitle>Team Totals per Match</CardTitle>
             <CardDescription>
-              Feirense totals calculated automatically from the selected match statistics for
+              Totals calculated automatically from the selected match statistics for
               players.
             </CardDescription>
           </CardHeader>

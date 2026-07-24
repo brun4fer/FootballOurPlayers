@@ -56,14 +56,69 @@ const createGoalkeeperStatColumns = () => ({
 
 export const homeAwayEnum = pgEnum("home_away", ["home", "away"]);
 
+export const workspaces = pgTable(
+  "workspaces",
+  {
+    id: serial("id").primaryKey(),
+    name: varchar("name", { length: 120 }).notNull(),
+    slug: varchar("slug", { length: 80 }).notNull(),
+  },
+  (table) => ({
+    slugUnique: uniqueIndex("workspaces_slug_unique").on(table.slug),
+  }),
+);
+
+export const users = pgTable(
+  "users",
+  {
+    id: serial("id").primaryKey(),
+    username: varchar("username", { length: 80 }).notNull(),
+    passwordHash: text("password_hash").notNull(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    mustChangePassword: boolean("must_change_password").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    usernameUnique: uniqueIndex("users_username_unique").on(table.username),
+    workspaceIdx: index("users_workspace_id_idx").on(table.workspaceId),
+  }),
+);
+
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: uuid("id").primaryKey(),
+    tokenHash: varchar("token_hash", { length: 64 }).notNull(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    tokenUnique: uniqueIndex("sessions_token_hash_unique").on(table.tokenHash),
+    userIdx: index("sessions_user_id_idx").on(table.userId),
+    expiresIdx: index("sessions_expires_at_idx").on(table.expiresAt),
+  }),
+);
+
 export const seasons = pgTable(
   "seasons",
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
   },
   (table) => ({
-    nameUnique: uniqueIndex("seasons_name_unique").on(table.name),
+    nameUnique: uniqueIndex("seasons_name_workspace_unique").on(table.name, table.workspaceId),
   }),
 );
 
@@ -75,6 +130,9 @@ export const competitions = pgTable(
     seasonId: integer("season_id")
       .notNull()
       .references(() => seasons.id, { onDelete: "cascade" }),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
   },
   (table) => ({
     seasonIdx: index("competitions_season_id_idx").on(table.seasonId),
@@ -91,9 +149,12 @@ export const teams = pgTable(
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
     emblemUrl: text("emblem_url"),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
   },
   (table) => ({
-    nameUnique: uniqueIndex("teams_name_unique").on(table.name),
+    nameUnique: uniqueIndex("teams_name_workspace_unique").on(table.name, table.workspaceId),
   }),
 );
 
@@ -239,6 +300,9 @@ export const publicReports = pgTable(
   "public_reports",
   {
     id: uuid("id").primaryKey(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
     filters: jsonb("filters").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
@@ -346,6 +410,9 @@ export const teamMatchStatsRelations = relations(teamMatchStats, ({ one }) => ({
 }));
 
 export type Season = typeof seasons.$inferSelect;
+export type Workspace = typeof workspaces.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
 export type Competition = typeof competitions.$inferSelect;
 export type Team = typeof teams.$inferSelect;
 export type TeamCompetition = typeof teamCompetitions.$inferSelect;
