@@ -36,6 +36,27 @@
       "when": 1784908800000,
       "tag": "0004_multi_workspace_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785283200000,
+      "tag": "0005_action_metrics",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785369600000,
+      "tag": "0006_fixed_home_team",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785456000000,
+      "tag": "0007_players_fixed_team",
+      "breakpoints": true
     }
   ]
 }

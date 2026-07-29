@@ -20,8 +20,8 @@ export const COMPARISON_RANKING_METRICS: Array<{
   key: ComparisonRankingMetricKey;
   label: string;
 }> = [
-  { key: "shortPassAccuracy", label: "Passe Curto %" },
-  { key: "longPassAccuracy", label: "Passe Longo %" },
+  { key: "shortPassAccuracy", label: "Short Passes %" },
+  { key: "longPassAccuracy", label: "Long Passes %" },
   { key: "crossAccuracy", label: "Crosses %" },
   { key: "individualActionAccuracy", label: "Individual Actions %" },
   { key: "throwAccuracy", label: "Throw-ins %" },

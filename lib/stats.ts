@@ -54,9 +54,8 @@ export function computeOutfieldPercentages(totals: NumericRecord): PercentageMet
   const passFail = Number(totals.shortPassFail ?? 0) + Number(totals.longPassFail ?? 0);
   const crossSuccess = Number(totals.crossSuccess ?? 0);
   const crossFail = Number(totals.crossFail ?? 0);
-  const duelSuccess =
-    Number(totals.aerialDuelSuccess ?? 0) + Number(totals.defensiveDuelSuccess ?? 0);
-  const duelFail = Number(totals.aerialDuelFail ?? 0) + Number(totals.defensiveDuelFail ?? 0);
+  const duelSuccess = Number(totals.aerialDuelSuccess ?? 0);
+  const duelFail = Number(totals.aerialDuelFail ?? 0);
   const shotsOn = Number(totals.shotsOnTarget ?? 0);
   const shotsOff = Number(totals.shotsOffTarget ?? 0);
 
@@ -103,12 +102,12 @@ export function buildOffensiveDistribution(totals: NumericRecord) {
 export function buildRadarProfile(totals: NumericRecord) {
   const minutes = Number(totals.minutesPlayed ?? 0);
   return [
-    { metric: "Passe", value: per90((totals.shortPassSuccess ?? 0) + (totals.longPassSuccess ?? 0), minutes) },
-    { metric: "Criaction", value: per90((totals.assists ?? 0) + (totals.crossSuccess ?? 0), minutes) },
-    { metric: "Finalizaction", value: per90((totals.goals ?? 0) + (totals.shotsOnTarget ?? 0), minutes) },
-    { metric: "Action Individual", value: per90(totals.dribbleSuccess ?? 0, minutes) },
-    { metric: "Defesa", value: per90((totals.interceptions ?? 0) + (totals.recoveries ?? 0), minutes) },
-    { metric: "Duels", value: per90((totals.aerialDuelSuccess ?? 0) + (totals.defensiveDuelSuccess ?? 0), minutes) },
+    { metric: "Passing", value: per90((totals.shortPassSuccess ?? 0) + (totals.longPassSuccess ?? 0), minutes) },
+    { metric: "Creation", value: per90((totals.assists ?? 0) + (totals.crossSuccess ?? 0), minutes) },
+    { metric: "Finishing", value: per90((totals.goals ?? 0) + (totals.shotsOnTarget ?? 0), minutes) },
+    { metric: "Individual Actions", value: per90(totals.dribbleSuccess ?? 0, minutes) },
+    { metric: "Defending", value: per90((totals.interceptions ?? 0) + (totals.recoveries ?? 0), minutes) },
+    { metric: "Aerial Duels", value: per90(totals.aerialDuelSuccess ?? 0, minutes) },
   ];
 }
 

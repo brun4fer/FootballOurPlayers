@@ -252,14 +252,14 @@ export default async function PublicReportPage({ params }: PublicReportPageProps
   }));
 
   const percentualRows = [
-    { label: "Passe Curto", success: percentualActions.shortPass.success, fail: percentualActions.shortPass.fail, percentage: percentualActions.shortPass.percentage },
-    { label: "Passe Longo", success: percentualActions.longPass.success, fail: percentualActions.longPass.fail, percentage: percentualActions.longPass.percentage },
+    { label: "Short Passes", success: percentualActions.shortPass.success, fail: percentualActions.shortPass.fail, percentage: percentualActions.shortPass.percentage },
+    { label: "Long Passes", success: percentualActions.longPass.success, fail: percentualActions.longPass.fail, percentage: percentualActions.longPass.percentage },
     { label: "Crosses", success: percentualActions.cross.success, fail: percentualActions.cross.fail, percentage: percentualActions.cross.percentage },
     { label: "Individual Actions", success: percentualActions.dribble.success, fail: percentualActions.dribble.fail, percentage: percentualActions.dribble.percentage },
     { label: "Throw-ins", success: percentualActions.throw.success, fail: percentualActions.throw.fail, percentage: percentualActions.throw.percentage },
     { label: "Shots", success: percentualActions.shot.success, fail: percentualActions.shot.fail, percentage: percentualActions.shot.percentage },
     { label: "Aerial Duels", success: percentualActions.aerialDuel.success, fail: percentualActions.aerialDuel.fail, percentage: percentualActions.aerialDuel.percentage },
-    { label: "Defensive Duels", success: percentualActions.defensiveDuel.success, fail: percentualActions.defensiveDuel.fail, percentage: percentualActions.defensiveDuel.percentage },
+    { label: "Set-Piece Crosses", success: percentualActions.setPieceCross.success, fail: percentualActions.setPieceCross.fail, percentage: percentualActions.setPieceCross.percentage },
   ];
 
   return (

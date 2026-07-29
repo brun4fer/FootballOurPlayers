@@ -33,6 +33,12 @@ const createOutfieldStatColumns = () => ({
   aerialDuelFail: integer("aerial_duel_fail").notNull().default(0),
   defensiveDuelSuccess: integer("defensive_duel_success").notNull().default(0),
   defensiveDuelFail: integer("defensive_duel_fail").notNull().default(0),
+  defensivePositioningToCorrect: integer("defensive_positioning_to_correct").notNull().default(0),
+  throughPasses: integer("through_passes").notNull().default(0),
+  runsInBehind: integer("runs_in_behind").notNull().default(0),
+  setPieceCrossSuccess: integer("set_piece_cross_success").notNull().default(0),
+  setPieceCrossFail: integer("set_piece_cross_fail").notNull().default(0),
+  interceptedCrosses: integer("intercepted_crosses").notNull().default(0),
   goals: integer("goals").notNull().default(0),
   assists: integer("assists").notNull().default(0),
   foulsSuffered: integer("fouls_suffered").notNull().default(0),
@@ -40,7 +46,7 @@ const createOutfieldStatColumns = () => ({
   recoveries: integer("recoveries").notNull().default(0),
   interceptions: integer("interceptions").notNull().default(0),
   offsides: integer("offsides").notNull().default(0),
-  possessionLosses: integer("possession_losses").notNull().default(0),
+  possessionLosses: integer("other_possession_losses").notNull().default(0),
   responsibilityGoal: integer("responsibility_goal").notNull().default(0),
   yellowCards: integer("yellow_cards").notNull().default(0),
   redCards: integer("red_cards").notNull().default(0),
@@ -149,12 +155,14 @@ export const teams = pgTable(
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
     emblemUrl: text("emblem_url"),
+    isFixedHomeTeam: boolean("is_fixed_home_team").notNull().default(false),
     workspaceId: integer("workspace_id")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
   },
   (table) => ({
     nameUnique: uniqueIndex("teams_name_workspace_unique").on(table.name, table.workspaceId),
+    fixedHomeTeamIdx: index("teams_fixed_home_team_idx").on(table.workspaceId, table.isFixedHomeTeam),
   }),
 );
 

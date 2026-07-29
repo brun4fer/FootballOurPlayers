@@ -28,6 +28,9 @@ export type PublicReportFilters = {
 
 export async function getAnalyzedTeamIds() {
   const workspaceId = await getWorkspaceId();
+  const fixedTeams = await db.select({ id: teams.id }).from(teams)
+    .where(and(eq(teams.workspaceId, workspaceId), eq(teams.isFixedHomeTeam, true)));
+  if (fixedTeams.length > 0) return fixedTeams.map((team) => team.id);
   const rows = await db
     .selectDistinct({ id: teams.id })
     .from(teams)
@@ -53,13 +56,11 @@ async function getScopedAnalyzedTeamIds(competitionId?: number) {
   if (!competitionId) {
     return [];
   }
-
-  const scopedTeamIds = await getCompetitionAnalyzedTeamIds(competitionId);
-  return scopedTeamIds.length > 0 ? scopedTeamIds : getAnalyzedTeamIds();
+  return getAnalyzedTeamIds();
 }
 
 function formatHomeAwayLabel(value: "home" | "away") {
-  return value === "home" ? "Casa" : "Fora";
+  return value === "home" ? "Home" : "Away";
 }
 
 export function formatMatchLabel(match: {
@@ -67,7 +68,7 @@ export function formatMatchLabel(match: {
   matchdayNumber: number;
   homeAway: "home" | "away";
 }) {
-  return `Equipa x ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+  return `CD Feirense vs ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {
@@ -316,6 +317,12 @@ type TeamOutfieldTotals = {
   aerialDuelFail: number;
   defensiveDuelSuccess: number;
   defensiveDuelFail: number;
+  defensivePositioningToCorrect: number;
+  throughPasses: number;
+  runsInBehind: number;
+  setPieceCrossSuccess: number;
+  setPieceCrossFail: number;
+  interceptedCrosses: number;
   goals: number;
   assists: number;
   foulsSuffered: number;
@@ -351,6 +358,12 @@ export type TeamDashboardMatchAggregate = {
   aerialDuelFail: number;
   defensiveDuelSuccess: number;
   defensiveDuelFail: number;
+  defensivePositioningToCorrect: number;
+  throughPasses: number;
+  runsInBehind: number;
+  setPieceCrossSuccess: number;
+  setPieceCrossFail: number;
+  interceptedCrosses: number;
   goals: number;
   foulsSuffered: number;
   foulsCommitted: number;
@@ -398,6 +411,12 @@ export async function getCalculatedTeamTotalsByMatch(
       aerialDuelFail: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelFail}), 0)`,
       defensiveDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelSuccess}), 0)`,
       defensiveDuelFail: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelFail}), 0)`,
+      defensivePositioningToCorrect: sql<number>`coalesce(sum(${playerMatchStats.defensivePositioningToCorrect}), 0)`,
+      throughPasses: sql<number>`coalesce(sum(${playerMatchStats.throughPasses}), 0)`,
+      runsInBehind: sql<number>`coalesce(sum(${playerMatchStats.runsInBehind}), 0)`,
+      setPieceCrossSuccess: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossSuccess}), 0)`,
+      setPieceCrossFail: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossFail}), 0)`,
+      interceptedCrosses: sql<number>`coalesce(sum(${playerMatchStats.interceptedCrosses}), 0)`,
       goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
       assists: sql<number>`coalesce(sum(${playerMatchStats.assists}), 0)`,
       foulsSuffered: sql<number>`coalesce(sum(${playerMatchStats.foulsSuffered}), 0)`,
@@ -512,6 +531,12 @@ export async function getPlayerCompetitionMatchStats(
       aerialDuelFail: playerMatchStats.aerialDuelFail,
       defensiveDuelSuccess: playerMatchStats.defensiveDuelSuccess,
       defensiveDuelFail: playerMatchStats.defensiveDuelFail,
+      defensivePositioningToCorrect: playerMatchStats.defensivePositioningToCorrect,
+      throughPasses: playerMatchStats.throughPasses,
+      runsInBehind: playerMatchStats.runsInBehind,
+      setPieceCrossSuccess: playerMatchStats.setPieceCrossSuccess,
+      setPieceCrossFail: playerMatchStats.setPieceCrossFail,
+      interceptedCrosses: playerMatchStats.interceptedCrosses,
       goals: playerMatchStats.goals,
       assists: playerMatchStats.assists,
       foulsSuffered: playerMatchStats.foulsSuffered,
@@ -596,6 +621,12 @@ export async function getCompetitionPlayerTotals(competitionId?: number, matchId
       aerialDuelFail: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelFail}), 0)`,
       defensiveDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelSuccess}), 0)`,
       defensiveDuelFail: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelFail}), 0)`,
+      defensivePositioningToCorrect: sql<number>`coalesce(sum(${playerMatchStats.defensivePositioningToCorrect}), 0)`,
+      throughPasses: sql<number>`coalesce(sum(${playerMatchStats.throughPasses}), 0)`,
+      runsInBehind: sql<number>`coalesce(sum(${playerMatchStats.runsInBehind}), 0)`,
+      setPieceCrossSuccess: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossSuccess}), 0)`,
+      setPieceCrossFail: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossFail}), 0)`,
+      interceptedCrosses: sql<number>`coalesce(sum(${playerMatchStats.interceptedCrosses}), 0)`,
       goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
       assists: sql<number>`coalesce(sum(${playerMatchStats.assists}), 0)`,
       recoveries: sql<number>`coalesce(sum(${playerMatchStats.recoveries}), 0)`,
@@ -677,6 +708,12 @@ export async function getReportOutfieldStats(playerId: number, competitionId?: n
       aerialDuelFail: playerMatchStats.aerialDuelFail,
       defensiveDuelSuccess: playerMatchStats.defensiveDuelSuccess,
       defensiveDuelFail: playerMatchStats.defensiveDuelFail,
+      defensivePositioningToCorrect: playerMatchStats.defensivePositioningToCorrect,
+      throughPasses: playerMatchStats.throughPasses,
+      runsInBehind: playerMatchStats.runsInBehind,
+      setPieceCrossSuccess: playerMatchStats.setPieceCrossSuccess,
+      setPieceCrossFail: playerMatchStats.setPieceCrossFail,
+      interceptedCrosses: playerMatchStats.interceptedCrosses,
       goals: playerMatchStats.goals,
       assists: playerMatchStats.assists,
       foulsSuffered: playerMatchStats.foulsSuffered,
@@ -843,6 +880,12 @@ export async function getAnalyzedTeamMatchAggregates(
       aerialDuelFail: 0,
       defensiveDuelSuccess: 0,
       defensiveDuelFail: 0,
+      defensivePositioningToCorrect: 0,
+      throughPasses: 0,
+      runsInBehind: 0,
+      setPieceCrossSuccess: 0,
+      setPieceCrossFail: 0,
+      interceptedCrosses: 0,
       goals: 0,
       foulsSuffered: 0,
       foulsCommitted: 0,
@@ -882,6 +925,12 @@ export async function getAnalyzedTeamMatchAggregates(
       aerialDuelFail: sql<number>`coalesce(sum(${playerMatchStats.aerialDuelFail}), 0)`,
       defensiveDuelSuccess: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelSuccess}), 0)`,
       defensiveDuelFail: sql<number>`coalesce(sum(${playerMatchStats.defensiveDuelFail}), 0)`,
+      defensivePositioningToCorrect: sql<number>`coalesce(sum(${playerMatchStats.defensivePositioningToCorrect}), 0)`,
+      throughPasses: sql<number>`coalesce(sum(${playerMatchStats.throughPasses}), 0)`,
+      runsInBehind: sql<number>`coalesce(sum(${playerMatchStats.runsInBehind}), 0)`,
+      setPieceCrossSuccess: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossSuccess}), 0)`,
+      setPieceCrossFail: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossFail}), 0)`,
+      interceptedCrosses: sql<number>`coalesce(sum(${playerMatchStats.interceptedCrosses}), 0)`,
       goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
       foulsSuffered: sql<number>`coalesce(sum(${playerMatchStats.foulsSuffered}), 0)`,
       foulsCommitted: sql<number>`coalesce(sum(${playerMatchStats.foulsCommitted}), 0)`,
@@ -944,6 +993,12 @@ export async function getAnalyzedTeamMatchAggregates(
       aerialDuelFail: toSafeNumber(outfield?.aerialDuelFail),
       defensiveDuelSuccess: toSafeNumber(outfield?.defensiveDuelSuccess),
       defensiveDuelFail: toSafeNumber(outfield?.defensiveDuelFail),
+      defensivePositioningToCorrect: toSafeNumber(outfield?.defensivePositioningToCorrect),
+      throughPasses: toSafeNumber(outfield?.throughPasses),
+      runsInBehind: toSafeNumber(outfield?.runsInBehind),
+      setPieceCrossSuccess: toSafeNumber(outfield?.setPieceCrossSuccess),
+      setPieceCrossFail: toSafeNumber(outfield?.setPieceCrossFail),
+      interceptedCrosses: toSafeNumber(outfield?.interceptedCrosses),
       goals: toSafeNumber(outfield?.goals),
       foulsSuffered: toSafeNumber(outfield?.foulsSuffered),
       foulsCommitted: toSafeNumber(outfield?.foulsCommitted),

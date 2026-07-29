@@ -78,7 +78,7 @@ export default async function AdminTeamsPage() {
                   ))}
                 </NativeSelect>
               </div>
-              <Button className="w-full">Save Associaction</Button>
+              <Button className="w-full">Save Association</Button>
             </form>
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export default async function AdminTeamsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Emblema</TableHead>
+                <TableHead>Crest</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead className="w-[260px]">Actions</TableHead>
               </TableRow>
@@ -114,9 +114,13 @@ export default async function AdminTeamsPage() {
                     )}
                   </TableCell>
                   <TableCell>
+                    {team.isFixedHomeTeam ? (
+                      <p className="mb-2 text-xs font-medium text-cyan-300">Fixed home team</p>
+                    ) : null}
                     <form action={updateTeamAction} className="grid gap-2">
                       <input type="hidden" name="id" value={team.id} />
-                      <Input name="name" defaultValue={team.name} minLength={2} required />
+                      <Input name="name" defaultValue={team.name} minLength={2} required disabled={team.isFixedHomeTeam} />
+                      {team.isFixedHomeTeam ? <input type="hidden" name="name" value="CD Feirense" /> : null}
                       <ImageUrlInput
                         id={`emblemUrl-${team.id}`}
                         name="emblemUrl"
@@ -129,12 +133,14 @@ export default async function AdminTeamsPage() {
                     </form>
                   </TableCell>
                   <TableCell>
-                    <form action={deleteTeamAction}>
+                    {team.isFixedHomeTeam ? (
+                      <span className="text-xs text-muted-foreground">Protected — cannot be deleted</span>
+                    ) : <form action={deleteTeamAction}>
                       <input type="hidden" name="id" value={team.id} />
                       <Button variant="danger" size="sm">
                         Delete
                       </Button>
-                    </form>
+                    </form>}
                   </TableCell>
                 </TableRow>
               ))}

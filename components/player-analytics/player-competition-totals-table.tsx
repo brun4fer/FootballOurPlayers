@@ -33,11 +33,11 @@ export function PlayerCompetitionTotalsTable({
           <TableRow>
             <TableHead>Player</TableHead>
             <TableHead>Team</TableHead>
-            <TableHead>PC Certos</TableHead>
+            <TableHead>Successful Short Passes</TableHead>
             <TableHead>PC Falhados</TableHead>
-            <TableHead>PL Certos</TableHead>
+            <TableHead>Successful Long Passes</TableHead>
             <TableHead>PL Falhados</TableHead>
-            <TableHead>Cruz. Certos</TableHead>
+            <TableHead>Successful Crosses</TableHead>
             <TableHead>Cruz. Falhados</TableHead>
             <TableHead>Individual Actions Certas</TableHead>
             <TableHead>Individual Actions Falhadas</TableHead>

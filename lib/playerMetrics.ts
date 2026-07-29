@@ -104,7 +104,11 @@ export function normalizePlayerRows(rows: UnknownRow[]): PlayerMatchMetricsRow[]
       foulsCommitted: toNumber(row.foulsCommitted),
       recoveries: toNumber(row.recoveries),
       interceptions: toNumber(row.interceptions),
-      possessionLosses: toNumber(row.possessionLosses),
+      possessionLosses:
+        toNumber(row.shortPassFail) + toNumber(row.longPassFail) +
+        toNumber(row.crossFail) + toNumber(row.dribbleFail) +
+        toNumber(row.throwFail) + toNumber(row.shotsOffTarget) +
+        toNumber(row.possessionLosses),
       responsibilityGoal: toNumber(row.responsibilityGoal),
       yellowCards: toNumber(row.yellowCards),
       redCards: toNumber(row.redCards),
@@ -224,11 +228,11 @@ export function computePer90Metrics(totals: PlayerMetricsTotals) {
 export function buildMatchEvolutionSeries(rows: PlayerMatchMetricsRow[]) {
   return rows.map((row) => ({
     matchLabel: `Feirense x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`,
-    remates: row.shotsOnTarget + row.shotsOffTarget,
+    shots: row.shotsOnTarget + row.shotsOffTarget,
     assists: row.assists,
     goals: row.goals,
     dribbles: row.dribbleSuccess,
-    passesCertos: row.shortPassSuccess + row.longPassSuccess,
+    successfulPasses: row.shortPassSuccess + row.longPassSuccess,
   }));
 }
 
@@ -246,20 +250,19 @@ export function buildRadarNormalizedMetrics(totals: PlayerMetricsTotals) {
   const accuracy = computeAccuracyMetrics(totals);
   const defensiveActionsPer90 = per90(totals.recoveries + totals.interceptions, totals.minutesPlayed);
   const finishingVolumePer90 = per90(totals.goals + totals.shotsOnTarget, totals.minutesPlayed);
-  const duelAccuracy =
-    (accuracy.aerialDuelSuccessRate + accuracy.defensiveDuelSuccessRate) / 2;
+  const duelAccuracy = accuracy.aerialDuelSuccessRate;
 
   return [
     {
-      metric: "Passe",
+      metric: "Passing",
       value: clamp0to100((accuracy.shortPassAccuracy + accuracy.longPassAccuracy) / 2),
     },
-    { metric: "Cruzamento", value: clamp0to100(accuracy.crossAccuracy) },
-    { metric: "Action Individual", value: clamp0to100(accuracy.dribbleAccuracy) },
+    { metric: "Crossing", value: clamp0to100(accuracy.crossAccuracy) },
+    { metric: "Individual Actions", value: clamp0to100(accuracy.dribbleAccuracy) },
     { metric: "Duels", value: clamp0to100(duelAccuracy) },
-    { metric: "Defesa", value: normalizeByCap(defensiveActionsPer90, 20) },
+    { metric: "Defending", value: normalizeByCap(defensiveActionsPer90, 20) },
     {
-      metric: "Finalizaction",
+      metric: "Finishing",
       value: clamp0to100((accuracy.shotAccuracy + normalizeByCap(finishingVolumePer90, 6)) / 2),
     },
   ];

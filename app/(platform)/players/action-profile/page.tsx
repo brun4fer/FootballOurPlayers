@@ -162,7 +162,7 @@ export default async function ActionProfilePage({
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
         playerLabel="Players (1 or mais)"
-        description="Select one player for perfil individual or several to comparison direct."
+        description="Select one player for an individual profile or several for direct comparison."
         searchQuery={searchQuery}
       />
 

@@ -50,7 +50,7 @@ export function getMatchSearchValues(match: {
     match.date,
     match.matchdayNumber,
     `Matchday ${match.matchdayNumber ?? ""}`,
-    `Jogo ${match.matchdayNumber ?? ""}`,
+    `Match ${match.matchdayNumber ?? ""}`,
     `Feirense x ${match.opponentTeamName ?? ""}`,
   ];
 }

@@ -26,6 +26,30 @@ async function requireOwnedTeam(id: number) {
   return workspaceId;
 }
 
+async function requireMutableTeam(id: number) {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
+    .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
+  if (!row[0]) throw new Error("Invalid team.");
+  if (row[0].isFixedHomeTeam) throw new Error("CD Feirense is the fixed home team and cannot be deleted.");
+  return workspaceId;
+}
+
+async function requireOpponentTeam(id: number) {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
+    .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
+  if (!row[0] || row[0].isFixedHomeTeam) throw new Error("Select a valid opponent team.");
+}
+
+async function getFixedHomeTeamId() {
+  const workspaceId = await getWorkspaceId();
+  const row = await db.select({ id: teams.id }).from(teams)
+    .where(and(eq(teams.workspaceId, workspaceId), eq(teams.isFixedHomeTeam, true))).limit(1);
+  if (!row[0]) throw new Error("The fixed CD Feirense team is missing.");
+  return row[0].id;
+}
+
 async function requireOwnedCompetition(id: number) {
   const workspaceId = await getWorkspaceId();
   const row = await db.select({ id: competitions.id }).from(competitions)
@@ -196,7 +220,7 @@ export async function createTeamAction(formData: FormData) {
     throw new Error("The team name must be at least 2 characters long.");
   }
 
-  const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "O emblema");
+  const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "The crest");
 
   await db.insert(teams).values({ name, emblemUrl, workspaceId }).onConflictDoNothing();
   revalidatePath("/admin/teams");
@@ -205,12 +229,16 @@ export async function createTeamAction(formData: FormData) {
 export async function updateTeamAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const workspaceId = await requireOwnedTeam(id);
-  const name = optionalText(formData.get("name"), 120);
+  const fixedTeam = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
+    .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
+  const name = fixedTeam[0]?.isFixedHomeTeam
+    ? "CD Feirense"
+    : optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The team name must be at least 2 characters long.");
   }
 
-  const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "O emblema");
+  const emblemUrl = optionalImageUrl(formData.get("emblemUrl"), "The crest");
 
   await db
     .update(teams)
@@ -227,7 +255,7 @@ export async function updateTeamAction(formData: FormData) {
 
 export async function deleteTeamAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
-  const workspaceId = await requireOwnedTeam(id);
+  const workspaceId = await requireMutableTeam(id);
   await db.delete(teams).where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId)));
   revalidatePath("/admin/teams");
   revalidatePath("/admin/players");
@@ -265,8 +293,7 @@ export async function removeTeamCompetitionAction(formData: FormData) {
 
 export async function createPlayerAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 140);
-  const teamId = toRequiredId(formData.get("teamId"));
-  await requireOwnedTeam(teamId);
+  const teamId = await getFixedHomeTeamId();
   if (!name || name.length < 2) {
     throw new Error("The player name must be at least 2 characters long.");
   }
@@ -294,8 +321,8 @@ export async function createPlayerAction(formData: FormData) {
 export async function updatePlayerAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 140);
-  const teamId = toRequiredId(formData.get("teamId"));
-  await Promise.all([requireOwnedPlayer(id), requireOwnedTeam(teamId)]);
+  const teamId = await getFixedHomeTeamId();
+  await requireOwnedPlayer(id);
   if (!name || name.length < 2) {
     throw new Error("The player name must be at least 2 characters long.");
   }
@@ -355,8 +382,8 @@ export async function createMatchAction(formData: FormData) {
   const matchdayNumber = toRequiredId(formData.get("matchdayNumber"));
   const competitionId = toRequiredId(formData.get("competitionId"));
   const opponentTeamId = toRequiredId(formData.get("opponentTeamId"));
-  await Promise.all([requireOwnedCompetition(competitionId), requireOwnedTeam(opponentTeamId)]);
-  const homeAway = toRequiredHomeAway(formData.get("homeAway"));
+  await Promise.all([requireOwnedCompetition(competitionId), requireOpponentTeam(opponentTeamId)]);
+  const homeAway = "home" as const;
   const date = toRequiredDateString(formData.get("date"));
 
   await db
@@ -374,8 +401,8 @@ export async function updateMatchAction(formData: FormData) {
   const matchdayNumber = toRequiredId(formData.get("matchdayNumber"));
   const competitionId = toRequiredId(formData.get("competitionId"));
   const opponentTeamId = toRequiredId(formData.get("opponentTeamId"));
-  await Promise.all([requireOwnedMatch(id), requireOwnedCompetition(competitionId), requireOwnedTeam(opponentTeamId)]);
-  const homeAway = toRequiredHomeAway(formData.get("homeAway"));
+  await Promise.all([requireOwnedMatch(id), requireOwnedCompetition(competitionId), requireOpponentTeam(opponentTeamId)]);
+  const homeAway = "home" as const;
   const date = toRequiredDateString(formData.get("date"));
 
   await db
@@ -424,8 +451,12 @@ export async function upsertPlayerStatsAction(formData: FormData) {
       shotsOffTarget: data.shotsOffTarget,
       aerialDuelSuccess: data.aerialDuelSuccess,
       aerialDuelFail: data.aerialDuelFail,
-      defensiveDuelSuccess: data.defensiveDuelSuccess,
-      defensiveDuelFail: data.defensiveDuelFail,
+      defensivePositioningToCorrect: data.defensivePositioningToCorrect,
+      throughPasses: data.throughPasses,
+      runsInBehind: data.runsInBehind,
+      setPieceCrossSuccess: data.setPieceCrossSuccess,
+      setPieceCrossFail: data.setPieceCrossFail,
+      interceptedCrosses: data.interceptedCrosses,
       goals: data.goals,
       assists: data.assists,
       foulsSuffered: data.foulsSuffered,
@@ -456,8 +487,12 @@ export async function upsertPlayerStatsAction(formData: FormData) {
         shotsOffTarget: data.shotsOffTarget,
         aerialDuelSuccess: data.aerialDuelSuccess,
         aerialDuelFail: data.aerialDuelFail,
-        defensiveDuelSuccess: data.defensiveDuelSuccess,
-        defensiveDuelFail: data.defensiveDuelFail,
+        defensivePositioningToCorrect: data.defensivePositioningToCorrect,
+        throughPasses: data.throughPasses,
+        runsInBehind: data.runsInBehind,
+        setPieceCrossSuccess: data.setPieceCrossSuccess,
+        setPieceCrossFail: data.setPieceCrossFail,
+        interceptedCrosses: data.interceptedCrosses,
         goals: data.goals,
         assists: data.assists,
         foulsSuffered: data.foulsSuffered,
@@ -533,8 +568,12 @@ export async function upsertTeamStatsAction(formData: FormData) {
       shotsOffTarget: data.shotsOffTarget,
       aerialDuelSuccess: data.aerialDuelSuccess,
       aerialDuelFail: data.aerialDuelFail,
-      defensiveDuelSuccess: data.defensiveDuelSuccess,
-      defensiveDuelFail: data.defensiveDuelFail,
+      defensivePositioningToCorrect: data.defensivePositioningToCorrect,
+      throughPasses: data.throughPasses,
+      runsInBehind: data.runsInBehind,
+      setPieceCrossSuccess: data.setPieceCrossSuccess,
+      setPieceCrossFail: data.setPieceCrossFail,
+      interceptedCrosses: data.interceptedCrosses,
       goals: data.goals,
       assists: data.assists,
       foulsSuffered: data.foulsSuffered,
@@ -565,8 +604,12 @@ export async function upsertTeamStatsAction(formData: FormData) {
         shotsOffTarget: data.shotsOffTarget,
         aerialDuelSuccess: data.aerialDuelSuccess,
         aerialDuelFail: data.aerialDuelFail,
-        defensiveDuelSuccess: data.defensiveDuelSuccess,
-        defensiveDuelFail: data.defensiveDuelFail,
+        defensivePositioningToCorrect: data.defensivePositioningToCorrect,
+        throughPasses: data.throughPasses,
+        runsInBehind: data.runsInBehind,
+        setPieceCrossSuccess: data.setPieceCrossSuccess,
+        setPieceCrossFail: data.setPieceCrossFail,
+        interceptedCrosses: data.interceptedCrosses,
         goals: data.goals,
         assists: data.assists,
         foulsSuffered: data.foulsSuffered,

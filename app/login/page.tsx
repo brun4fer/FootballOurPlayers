@@ -14,7 +14,7 @@ export default async function LoginPage({
     <main className="grid min-h-screen place-items-center px-4">
       <form action={loginAction} className="w-full max-w-sm space-y-4 rounded-xl border bg-card p-6 shadow-xl">
         <div>
-          <h1 className="text-2xl font-semibold">Iniciar sessão</h1>
+          <h1 className="text-2xl font-semibold">Sign in</h1>
           <p className="text-sm text-muted-foreground">Introduza as suas credenciais.</p>
         </div>
         {error && <p className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">Username ou palavra-passe incorretos.</p>}

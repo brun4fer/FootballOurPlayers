@@ -43,12 +43,14 @@ export function PlayerActionProfileTable({
             <TableHead>Player</TableHead>
             <TableHead>Short Passes</TableHead>
             <TableHead>Long Passes</TableHead>
-            <TableHead>Cruzamentos</TableHead>
+            <TableHead>Crosses</TableHead>
             <TableHead>Individual Actions</TableHead>
             <TableHead>Throw-ins</TableHead>
             <TableHead>Shots</TableHead>
             <TableHead>Aerial Duels</TableHead>
-            <TableHead>Duels Defensivos</TableHead>
+            <TableHead>Through Passes</TableHead>
+            <TableHead>Runs in Behind</TableHead>
+            <TableHead>Set-Piece Crosses</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,9 +64,9 @@ export function PlayerActionProfileTable({
               <TableCell>{scope.totals.throwSuccess + scope.totals.throwFail}</TableCell>
               <TableCell>{scope.totals.shotsOnTarget + scope.totals.shotsOffTarget}</TableCell>
               <TableCell>{scope.totals.aerialDuelSuccess + scope.totals.aerialDuelFail}</TableCell>
-              <TableCell>
-                {scope.totals.defensiveDuelSuccess + scope.totals.defensiveDuelFail}
-              </TableCell>
+              <TableCell>{scope.totals.throughPasses}</TableCell>
+              <TableCell>{scope.totals.runsInBehind}</TableCell>
+              <TableCell>{scope.totals.setPieceCrossSuccess + scope.totals.setPieceCrossFail}</TableCell>
             </TableRow>
           ))}
         </TableBody>

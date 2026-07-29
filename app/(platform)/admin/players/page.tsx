@@ -37,7 +37,8 @@ export default async function AdminPlayersPage({
   searchParams,
 }: AdminPlayersPageProps) {
   const params = (await searchParams) ?? {};
-  const [teamList, playerList] = await Promise.all([getTeams(), getPlayers()]);
+  const [allTeams, playerList] = await Promise.all([getTeams(), getPlayers()]);
+  const teamList = allTeams.filter((team) => team.isFixedHomeTeam);
   const selectedTeamIds = parseSelectedTeamIds(
     params.teamIds,
     new Set(teamList.map((team) => team.id)),
@@ -64,16 +65,14 @@ export default async function AdminPlayersPage({
             </div>
             <div className="space-y-2">
               <Label htmlFor="teamId">Team</Label>
-              <NativeSelect id="teamId" name="teamId" defaultValue="" required>
-                <option value="" disabled>
-                  Select team
-                </option>
+              <NativeSelect id="teamId" name="teamId" defaultValue={String(teamList[0]?.id ?? "")} required disabled>
                 {teamList.map((team) => (
                   <option key={team.id} value={team.id}>
                     {team.name}
                   </option>
                 ))}
               </NativeSelect>
+              <input type="hidden" name="teamId" value={teamList[0]?.id ?? ""} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="position1">Position 1</Label>
@@ -201,16 +200,22 @@ export default async function AdminPlayersPage({
                       )}
                     </TableCell>
                     <TableCell>
-                      <form action={updatePlayerAction} className="space-y-2">
+                      <details className="min-w-52">
+                        <summary className="cursor-pointer font-medium text-foreground">
+                          {player.name}
+                          <span className="ml-2 text-xs font-normal text-muted-foreground">Edit</span>
+                        </summary>
+                      <form action={updatePlayerAction} className="mt-3 space-y-2 rounded-lg border border-border/70 p-3">
                         <input type="hidden" name="id" value={player.id} />
                         <Input name="name" defaultValue={player.name} minLength={2} required />
-                        <NativeSelect name="teamId" defaultValue={String(player.teamId)} required>
+                        <NativeSelect name="teamId" defaultValue={String(player.teamId)} required disabled>
                           {teamList.map((team) => (
                             <option key={team.id} value={team.id}>
                               {team.name}
                             </option>
                           ))}
                         </NativeSelect>
+                        <input type="hidden" name="teamId" value={teamList[0]?.id ?? player.teamId} />
                         <div className="grid gap-2 sm:grid-cols-3">
                           <NativeSelect name="position1" defaultValue={player.position1 ?? ""}>
                             <option value="">Select position</option>
@@ -276,6 +281,7 @@ export default async function AdminPlayersPage({
                           Update
                         </Button>
                       </form>
+                      </details>
                     </TableCell>
                     <TableCell>{player.teamName}</TableCell>
                     <TableCell>{player.nationality ?? "-"}</TableCell>

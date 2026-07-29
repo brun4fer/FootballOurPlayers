@@ -45,8 +45,12 @@ const emptyTeamTotals: Record<string, number> = {
   shotsOffTarget: 0,
   aerialDuelSuccess: 0,
   aerialDuelFail: 0,
-  defensiveDuelSuccess: 0,
-  defensiveDuelFail: 0,
+  defensivePositioningToCorrect: 0,
+  throughPasses: 0,
+  runsInBehind: 0,
+  setPieceCrossSuccess: 0,
+  setPieceCrossFail: 0,
+  interceptedCrosses: 0,
   goals: 0,
   assists: 0,
   foulsSuffered: 0,
@@ -100,10 +104,10 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
         <CardHeader>
           <CardTitle>Administration Workflow</CardTitle>
           <CardDescription>
-            1. Select competition 2. Select jogo 3. Select player 4. Enter totais
+            1. Select competition 2. Select match 3. Select player 4. Enter totals
           </CardDescription>
           <p className="text-xs text-muted-foreground">
-            Os jogadores apresentados pertencem à equipa analisada deste workspace.
+            The players shown belong to the analyzed team in this workspace.
           </p>
           <p className="text-xs text-muted-foreground">
             After changing the competition, click <strong>Load Selection</strong> to update
@@ -128,9 +132,9 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="matchId">Jogo</Label>
+              <Label htmlFor="matchId">Match</Label>
               <NativeSelect id="matchId" name="matchId" defaultValue={String(selectedMatchId ?? "")}>
-                <option value="">Select jogo</option>
+                <option value="">Select match</option>
                 {matchOptions.length === 0 ? (
                   <option value="" disabled>
                     No matches available
@@ -225,7 +229,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
             <CardTitle>Goalkeeper Totals per Match</CardTitle>
             <CardDescription>
               Goalkeeper metrics are only visible for players marked as
-              guarda-redes.
+                goalkeepers.
             </CardDescription>
           </CardHeader>
           <CardContent>

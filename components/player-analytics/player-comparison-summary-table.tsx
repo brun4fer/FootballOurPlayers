@@ -27,8 +27,8 @@ const columns: Array<{
   render: (row: ComparisonSummaryRow) => string | number;
 }> = [
   { key: "label", label: "Player", render: (row) => row.label },
-  { key: "shortPassAccuracy", label: "Passe Curto %", render: (row) => `${formatMetric(row.shortPassAccuracy)}%` },
-  { key: "longPassAccuracy", label: "Passe Longo %", render: (row) => `${formatMetric(row.longPassAccuracy)}%` },
+  { key: "shortPassAccuracy", label: "Short Passes %", render: (row) => `${formatMetric(row.shortPassAccuracy)}%` },
+  { key: "longPassAccuracy", label: "Long Passes %", render: (row) => `${formatMetric(row.longPassAccuracy)}%` },
   { key: "crossAccuracy", label: "Crosses %", render: (row) => `${formatMetric(row.crossAccuracy)}%` },
   {
     key: "individualActionAccuracy",

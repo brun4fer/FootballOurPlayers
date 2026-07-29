@@ -130,7 +130,7 @@ export type EvolutionMetricKey =
   | "throwSuccess"
   | "shotsOnTarget"
   | "aerialDuelSuccess"
-  | "defensiveDuelSuccess";
+  | "defensivePositioningToCorrect";
 
 export type EvolutionMetricDefinition = {
   key: EvolutionMetricKey;
@@ -179,9 +179,16 @@ const ACTION_PROFILE_DEFINITIONS = [
     value: (totals: OutfieldTotals) => totals.aerialDuelSuccess + totals.aerialDuelFail,
   },
   {
-    label: "Defensive Duels",
-    value: (totals: OutfieldTotals) =>
-      totals.defensiveDuelSuccess + totals.defensiveDuelFail,
+    label: "Through Passes",
+    value: (totals: OutfieldTotals) => totals.throughPasses,
+  },
+  {
+    label: "Runs in Behind",
+    value: (totals: OutfieldTotals) => totals.runsInBehind,
+  },
+  {
+    label: "Set-Piece Crosses",
+    value: (totals: OutfieldTotals) => totals.setPieceCrossSuccess + totals.setPieceCrossFail,
   },
 ] as const;
 
@@ -191,9 +198,9 @@ export const EVOLUTION_METRICS: EvolutionMetricDefinition[] = [
   { key: "crossSuccess", label: "Crosses Success" },
   { key: "dribbleSuccess", label: "Individual Actions Success" },
   { key: "throwSuccess", label: "Throw-ins Success" },
-  { key: "shotsOnTarget", label: "Shots Enquadrados" },
+  { key: "shotsOnTarget", label: "Shots on Target" },
   { key: "aerialDuelSuccess", label: "Aerial Duels Success" },
-  { key: "defensiveDuelSuccess", label: "Defensive Duels Success" },
+  { key: "defensivePositioningToCorrect", label: "Defensive Positioning to Correct" },
 ];
 
 export { COMPARISON_RANKING_METRICS, EVOLUTION_COLORS, getSeriesColor };
@@ -429,13 +436,13 @@ export function buildPlayerPercentageRows(totals: OutfieldTotals): PercentageRow
 
   return [
     {
-      metric: "Passe Curto",
+      metric: "Short Passes",
       success: percentualActions.shortPass.success,
       fail: percentualActions.shortPass.fail,
       percentage: percentualActions.shortPass.percentage,
     },
     {
-      metric: "Passe Longo",
+      metric: "Long Passes",
       success: percentualActions.longPass.success,
       fail: percentualActions.longPass.fail,
       percentage: percentualActions.longPass.percentage,
@@ -471,10 +478,10 @@ export function buildPlayerPercentageRows(totals: OutfieldTotals): PercentageRow
       percentage: percentualActions.aerialDuel.percentage,
     },
     {
-      metric: "Defensive Duels",
-      success: percentualActions.defensiveDuel.success,
-      fail: percentualActions.defensiveDuel.fail,
-      percentage: percentualActions.defensiveDuel.percentage,
+      metric: "Set-Piece Crosses",
+      success: percentualActions.setPieceCross.success,
+      fail: percentualActions.setPieceCross.fail,
+      percentage: percentualActions.setPieceCross.percentage,
     },
   ];
 }
@@ -566,6 +573,26 @@ export function buildPlayerNumericRows(options: {
       metric: "Possession Losses",
       total: numericActions.possessionLossesTotal,
       per90: numericActions.possessionLossesPer90,
+    },
+    {
+      metric: "Defensive Positioning to Correct",
+      total: numericActions.defensivePositioningToCorrectTotal,
+      per90: numericActions.defensivePositioningToCorrectPer90,
+    },
+    {
+      metric: "Through Passes",
+      total: numericActions.throughPassesTotal,
+      per90: numericActions.throughPassesPer90,
+    },
+    {
+      metric: "Runs in Behind",
+      total: numericActions.runsInBehindTotal,
+      per90: numericActions.runsInBehindPer90,
+    },
+    {
+      metric: "Intercepted Crosses",
+      total: numericActions.interceptedCrossesTotal,
+      per90: numericActions.interceptedCrossesPer90,
     },
     {
       metric: "Yellow Cards",

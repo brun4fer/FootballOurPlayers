@@ -83,6 +83,12 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
       aerialDuelFail: Number(row.aerialDuelFail ?? 0),
       defensiveDuelSuccess: Number(row.defensiveDuelSuccess ?? 0),
       defensiveDuelFail: Number(row.defensiveDuelFail ?? 0),
+      defensivePositioningToCorrect: Number(row.defensivePositioningToCorrect ?? 0),
+      throughPasses: Number(row.throughPasses ?? 0),
+      runsInBehind: Number(row.runsInBehind ?? 0),
+      setPieceCrossSuccess: Number(row.setPieceCrossSuccess ?? 0),
+      setPieceCrossFail: Number(row.setPieceCrossFail ?? 0),
+      interceptedCrosses: Number(row.interceptedCrosses ?? 0),
       goals: Number(row.goals ?? 0),
       assists: Number(row.assists ?? 0),
       foulsSuffered: Number(row.foulsSuffered ?? 0),
@@ -90,7 +96,11 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
       recoveries: Number(row.recoveries ?? 0),
       interceptions: Number(row.interceptions ?? 0),
       offsides: Number(row.offsides ?? 0),
-      possessionLosses: Number(row.possessionLosses ?? 0),
+      possessionLosses:
+        Number(row.shortPassFail ?? 0) + Number(row.longPassFail ?? 0) +
+        Number(row.crossFail ?? 0) + Number(row.dribbleFail ?? 0) +
+        Number(row.throwFail ?? 0) + Number(row.shotsOffTarget ?? 0) +
+        Number(row.possessionLosses ?? 0),
       responsibilityGoal: Number(row.responsibilityGoal ?? 0),
       yellowCards: Number(row.yellowCards ?? 0),
       redCards: Number(row.redCards ?? 0),
@@ -233,7 +243,7 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Jogo</TableHead>
+                <TableHead>Match</TableHead>
                 <TableHead>Minutos</TableHead>
                 <TableHead>Goals</TableHead>
                 <TableHead>Assists</TableHead>

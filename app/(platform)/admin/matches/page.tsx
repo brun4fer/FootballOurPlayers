@@ -23,10 +23,14 @@ export default async function AdminMatchesPage() {
 
         <Card>
           <CardHeader>
-          <CardTitle>Create Jogo</CardTitle>
+          <CardTitle>Create Match</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={createMatchAction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <form action={createMatchAction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="space-y-2">
+                <Label>Home Team</Label>
+                <Input value="CD Feirense" disabled />
+              </div>
               <div className="space-y-2">
               <Label htmlFor="matchdayNumber">Matchday Number</Label>
               <Input id="matchdayNumber" name="matchdayNumber" type="number" min={1} required />
@@ -45,7 +49,7 @@ export default async function AdminMatchesPage() {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="opponentTeamId">Team Opponent</Label>
+              <Label htmlFor="opponentTeamId">Opponent</Label>
               <NativeSelect id="opponentTeamId" name="opponentTeamId" required defaultValue="">
                 <option value="" disabled>
                   Select opponent
@@ -58,17 +62,10 @@ export default async function AdminMatchesPage() {
               </NativeSelect>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="homeAway">Casa/Fora</Label>
-              <NativeSelect id="homeAway" name="homeAway" required defaultValue="home">
-                <option value="home">Casa</option>
-                <option value="away">Fora</option>
-              </NativeSelect>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
+              <Label htmlFor="date">Date</Label>
               <Input id="date" name="date" type="date" required />
             </div>
-            <Button className="sm:col-span-2 xl:col-span-5">Save Jogo</Button>
+            <Button className="sm:col-span-2 xl:col-span-4">Save Match</Button>
           </form>
         </CardContent>
       </Card>
@@ -82,10 +79,10 @@ export default async function AdminMatchesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Jogo</TableHead>
+                <TableHead>Match</TableHead>
                 <TableHead>Competition</TableHead>
                 <TableHead>Season</TableHead>
-                <TableHead>Data</TableHead>
+                <TableHead>Date</TableHead>
                 <TableHead className="w-[320px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -130,10 +127,7 @@ export default async function AdminMatchesPage() {
                           </option>
                           ))}
                         </NativeSelect>
-                        <NativeSelect name="homeAway" defaultValue={match.homeAway} required>
-                          <option value="home">Casa</option>
-                          <option value="away">Fora</option>
-                        </NativeSelect>
+                        <Input value="CD Feirense (Home)" disabled />
                         <Input name="date" type="date" defaultValue={match.date} required />
                         <Button variant="outline" size="sm">
                           Update

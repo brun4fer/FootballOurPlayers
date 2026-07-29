@@ -24,6 +24,12 @@ export type OutfieldMatchRow = {
   aerialDuelFail: number;
   defensiveDuelSuccess: number;
   defensiveDuelFail: number;
+  defensivePositioningToCorrect: number;
+  throughPasses: number;
+  runsInBehind: number;
+  setPieceCrossSuccess: number;
+  setPieceCrossFail: number;
+  interceptedCrosses: number;
   goals: number;
   assists: number;
   foulsSuffered: number;
@@ -78,6 +84,12 @@ const EMPTY_OUTFIELD_TOTALS: OutfieldTotals = {
   aerialDuelFail: 0,
   defensiveDuelSuccess: 0,
   defensiveDuelFail: 0,
+  defensivePositioningToCorrect: 0,
+  throughPasses: 0,
+  runsInBehind: 0,
+  setPieceCrossSuccess: 0,
+  setPieceCrossFail: 0,
+  interceptedCrosses: 0,
   goals: 0,
   assists: 0,
   foulsSuffered: 0,
@@ -144,6 +156,12 @@ export function normalizeOutfieldRows(
       aerialDuelFail: toNumber(row.aerialDuelFail),
       defensiveDuelSuccess: toNumber(row.defensiveDuelSuccess),
       defensiveDuelFail: toNumber(row.defensiveDuelFail),
+      defensivePositioningToCorrect: toNumber(row.defensivePositioningToCorrect),
+      throughPasses: toNumber(row.throughPasses),
+      runsInBehind: toNumber(row.runsInBehind),
+      setPieceCrossSuccess: toNumber(row.setPieceCrossSuccess),
+      setPieceCrossFail: toNumber(row.setPieceCrossFail),
+      interceptedCrosses: toNumber(row.interceptedCrosses),
       goals: toNumber(row.goals),
       assists: toNumber(row.assists),
       foulsSuffered: toNumber(row.foulsSuffered),
@@ -151,7 +169,14 @@ export function normalizeOutfieldRows(
       recoveries: toNumber(row.recoveries),
       interceptions: toNumber(row.interceptions),
       offsides: toNumber(row.offsides),
-      possessionLosses: toNumber(row.possessionLosses),
+      possessionLosses:
+        toNumber(row.shortPassFail) +
+        toNumber(row.longPassFail) +
+        toNumber(row.crossFail) +
+        toNumber(row.dribbleFail) +
+        toNumber(row.throwFail) +
+        toNumber(row.shotsOffTarget) +
+        toNumber(row.possessionLosses),
       responsibilityGoal: toNumber(row.responsibilityGoal),
       yellowCards: toNumber(row.yellowCards),
       redCards: toNumber(row.redCards),
@@ -204,6 +229,12 @@ export function aggregateOutfieldTotals(rows: OutfieldMatchRow[]): OutfieldTotal
       aerialDuelFail: acc.aerialDuelFail + row.aerialDuelFail,
       defensiveDuelSuccess: acc.defensiveDuelSuccess + row.defensiveDuelSuccess,
       defensiveDuelFail: acc.defensiveDuelFail + row.defensiveDuelFail,
+      defensivePositioningToCorrect: acc.defensivePositioningToCorrect + row.defensivePositioningToCorrect,
+      throughPasses: acc.throughPasses + row.throughPasses,
+      runsInBehind: acc.runsInBehind + row.runsInBehind,
+      setPieceCrossSuccess: acc.setPieceCrossSuccess + row.setPieceCrossSuccess,
+      setPieceCrossFail: acc.setPieceCrossFail + row.setPieceCrossFail,
+      interceptedCrosses: acc.interceptedCrosses + row.interceptedCrosses,
       goals: acc.goals + row.goals,
       assists: acc.assists + row.assists,
       foulsSuffered: acc.foulsSuffered + row.foulsSuffered,
@@ -255,6 +286,11 @@ export function buildPercentualActions(totals: OutfieldTotals) {
       success: totals.crossSuccess,
       fail: totals.crossFail,
       percentage: percent(totals.crossSuccess, totals.crossFail),
+    },
+    setPieceCross: {
+      success: totals.setPieceCrossSuccess,
+      fail: totals.setPieceCrossFail,
+      percentage: percent(totals.setPieceCrossSuccess, totals.setPieceCrossFail),
     },
     dribble: {
       success: totals.dribbleSuccess,
@@ -313,8 +349,12 @@ export function buildNumericActions(
     outfieldTotals.shotsOffTarget +
     outfieldTotals.aerialDuelSuccess +
     outfieldTotals.aerialDuelFail +
-    outfieldTotals.defensiveDuelSuccess +
-    outfieldTotals.defensiveDuelFail +
+    outfieldTotals.defensivePositioningToCorrect +
+    outfieldTotals.throughPasses +
+    outfieldTotals.runsInBehind +
+    outfieldTotals.setPieceCrossSuccess +
+    outfieldTotals.setPieceCrossFail +
+    outfieldTotals.interceptedCrosses +
     outfieldTotals.recoveries +
     outfieldTotals.interceptions +
     outfieldTotals.foulsCommitted +
@@ -333,6 +373,14 @@ export function buildNumericActions(
     offsidesPer90: per90(outfieldTotals.offsides, minutes),
     possessionLossesTotal: outfieldTotals.possessionLosses,
     possessionLossesPer90: per90(outfieldTotals.possessionLosses, minutes),
+    defensivePositioningToCorrectTotal: outfieldTotals.defensivePositioningToCorrect,
+    defensivePositioningToCorrectPer90: per90(outfieldTotals.defensivePositioningToCorrect, minutes),
+    throughPassesTotal: outfieldTotals.throughPasses,
+    throughPassesPer90: per90(outfieldTotals.throughPasses, minutes),
+    runsInBehindTotal: outfieldTotals.runsInBehind,
+    runsInBehindPer90: per90(outfieldTotals.runsInBehind, minutes),
+    interceptedCrossesTotal: outfieldTotals.interceptedCrosses,
+    interceptedCrossesPer90: per90(outfieldTotals.interceptedCrosses, minutes),
     yellowCardsTotal: outfieldTotals.yellowCards,
     yellowCardsPer90: per90(outfieldTotals.yellowCards, minutes),
     redCardsTotal: outfieldTotals.redCards,
@@ -356,8 +404,7 @@ export function buildComparisonMetrics(totals: OutfieldTotals) {
     passAccuracy: (percentual.shortPass.percentage + percentual.longPass.percentage) / 2,
     crossAccuracy: percentual.cross.percentage,
     dribbleSuccess: percentual.dribble.percentage,
-    duelSuccess:
-      (percentual.aerialDuel.percentage + percentual.defensiveDuel.percentage) / 2,
+    duelSuccess: percentual.aerialDuel.percentage,
     recoveries: totals.recoveries,
     interceptions: totals.interceptions,
     minutesPlayed: totals.minutesPlayed,
@@ -386,6 +433,12 @@ export function toOutfieldTotalsFromAggregate(row: UnknownRow): OutfieldTotals {
     aerialDuelFail: toNumber(row.aerialDuelFail),
     defensiveDuelSuccess: toNumber(row.defensiveDuelSuccess),
     defensiveDuelFail: toNumber(row.defensiveDuelFail),
+    defensivePositioningToCorrect: toNumber(row.defensivePositioningToCorrect),
+    throughPasses: toNumber(row.throughPasses),
+    runsInBehind: toNumber(row.runsInBehind),
+    setPieceCrossSuccess: toNumber(row.setPieceCrossSuccess),
+    setPieceCrossFail: toNumber(row.setPieceCrossFail),
+    interceptedCrosses: toNumber(row.interceptedCrosses),
     goals: toNumber(row.goals),
     assists: toNumber(row.assists),
     foulsSuffered: toNumber(row.foulsSuffered),
@@ -393,7 +446,11 @@ export function toOutfieldTotalsFromAggregate(row: UnknownRow): OutfieldTotals {
     recoveries: toNumber(row.recoveries),
     interceptions: toNumber(row.interceptions),
     offsides: toNumber(row.offsides),
-    possessionLosses: toNumber(row.possessionLosses),
+    possessionLosses:
+      toNumber(row.shortPassFail) + toNumber(row.longPassFail) +
+      toNumber(row.crossFail) + toNumber(row.dribbleFail) +
+      toNumber(row.throwFail) + toNumber(row.shotsOffTarget) +
+      toNumber(row.possessionLosses),
     responsibilityGoal: toNumber(row.responsibilityGoal),
     yellowCards: toNumber(row.yellowCards),
     redCards: toNumber(row.redCards),
@@ -422,7 +479,7 @@ export function buildRadarProfileData(totals: OutfieldTotals) {
 
   return [
     { metric: "Passe", value: clamp(metrics.passAccuracy) },
-    { metric: "Cruzamento", value: clamp(metrics.crossAccuracy) },
+    { metric: "Crossing", value: clamp(metrics.crossAccuracy) },
     { metric: "Action Individual", value: clamp(metrics.dribbleSuccess) },
     { metric: "Duels", value: clamp(metrics.duelSuccess) },
     { metric: "Defesa", value: clamp((defenseImpact / 20) * 100) },

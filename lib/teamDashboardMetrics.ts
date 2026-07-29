@@ -70,6 +70,12 @@ const EMPTY_TOTALS: TeamDashboardTotals = {
   aerialDuelFail: 0,
   defensiveDuelSuccess: 0,
   defensiveDuelFail: 0,
+  defensivePositioningToCorrect: 0,
+  throughPasses: 0,
+  runsInBehind: 0,
+  setPieceCrossSuccess: 0,
+  setPieceCrossFail: 0,
+  interceptedCrosses: 0,
   goals: 0,
   foulsSuffered: 0,
   foulsCommitted: 0,
@@ -165,13 +171,22 @@ export function aggregateTeamDashboardTotals(
       aerialDuelFail: acc.aerialDuelFail + toSafeNumber(row.aerialDuelFail),
       defensiveDuelSuccess: acc.defensiveDuelSuccess + toSafeNumber(row.defensiveDuelSuccess),
       defensiveDuelFail: acc.defensiveDuelFail + toSafeNumber(row.defensiveDuelFail),
+      defensivePositioningToCorrect: acc.defensivePositioningToCorrect + toSafeNumber(row.defensivePositioningToCorrect),
+      throughPasses: acc.throughPasses + toSafeNumber(row.throughPasses),
+      runsInBehind: acc.runsInBehind + toSafeNumber(row.runsInBehind),
+      setPieceCrossSuccess: acc.setPieceCrossSuccess + toSafeNumber(row.setPieceCrossSuccess),
+      setPieceCrossFail: acc.setPieceCrossFail + toSafeNumber(row.setPieceCrossFail),
+      interceptedCrosses: acc.interceptedCrosses + toSafeNumber(row.interceptedCrosses),
       goals: acc.goals + toSafeNumber(row.goals),
       foulsSuffered: acc.foulsSuffered + toSafeNumber(row.foulsSuffered),
       foulsCommitted: acc.foulsCommitted + toSafeNumber(row.foulsCommitted),
       recoveries: acc.recoveries + toSafeNumber(row.recoveries),
       interceptions: acc.interceptions + toSafeNumber(row.interceptions),
       offsides: acc.offsides + toSafeNumber(row.offsides),
-      possessionLosses: acc.possessionLosses + toSafeNumber(row.possessionLosses),
+      possessionLosses: acc.possessionLosses + toSafeNumber(row.shortPassFail) +
+        toSafeNumber(row.longPassFail) + toSafeNumber(row.crossFail) +
+        toSafeNumber(row.dribbleFail) + toSafeNumber(row.throwFail) +
+        toSafeNumber(row.shotsOffTarget) + toSafeNumber(row.possessionLosses),
       yellowCards: acc.yellowCards + toSafeNumber(row.yellowCards),
       redCards: acc.redCards + toSafeNumber(row.redCards),
       responsibilityGoal: acc.responsibilityGoal + toSafeNumber(row.responsibilityGoal),
@@ -199,13 +214,13 @@ export function buildTeamOffensiveChartData(
 export function buildTeamPercentageRows(totals: TeamDashboardTotals): TeamPercentageRow[] {
   return [
     {
-      metric: "Passe Curto",
+      metric: "Short Passes",
       success: totals.shortPassSuccess,
       fail: totals.shortPassFail,
       percentage: percent(totals.shortPassSuccess, totals.shortPassFail),
     },
     {
-      metric: "Passe Longo",
+      metric: "Long Passes",
       success: totals.longPassSuccess,
       fail: totals.longPassFail,
       percentage: percent(totals.longPassSuccess, totals.longPassFail),
@@ -241,10 +256,10 @@ export function buildTeamPercentageRows(totals: TeamDashboardTotals): TeamPercen
       percentage: percent(totals.aerialDuelSuccess, totals.aerialDuelFail),
     },
     {
-      metric: "Defensive Duels",
-      success: totals.defensiveDuelSuccess,
-      fail: totals.defensiveDuelFail,
-      percentage: percent(totals.defensiveDuelSuccess, totals.defensiveDuelFail),
+      metric: "Set-Piece Crosses",
+      success: totals.setPieceCrossSuccess,
+      fail: totals.setPieceCrossFail,
+      percentage: percent(totals.setPieceCrossSuccess, totals.setPieceCrossFail),
     },
     {
       metric: "Saves (GK)",
@@ -290,6 +305,10 @@ export function buildTeamNumericRows(totals: TeamDashboardTotals): TeamNumericRo
       total: totals.possessionLosses,
       per90: per90(totals.possessionLosses, totalMinutes),
     },
+    { metric: "Defensive Positioning to Correct", total: totals.defensivePositioningToCorrect, per90: per90(totals.defensivePositioningToCorrect, totalMinutes) },
+    { metric: "Through Passes", total: totals.throughPasses, per90: per90(totals.throughPasses, totalMinutes) },
+    { metric: "Runs in Behind", total: totals.runsInBehind, per90: per90(totals.runsInBehind, totalMinutes) },
+    { metric: "Intercepted Crosses", total: totals.interceptedCrosses, per90: per90(totals.interceptedCrosses, totalMinutes) },
     {
       metric: "Yellow Cards",
       total: totals.yellowCards,
@@ -357,17 +376,17 @@ export function buildTeamOverviewStats(
 
   return [
     {
-      title: "Average Passe Curto",
+      title: "Average Short Pass Accuracy",
       value: `${formatMetric(shortPassAverage)}%`,
       description: "Percentage average per matchday no current filter.",
     },
     {
-      title: "Average Passe Longo",
+      title: "Average Long Pass Accuracy",
       value: `${formatMetric(longPassAverage)}%`,
       description: "Average ability to connect with long passes.",
     },
     {
-      title: "Average Cruzamento",
+      title: "Average Cross Accuracy",
       value: `${formatMetric(crossAverage)}%`,
       description: "Average quality of deliveries into the box.",
     },
@@ -406,13 +425,13 @@ export function buildTeamAnalyticsTableRows(
 
   return [
     {
-      metric: "Passe Curto",
+      metric: "Short Passes",
       total: totals.shortPassSuccess + totals.shortPassFail,
       percentage: percent(totals.shortPassSuccess, totals.shortPassFail),
       per90: per90(totals.shortPassSuccess + totals.shortPassFail, totalMinutes),
     },
     {
-      metric: "Passe Longo",
+      metric: "Long Passes",
       total: totals.longPassSuccess + totals.longPassFail,
       percentage: percent(totals.longPassSuccess, totals.longPassFail),
       per90: per90(totals.longPassSuccess + totals.longPassFail, totalMinutes),
@@ -448,13 +467,10 @@ export function buildTeamAnalyticsTableRows(
       per90: per90(totals.aerialDuelSuccess + totals.aerialDuelFail, totalMinutes),
     },
     {
-      metric: "Defensive Duels",
-      total: totals.defensiveDuelSuccess + totals.defensiveDuelFail,
-      percentage: percent(totals.defensiveDuelSuccess, totals.defensiveDuelFail),
-      per90: per90(
-        totals.defensiveDuelSuccess + totals.defensiveDuelFail,
-        totalMinutes,
-      ),
+      metric: "Set-Piece Crosses",
+      total: totals.setPieceCrossSuccess + totals.setPieceCrossFail,
+      percentage: percent(totals.setPieceCrossSuccess, totals.setPieceCrossFail),
+      per90: per90(totals.setPieceCrossSuccess + totals.setPieceCrossFail, totalMinutes),
     },
   ];
 }
@@ -472,14 +488,14 @@ export function buildTeamEvolutionCharts(
   }> = [
     {
       key: "short-pass",
-      title: "Passe Curto %",
+      title: "Short Pass Accuracy %",
       description: "Short-pass accuracy by matchday.",
       color: "#00e7ff",
       value: (row) => percent(row.shortPassSuccess, row.shortPassFail),
     },
     {
       key: "long-pass",
-      title: "Passe Longo %",
+      title: "Long Pass Accuracy %",
       description: "Ability to connect accurately with long passes.",
       color: "#ff2ea6",
       value: (row) => percent(row.longPassSuccess, row.longPassFail),
@@ -566,7 +582,7 @@ export function buildTeamEvolutionCharts(
     },
     {
       key: "throw-ins-success",
-      title: "Throw-ins Certos",
+      title: "Successful Throw-ins",
       description: "Successful throw-in volume per matchday.",
       color: "#a78bfa",
       displayMode: "raw",
