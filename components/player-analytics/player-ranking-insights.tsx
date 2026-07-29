@@ -11,15 +11,15 @@ export function PlayerRankingInsights({ rows }: { rows: ComparisonSummaryRow[] }
       {COMPARISON_RANKING_METRICS.map((metric) => {
         const orderedRows = [...rows].sort((left, right) => right[metric.key] - left[metric.key]);
         const topRows = orderedRows.slice(0, 5);
-        const bottomRows = [...orderedRows].reverse().slice(0, 5);
+        const remainingRows = orderedRows.slice(5);
 
         return (
           <Card key={metric.key}>
             <CardHeader>
               <CardTitle>{metric.label}</CardTitle>
-              <CardDescription>Top five and bottom five at a glance.</CardDescription>
+            <CardDescription>Top five at a glance. Expand to see the full ranking.</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
+            <CardContent className="space-y-3">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-300">
                   Top five
@@ -41,18 +41,19 @@ export function PlayerRankingInsights({ rows }: { rows: ComparisonSummaryRow[] }
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-secondary">
-                  Bottom five
-                </p>
-                <div className="space-y-2">
-                  {bottomRows.map((row, index) => (
+              {remainingRows.length > 0 ? (
+                <details className="group rounded-lg border border-border/70 p-3">
+                  <summary className="cursor-pointer text-sm font-semibold text-secondary">
+                    Show all {orderedRows.length} players
+                  </summary>
+                <div className="mt-3 space-y-2">
+                  {remainingRows.map((row, index) => (
                     <div
-                      key={`${metric.key}-bottom-${row.label}`}
+                      key={`${metric.key}-remaining-${row.label}`}
                       className="flex items-center justify-between rounded-lg border border-secondary/20 bg-secondary/5 px-3 py-2"
                     >
                       <p className="text-sm">
-                        {index + 1}. {row.label}
+                        {index + 6}. {row.label}
                       </p>
                       <p className="text-sm font-semibold text-secondary">
                         {formatMetric(row[metric.key])}%
@@ -60,7 +61,8 @@ export function PlayerRankingInsights({ rows }: { rows: ComparisonSummaryRow[] }
                     </div>
                   ))}
                 </div>
-              </div>
+                </details>
+              ) : null}
             </CardContent>
           </Card>
         );

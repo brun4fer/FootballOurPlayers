@@ -39,7 +39,7 @@ export default async function TotalAllMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Totals (All Matchdays)"
+        title="Totals by Player (All Matches)"
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -63,7 +63,7 @@ export default async function TotalAllMatchdaysPage({
   if (!selectedPlayerId) {
     return (
       <AnalyticsPageShell
-        title="Totals (All Matchdays)"
+        title="Totals by Player (All Matches)"
         description="Consolidated analysis of one player across all competition matchdays."
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
@@ -123,7 +123,7 @@ export default async function TotalAllMatchdaysPage({
   if (searchQuery && matchesPlayed === 0) {
     return (
       <AnalyticsPageShell
-        title="Totals (All Matchdays)"
+        title="Totals by Player (All Matches)"
         description="Totals and derived percentages for the selected player throughout the season."
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
@@ -164,7 +164,7 @@ export default async function TotalAllMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Totals (All Matchdays)"
+      title="Totals by Player (All Matches)"
       description="Totals and derived percentages for the selected player throughout the entire season."
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
@@ -203,7 +203,7 @@ export default async function TotalAllMatchdaysPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Volume Metrics</CardTitle>
+          <CardTitle>Numeric Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerNumericTable rows={numericRows} />

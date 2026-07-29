@@ -5,7 +5,6 @@ import { PlayerNumericTable } from "@/components/player-analytics/player-numeric
 import { PlayerOverviewStats } from "@/components/player-analytics/player-overview-stats";
 import { PlayerPercentageTable } from "@/components/player-analytics/player-percentage-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   filterBySearch,
   formatMatchLabel,
@@ -14,7 +13,6 @@ import {
   matchesSearch,
 } from "@/lib/analytics-search";
 import { aggregateOutfieldTotals } from "@/lib/dashboardMetrics";
-import { goalkeeperStatFields, outfieldStatFields } from "@/lib/stat-fields";
 import {
   buildGoalkeeperSummary,
   buildPlayerNumericRows,
@@ -40,7 +38,7 @@ export default async function SingleMatchdayPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="By Matchday"
+        title="Player by Match"
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -71,7 +69,7 @@ export default async function SingleMatchdayPage({
   if (!selectedPlayerId || !selectedMatchId) {
     return (
       <AnalyticsPageShell
-        title="By Matchday"
+        title="Player by Match"
         description="Focused analysis of one player on a single matchday."
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
@@ -114,7 +112,7 @@ export default async function SingleMatchdayPage({
   if (outfieldRows.length === 0 && goalkeeperRows.length === 0) {
     return (
       <AnalyticsPageShell
-        title="By Matchday"
+        title="Player by Match"
         description="Focus on the player performance on a specific matchday."
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
@@ -144,8 +142,6 @@ export default async function SingleMatchdayPage({
     );
   }
 
-  const outfieldRow = outfieldRows[0];
-  const goalkeeperRow = goalkeeperRows[0];
   const totals = aggregateOutfieldTotals(outfieldRows);
   const overviewStats = buildPlayerOverviewStats(totals, 1);
   const percentageRows = buildPlayerPercentageRows(totals);
@@ -176,16 +172,10 @@ export default async function SingleMatchdayPage({
   const visibleNumericRows = searchMatchesScope
     ? numericRows
     : filterBySearch(numericRows, searchQuery, (row) => [row.metric, row.total]);
-  const visibleOutfieldStatFields = searchMatchesScope
-    ? outfieldStatFields
-    : filterBySearch(outfieldStatFields, searchQuery, (field) => [field.label, field.key]);
-  const visibleGoalkeeperStatFields = searchMatchesScope
-    ? goalkeeperStatFields
-    : filterBySearch(goalkeeperStatFields, searchQuery, (field) => [field.label, field.key]);
 
   return (
     <AnalyticsPageShell
-      title="By Matchday"
+      title="Player by Match"
       description="Focus on the player performance on a specific matchday."
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
@@ -234,80 +224,13 @@ export default async function SingleMatchdayPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Volume Metrics</CardTitle>
+          <CardTitle>Numeric Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <PlayerNumericTable rows={visibleNumericRows} />
         </CardContent>
       </Card>
 
-      {outfieldRow ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Raw Match Details</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Metrica</TableHead>
-                  <TableHead>Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleOutfieldStatFields.length > 0 ? (
-                  visibleOutfieldStatFields.map((field) => (
-                    <TableRow key={field.key}>
-                      <TableCell>{field.label}</TableCell>
-                      <TableCell>{String(outfieldRow[field.key] ?? 0)}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="py-8 text-center text-sm text-muted-foreground">
-                      No metrics match the current search.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {goalkeeperRow ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Goalkeeper Details</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Metrica</TableHead>
-                  <TableHead>Valor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleGoalkeeperStatFields.length > 0 ? (
-                  visibleGoalkeeperStatFields.map((field) => (
-                    <TableRow key={field.key}>
-                      <TableCell>{field.label}</TableCell>
-                      <TableCell>{String(goalkeeperRow[field.key] ?? 0)}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="py-8 text-center text-sm text-muted-foreground">
-                      No metrics match the current search.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ) : null}
     </AnalyticsPageShell>
   );
 }

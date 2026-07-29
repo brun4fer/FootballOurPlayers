@@ -130,7 +130,20 @@ export type EvolutionMetricKey =
   | "throwSuccess"
   | "shotsOnTarget"
   | "aerialDuelSuccess"
-  | "defensivePositioningToCorrect";
+  | "defensivePositioningToCorrect"
+  | "throughPasses"
+  | "runsInBehind"
+  | "interceptedCrosses"
+  | "recoveries"
+  | "interceptions"
+  | "possessionLosses"
+  | "goals"
+  | "assists"
+  | "foulsSuffered"
+  | "foulsCommitted"
+  | "offsides"
+  | "yellowCards"
+  | "redCards";
 
 export type EvolutionMetricDefinition = {
   key: EvolutionMetricKey;
@@ -193,14 +206,20 @@ const ACTION_PROFILE_DEFINITIONS = [
 ] as const;
 
 export const EVOLUTION_METRICS: EvolutionMetricDefinition[] = [
-  { key: "shortPassSuccess", label: "Short Passes Success" },
-  { key: "longPassSuccess", label: "Long Passes Success" },
-  { key: "crossSuccess", label: "Crosses Success" },
-  { key: "dribbleSuccess", label: "Individual Actions Success" },
-  { key: "throwSuccess", label: "Throw-ins Success" },
-  { key: "shotsOnTarget", label: "Shots on Target" },
-  { key: "aerialDuelSuccess", label: "Aerial Duels Success" },
   { key: "defensivePositioningToCorrect", label: "Defensive Positioning to Correct" },
+  { key: "throughPasses", label: "Through Passes" },
+  { key: "runsInBehind", label: "Runs in Behind" },
+  { key: "interceptedCrosses", label: "Intercepted Crosses" },
+  { key: "recoveries", label: "Recoveries" },
+  { key: "interceptions", label: "Interceptions" },
+  { key: "possessionLosses", label: "Possession Losses" },
+  { key: "goals", label: "Goals" },
+  { key: "assists", label: "Assists" },
+  { key: "foulsSuffered", label: "Fouls Won" },
+  { key: "foulsCommitted", label: "Fouls Committed" },
+  { key: "offsides", label: "Offsides" },
+  { key: "yellowCards", label: "Yellow Cards" },
+  { key: "redCards", label: "Red Cards" },
 ];
 
 export { COMPARISON_RANKING_METRICS, EVOLUTION_COLORS, getSeriesColor };
@@ -405,7 +424,6 @@ export function buildPlayerOverviewStats(
   totals: OutfieldTotals,
   matchesPlayed: number,
 ): OverviewStat[] {
-  const metrics = buildComparisonMetrics(totals);
   const numeric = buildNumericActions(
     totals,
     {
@@ -421,13 +439,10 @@ export function buildPlayerOverviewStats(
   return [
     { title: "Goals", value: totals.goals },
     { title: "Assists", value: totals.assists },
-    { title: "Pass Accuracy", value: `${formatMetric(metrics.passAccuracy)}%` },
-    {
-      title: "Shot Accuracy",
-      value: `${formatMetric(percent(totals.shotsOnTarget, totals.shotsOffTarget))}%`,
-    },
-    { title: "Minutos", value: totals.minutesPlayed },
+    { title: "Red Cards", value: totals.redCards },
+    { title: "Yellow Cards", value: totals.yellowCards },
     { title: "Actions / 90", value: formatMetric(numeric.actionsPer90) },
+    { title: "Minutes Played", value: totals.minutesPlayed },
   ];
 }
 

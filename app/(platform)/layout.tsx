@@ -36,7 +36,7 @@ export default async function PlatformLayout({
             </a>
             <ThemeToggle />
             <form action={logoutAction}>
-              <button className="rounded-md border px-3 py-2 text-xs hover:bg-accent">Sair</button>
+              <button className="rounded-md border px-3 py-2 text-xs hover:bg-accent">Sign out</button>
             </form>
           </div>
         </header>

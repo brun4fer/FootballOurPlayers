@@ -36,7 +36,7 @@ export default async function ComparisonMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Matchday Comparison"
+        title="Matchday Player Comparison"
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -95,7 +95,7 @@ export default async function ComparisonMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Matchday Comparison"
+      title="Matchday Player Comparison"
       description="Automatically compares all outfield players used on the selected matchday. Goalkeepers are excluded."
       filters={[
         { label: "Competition", value: selectedCompetition?.name },

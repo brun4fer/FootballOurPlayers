@@ -4,7 +4,6 @@ import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty
 import { PlayerEvolutionChartPanel } from "@/components/player-analytics/player-evolution-chart-panel";
 import { PlayerOverviewStats } from "@/components/player-analytics/player-overview-stats";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   describeList,
   filterBySearch,
@@ -13,7 +12,7 @@ import {
   getSearchQuery,
   matchesSearch,
 } from "@/lib/analytics-search";
-import { aggregateOutfieldTotals } from "@/lib/dashboardMetrics";
+import { aggregateOutfieldTotals, percent, type OutfieldMatchRow } from "@/lib/dashboardMetrics";
 import {
   buildMetricEvolutionData,
   buildPlayerOverviewStats,
@@ -38,7 +37,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Evolution"
+        title="Evolution by Player"
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -62,7 +61,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!selectedPlayerId) {
     return (
       <AnalyticsPageShell
-        title="Evolution"
+        title="Evolution by Player"
         description="Line-chart view by matchday for a single player."
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
@@ -106,7 +105,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (visibleOutfieldRows.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Evolution"
+        title="Evolution by Player"
         description="Line charts tracking performance changes by matchday."
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
@@ -152,10 +151,34 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     title: metric.label,
     data: buildMetricEvolutionData(metric.key, chartRowsByPlayer, evolutionLines),
   }));
+  const percentageDefinitions: Array<{
+    key: string;
+    label: string;
+    value: (row: OutfieldMatchRow) => number;
+  }> = [
+    { key: "short-pass", label: "Short Pass Accuracy", value: (row) => percent(row.shortPassSuccess, row.shortPassFail) },
+    { key: "long-pass", label: "Long Pass Accuracy", value: (row) => percent(row.longPassSuccess, row.longPassFail) },
+    { key: "crosses", label: "Cross Accuracy", value: (row) => percent(row.crossSuccess, row.crossFail) },
+    { key: "individual-actions", label: "Individual Actions Success", value: (row) => percent(row.dribbleSuccess, row.dribbleFail) },
+    { key: "throw-ins", label: "Throw-in Accuracy", value: (row) => percent(row.throwSuccess, row.throwFail) },
+    { key: "shots", label: "Shot Accuracy", value: (row) => percent(row.shotsOnTarget, row.shotsOffTarget) },
+    { key: "aerial-duels", label: "Aerial Duel Success", value: (row) => percent(row.aerialDuelSuccess, row.aerialDuelFail) },
+    { key: "set-piece-crosses", label: "Set-Piece Cross Accuracy", value: (row) => percent(row.setPieceCrossSuccess, row.setPieceCrossFail) },
+  ];
+  const percentageCharts = percentageDefinitions.map((metric) => ({
+    key: metric.key,
+    title: metric.label,
+    data: visibleOutfieldRows.map((row) => ({
+      matchLabel: `CD Feirense vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
+      matchdayNumber: row.matchdayNumber,
+      opponentTeamName: row.opponentTeamName,
+      [`player_${selectedPlayerId}`]: metric.value(row),
+    })),
+  }));
 
   return (
     <AnalyticsPageShell
-      title="Evolution"
+      title="Evolution by Player"
       description="Line charts tracking performance changes by matchday."
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
@@ -182,53 +205,36 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
       <Card>
         <CardHeader>
-          <CardTitle>Evolution Charts</CardTitle>
+          <CardTitle>Percentage Evolution</CardTitle>
           <CardDescription>
-            {player?.name ?? "Player"} matchday by matchday, with averages, trends and consistency.
+            Success rates for {player?.name ?? "the player"}, match by match.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <PlayerEvolutionChartPanel
-            charts={evolutionCharts}
+            charts={percentageCharts}
             lines={evolutionLines}
-            displayMode="per90"
+            displayMode="percentage"
           />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Matchday Record</CardTitle>
+          <CardTitle>Numeric Actions Evolution</CardTitle>
+          <CardDescription>
+            Absolute action volumes for {player?.name ?? "the player"} in each match.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Matchday</TableHead>
-                <TableHead>Opponent</TableHead>
-                <TableHead>Minutos</TableHead>
-                <TableHead>Goals</TableHead>
-                <TableHead>Assistencias</TableHead>
-                <TableHead>Recuperacoes</TableHead>
-                <TableHead>Intercecoes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleOutfieldRows.map((row) => (
-                <TableRow key={row.matchId}>
-                  <TableCell>{row.matchdayNumber}</TableCell>
-                  <TableCell>{row.opponentTeamName}</TableCell>
-                  <TableCell>{row.minutesPlayed}</TableCell>
-                  <TableCell>{row.goals}</TableCell>
-                  <TableCell>{row.assists}</TableCell>
-                  <TableCell>{row.recoveries}</TableCell>
-                  <TableCell>{row.interceptions}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent>
+          <PlayerEvolutionChartPanel
+            charts={evolutionCharts}
+            lines={evolutionLines}
+            displayMode="raw"
+          />
         </CardContent>
       </Card>
+
     </AnalyticsPageShell>
   );
 }

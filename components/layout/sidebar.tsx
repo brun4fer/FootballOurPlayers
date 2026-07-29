@@ -15,10 +15,10 @@ const links = [
     icon: BarChart3,
     children: [
       { href: "/players/total-competition", label: "Competition Totals" },
-      { href: "/players/total-all-matchdays", label: "Totals (All Matchdays)" },
-      { href: "/players/single-matchday", label: "By Matchday" },
-      { href: "/players/evolution", label: "Evolution" },
-      { href: "/players/comparison-matchdays", label: "Matchday Comparison" },
+      { href: "/players/total-all-matchdays", label: "Totals by Player (All Matches)" },
+      { href: "/players/single-matchday", label: "Player by Match" },
+      { href: "/players/evolution", label: "Evolution by Player" },
+      { href: "/players/comparison-matchdays", label: "Matchday Player Comparison" },
       { href: "/players/comparison-total", label: "Overall Comparison" },
       { href: "/players/action-profile", label: "Action Profile" },
     ],
@@ -46,7 +46,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-full border-b border-border/60 bg-card/60 backdrop-blur md:h-screen md:w-64 md:border-b-0 md:border-r">
+    <aside className="w-full shrink-0 border-b border-border/60 bg-card/60 backdrop-blur md:sticky md:top-0 md:h-screen md:w-72 md:overflow-y-auto md:border-b-0 md:border-r">
       <div className="flex items-center gap-3 border-b border-border/60 p-4">
         <img
           src="/favicon.ico"
@@ -81,7 +81,7 @@ export function Sidebar() {
                   <span className="truncate">{label}</span>
                 </Link>
 
-                <div className="grid gap-1 pl-4 md:pl-9">
+                <div className="grid gap-1 pl-3 md:pl-7">
                   {children.map((child) => {
                     const childIsActive = pathname === child.href;
 
@@ -90,14 +90,14 @@ export function Sidebar() {
                         key={child.href}
                         href={child.href}
                         className={cn(
-                          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                          "flex min-h-9 items-start gap-2 rounded-lg px-3 py-2 text-sm leading-5 transition-colors",
                           childIsActive
                             ? "bg-secondary/15 text-secondary ring-1 ring-secondary/40"
                             : "text-muted-foreground hover:bg-accent/30 hover:text-foreground",
                         )}
                       >
-                        <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
-                        <span className="truncate">{child.label}</span>
+                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-80" />
+                        <span className="min-w-0 break-words">{child.label}</span>
                       </Link>
                     );
                   })}

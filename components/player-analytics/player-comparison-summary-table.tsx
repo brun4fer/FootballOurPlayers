@@ -42,7 +42,7 @@ const columns: Array<{
   { key: "assists", label: "Assists", render: (row) => row.assists },
   { key: "recoveries", label: "Recoveries", render: (row) => row.recoveries },
   { key: "interceptions", label: "Interceptions", render: (row) => row.interceptions },
-  { key: "minutesPlayed", label: "Minutos", render: (row) => row.minutesPlayed },
+  { key: "minutesPlayed", label: "Minutes Played", render: (row) => row.minutesPlayed },
 ];
 
 function getSortValue(row: ComparisonSummaryRow, key: SortKey) {
