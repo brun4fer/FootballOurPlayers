@@ -6,6 +6,7 @@ import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-ana
 import { PlayerComparisonSummaryTable } from "@/components/player-analytics/player-comparison-summary-table";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerRankingInsights } from "@/components/player-analytics/player-ranking-insights";
+import { PdfExportButton } from "@/components/pdf/pdf-export-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { describeList, filterBySearch, getSearchQuery, matchesSearch } from "@/lib/analytics-search";
 import {
@@ -37,7 +38,9 @@ export default async function ComparisonTotalPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Comparison Geral"
+        title="Filter Comparison"
+        showPageExport={false}
+        showReportSummary={false}
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -65,8 +68,8 @@ export default async function ComparisonTotalPage({
   const visibleSelectedPlayerIds = visibleSelectedPlayerOptions.map((player) => player.id);
   const hasPlayerSelection = selectedPlayerIds.length >= 1;
   const hasValidSelection = visibleSelectedPlayerIds.length >= 1;
-  const shouldShowCharts =
-    visibleSelectedPlayerIds.length >= 1 && visibleSelectedPlayerIds.length <= 3;
+  const shouldShowRadar =
+    visibleSelectedPlayerIds.length >= 1 && visibleSelectedPlayerIds.length <= 2;
 
   const loadedData = hasValidSelection
     ? await loadPlayerAnalyticsData({
@@ -98,15 +101,17 @@ export default async function ComparisonTotalPage({
 
   return (
     <AnalyticsPageShell
-      title="Comparison Geral"
-      description="Aggregated totals for several players across all competition matchdays."
+      title="Filter Comparison"
+      description="Compares the selected players action by action across all competition matches."
+      showPageExport={false}
+      showReportSummary={false}
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
         {
           label: "Players",
           value: describeList(
             visibleSelectedPlayerOptions.map((player) => player.name),
-            hasPlayerSelection ? "No results" : "Selecao insuficiente",
+            hasPlayerSelection ? "No results" : "Insufficient selection",
           ),
         },
         {
@@ -124,7 +129,7 @@ export default async function ComparisonTotalPage({
         selectedPlayerIds={selectedPlayerIds}
         playerMode="multiple"
         playerLabel="Players"
-        description="Select up to three players to view comparison charts. With more players, the analysis focuses on the ranking."
+        description="Select the players you want to compare action by action."
         searchQuery={searchQuery}
       />
 
@@ -133,7 +138,7 @@ export default async function ComparisonTotalPage({
           title={
             hasPlayerSelection
               ? "No players match the current search"
-              : "Selecao insuficiente"
+              : "Insufficient selection"
           }
           description={
             hasPlayerSelection
@@ -143,46 +148,80 @@ export default async function ComparisonTotalPage({
         />
       ) : (
         <>
-          <Card>
+          <Card id="overall-player-comparison-ranking">
             <CardHeader>
-              <CardTitle>Classificacao Comparativa</CardTitle>
-              <CardDescription>
-                Scalable comparison table with sorting by any column and automatic highlighting of the best values.
-              </CardDescription>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1.5">
+                  <CardTitle>Comparison Ranking</CardTitle>
+                  <CardDescription>
+                    Comparison across all competition matches, sortable by any column.
+                  </CardDescription>
+                </div>
+                <PdfExportButton
+                  targetId="overall-player-comparison-ranking"
+                  fileName={`${selectedCompetition?.name ?? "competition"}-overall-player-ranking`}
+                  label="Generate ranking PDF"
+                  orientation="landscape"
+                />
+              </div>
             </CardHeader>
             <CardContent>
-              <PlayerComparisonSummaryTable rows={comparisonRows} />
+              <PlayerComparisonSummaryTable rows={comparisonRows} showHeading={false} />
             </CardContent>
           </Card>
 
-          {comparisonRows.length > 1 ? <PlayerRankingInsights rows={comparisonRows} /> : null}
+          {comparisonRows.length > 1 ? (
+            <PlayerRankingInsights
+              rows={comparisonRows}
+              enablePdfExport
+              pdfFileNamePrefix={`${selectedCompetition?.name ?? "competition"}-overall-percentage-ranking`}
+            />
+          ) : null}
 
-          {shouldShowCharts ? (
-            <div className="grid gap-4 xl:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Chart by Metric</CardTitle>
-                  <CardDescription>
-                    Simplified comparison for one to three players, showing one metric at a time.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <PlayerMetricFocusChart rows={comparisonRows} />
-                </CardContent>
-              </Card>
+          <div className={shouldShowRadar ? "grid gap-4 xl:grid-cols-2" : undefined}>
+            <Card id="overall-player-comparison-chart">
+              <CardHeader>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1.5">
+                    <CardTitle>Action Efficiency Chart</CardTitle>
+                    <CardDescription>
+                      Select an action to compare every selected player.
+                    </CardDescription>
+                  </div>
+                  <PdfExportButton
+                    targetId="overall-player-comparison-chart"
+                    fileName={`${selectedCompetition?.name ?? "competition"}-overall-efficiency-chart`}
+                    label="Generate chart PDF"
+                    orientation="landscape"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <PlayerMetricFocusChart rows={comparisonRows} />
+              </CardContent>
+            </Card>
 
-              <Card>
+            {shouldShowRadar ? (
+              <Card id="overall-player-comparison-radar">
                 <CardHeader>
-                  <CardTitle>
-                    {comparisonScopes.length === 1 ? "Player Radar" : "Comparison Radar"}
-                  </CardTitle>
-                  <CardDescription>
-                    {comparisonScopes.length === 1
-                      ? "Complete profile of the selected player."
-                      : comparisonScopes.length === 2
-                        ? "Available when exactly two players are selected."
-                        : "With three players, the radar is omitted to avoid visual clutter."}
-                  </CardDescription>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1.5">
+                      <CardTitle>
+                        {comparisonScopes.length === 1 ? "Player Radar" : "Comparison Radar"}
+                      </CardTitle>
+                      <CardDescription>
+                        {comparisonScopes.length === 1
+                          ? "Complete profile of the selected player."
+                          : "Direct comparison between the two selected players."}
+                      </CardDescription>
+                    </div>
+                    <PdfExportButton
+                      targetId="overall-player-comparison-radar"
+                      fileName={`${selectedCompetition?.name ?? "competition"}-overall-comparison-radar`}
+                      label="Generate radar PDF"
+                      orientation="landscape"
+                    />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {comparisonScopes.length === 1 ? (
@@ -191,7 +230,7 @@ export default async function ComparisonTotalPage({
                       color={getSeriesColor(comparisonScopes[0]?.label ?? "Player")}
                       name={comparisonScopes[0]?.label ?? "Player"}
                     />
-                  ) : radarComparisonData.length > 0 ? (
+                  ) : (
                     <RadarComparisonChart
                       data={radarComparisonData}
                       primaryLabel={comparisonScopes[0]?.label ?? "Player A"}
@@ -199,24 +238,11 @@ export default async function ComparisonTotalPage({
                       primaryColor={getSeriesColor(comparisonScopes[0]?.label ?? "Player A")}
                       secondaryColor={getSeriesColor(comparisonScopes[1]?.label ?? "Player B")}
                     />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      The radar is available for one player or a direct comparison between two players.
-                    </p>
                   )}
                 </CardContent>
               </Card>
-            </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Charts Ocultos</CardTitle>
-                <CardDescription>
-                  Select up to three players to view comparison charts.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
+            ) : null}
+          </div>
         </>
       )}
     </AnalyticsPageShell>

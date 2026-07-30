@@ -259,7 +259,7 @@ export function buildRadarNormalizedMetrics(totals: PlayerMetricsTotals) {
     },
     { metric: "Crossing", value: clamp0to100(accuracy.crossAccuracy) },
     { metric: "Individual Actions", value: clamp0to100(accuracy.dribbleAccuracy) },
-    { metric: "Duels", value: clamp0to100(duelAccuracy) },
+    { metric: "Aerial Duels", value: clamp0to100(duelAccuracy) },
     { metric: "Defending", value: normalizeByCap(defensiveActionsPer90, 20) },
     {
       metric: "Finishing",

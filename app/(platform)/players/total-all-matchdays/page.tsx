@@ -1,4 +1,5 @@
 import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
+import { PdfExportButton } from "@/components/pdf/pdf-export-button";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerNumericTable } from "@/components/player-analytics/player-numeric-table";
@@ -39,7 +40,9 @@ export default async function TotalAllMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Totals by Player (All Matches)"
+        title="Player Total Actions"
+        showPageExport={false}
+        showReportSummary={false}
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -63,8 +66,10 @@ export default async function TotalAllMatchdaysPage({
   if (!selectedPlayerId) {
     return (
       <AnalyticsPageShell
-        title="Totals by Player (All Matches)"
+        title="Player Total Actions"
         description="Consolidated analysis of one player across all competition matchdays."
+        showPageExport={false}
+        showReportSummary={false}
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
           { label: "Player", value: "No players available" },
@@ -123,8 +128,10 @@ export default async function TotalAllMatchdaysPage({
   if (searchQuery && matchesPlayed === 0) {
     return (
       <AnalyticsPageShell
-        title="Totals by Player (All Matches)"
+        title="Player Total Actions"
         description="Totals and derived percentages for the selected player throughout the season."
+        showPageExport={false}
+        showReportSummary={false}
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
           { label: "Player", value: player?.name },
@@ -151,12 +158,16 @@ export default async function TotalAllMatchdaysPage({
   }
 
   const totals = aggregateOutfieldTotals(visibleOutfieldRows);
-  const overviewStats = buildPlayerOverviewStats(totals, matchesPlayed);
+  const overviewStats = buildPlayerOverviewStats(totals, matchesPlayed, {
+    actionMetric: "total",
+    goalkeeperRows: visibleGoalkeeperRows,
+  });
   const percentageRows = buildPlayerPercentageRows(totals);
   const numericRows = buildPlayerNumericRows({
     totals,
     goalkeeperRows: visibleGoalkeeperRows,
     matchesPlayed,
+    includeActionsPer90: false,
   });
   const goalkeeperSummary = player?.isGoalkeeper
     ? buildGoalkeeperSummary(visibleGoalkeeperRows)
@@ -164,8 +175,10 @@ export default async function TotalAllMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Totals by Player (All Matches)"
+      title="Player Total Actions"
       description="Totals and derived percentages for the selected player throughout the entire season."
+      showPageExport={false}
+      showReportSummary={false}
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
         { label: "Player", value: player?.name },
@@ -184,14 +197,34 @@ export default async function TotalAllMatchdaysPage({
         searchQuery={searchQuery}
       />
 
-      <PlayerOverviewStats stats={overviewStats} />
+      <section id="player-total-actions-summary" className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-[var(--font-heading)] text-xl font-semibold">Player Summary</h2>
+          <PdfExportButton
+            targetId="player-total-actions-summary"
+            fileName={`${player?.name ?? "player"}-${selectedCompetition?.name ?? "competition"}-summary`}
+            label="Generate summary PDF"
+            orientation="landscape"
+          />
+        </div>
+        <PlayerOverviewStats stats={overviewStats} />
+      </section>
 
-      <Card>
+      <Card id="player-percentage-metrics">
         <CardHeader>
-          <CardTitle>Percentage Metrics</CardTitle>
-          <CardDescription>
-            {player?.name ?? "Player"} across {matchesPlayed} recorded matchday(s).
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Percentage Metrics</CardTitle>
+              <CardDescription>
+                {player?.name ?? "Player"} across {matchesPlayed} recorded matchday(s).
+              </CardDescription>
+            </div>
+            <PdfExportButton
+              targetId="player-percentage-metrics"
+              fileName={`${player?.name ?? "player"}-${selectedCompetition?.name ?? "competition"}-percentage-metrics`}
+              label="Generate percentages PDF"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <PlayerPercentageTable
@@ -201,12 +234,19 @@ export default async function TotalAllMatchdaysPage({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="player-numeric-actions">
         <CardHeader>
-          <CardTitle>Numeric Actions</CardTitle>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <CardTitle>Numeric Actions</CardTitle>
+            <PdfExportButton
+              targetId="player-numeric-actions"
+              fileName={`${player?.name ?? "player"}-${selectedCompetition?.name ?? "competition"}-numeric-actions`}
+              label="Generate actions PDF"
+            />
+          </div>
         </CardHeader>
         <CardContent>
-          <PlayerNumericTable rows={numericRows} />
+          <PlayerNumericTable rows={numericRows} showTotalActionsNote />
         </CardContent>
       </Card>
     </AnalyticsPageShell>

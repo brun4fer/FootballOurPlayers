@@ -1,4 +1,5 @@
 import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
+import { PdfExportButton } from "@/components/pdf/pdf-export-button";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerEvolutionChartPanel } from "@/components/player-analytics/player-evolution-chart-panel";
@@ -12,7 +13,12 @@ import {
   getSearchQuery,
   matchesSearch,
 } from "@/lib/analytics-search";
-import { aggregateOutfieldTotals, percent, type OutfieldMatchRow } from "@/lib/dashboardMetrics";
+import {
+  aggregateOutfieldTotals,
+  buildNumericActions,
+  percent,
+  type OutfieldMatchRow,
+} from "@/lib/dashboardMetrics";
 import {
   buildMetricEvolutionData,
   buildPlayerOverviewStats,
@@ -37,7 +43,9 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Evolution by Player"
+        title="Player Actions Evolution"
+        showPageExport={false}
+        showReportSummary={false}
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -61,8 +69,10 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   if (!selectedPlayerId) {
     return (
       <AnalyticsPageShell
-        title="Evolution by Player"
+        title="Player Actions Evolution"
         description="Line-chart view by matchday for a single player."
+        showPageExport={false}
+        showReportSummary={false}
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
           { label: "Player", value: "No players available" },
@@ -93,6 +103,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
   const player = loadedData.playerMap.get(selectedPlayerId);
   const outfieldRows = loadedData.outfieldRowsByPlayer.get(selectedPlayerId) ?? [];
+  const goalkeeperRows = loadedData.goalkeeperRowsByPlayer.get(selectedPlayerId) ?? [];
   const searchMatchesScope = matchesSearch(searchQuery, [
     selectedCompetition?.name,
     player?.name,
@@ -101,12 +112,17 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   const visibleOutfieldRows = searchMatchesScope
     ? outfieldRows
     : filterBySearch(outfieldRows, searchQuery, getMatchSearchValues);
+  const visibleGoalkeeperRows = searchMatchesScope
+    ? goalkeeperRows
+    : filterBySearch(goalkeeperRows, searchQuery, getMatchSearchValues);
 
   if (visibleOutfieldRows.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Evolution by Player"
+        title="Player Actions Evolution"
         description="Line charts tracking performance changes by matchday."
+        showPageExport={false}
+        showReportSummary={false}
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
           { label: "Player", value: player?.name },
@@ -136,6 +152,10 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
   const overviewStats = buildPlayerOverviewStats(
     totals,
     new Set(visibleOutfieldRows.map((row) => row.matchId)).size,
+    {
+      actionMetric: "total",
+      goalkeeperRows: visibleGoalkeeperRows,
+    },
   );
   const evolutionLines: EvolutionLine[] = [
     {
@@ -146,11 +166,55 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     },
   ];
   const chartRowsByPlayer = new Map([[selectedPlayerId, visibleOutfieldRows]]);
-  const evolutionCharts = EVOLUTION_METRICS.map((metric) => ({
-    key: metric.key,
-    title: metric.label,
-    data: buildMetricEvolutionData(metric.key, chartRowsByPlayer, evolutionLines),
-  }));
+  const goalkeeperRowByMatch = new Map(visibleGoalkeeperRows.map((row) => [row.matchId, row]));
+  const totalActionsChart = {
+    key: "total-actions",
+    title: "Total Actions",
+    data: visibleOutfieldRows.map((row) => ({
+      matchLabel: `CD Feirense vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
+      matchdayNumber: row.matchdayNumber,
+      opponentTeamName: row.opponentTeamName,
+      [`player_${selectedPlayerId}`]: buildNumericActions(
+        row,
+        goalkeeperRowByMatch.get(row.matchId) ?? {
+          minutesPlayed: 0,
+          saves: 0,
+          incompleteSaves: 0,
+          shotsConceded: 0,
+          goalsConceded: 0,
+        },
+        1,
+      ).totalActions,
+    })),
+  };
+  const otherPossessionLossesChart = {
+    key: "other-possession-losses",
+    title: "Other Possession Losses",
+    data: visibleOutfieldRows.map((row) => ({
+      matchLabel: `CD Feirense vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
+      matchdayNumber: row.matchdayNumber,
+      opponentTeamName: row.opponentTeamName,
+      [`player_${selectedPlayerId}`]: Math.max(
+        0,
+        row.possessionLosses -
+          row.shortPassFail -
+          row.longPassFail -
+          row.crossFail -
+          row.dribbleFail -
+          row.throwFail -
+          row.shotsOffTarget,
+      ),
+    })),
+  };
+  const evolutionCharts = [
+    totalActionsChart,
+    ...EVOLUTION_METRICS.map((metric) => ({
+      key: metric.key,
+      title: metric.label,
+      data: buildMetricEvolutionData(metric.key, chartRowsByPlayer, evolutionLines),
+    })),
+    otherPossessionLossesChart,
+  ];
   const percentageDefinitions: Array<{
     key: string;
     label: string;
@@ -163,6 +227,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     { key: "throw-ins", label: "Throw-in Accuracy", value: (row) => percent(row.throwSuccess, row.throwFail) },
     { key: "shots", label: "Shot Accuracy", value: (row) => percent(row.shotsOnTarget, row.shotsOffTarget) },
     { key: "aerial-duels", label: "Aerial Duel Success", value: (row) => percent(row.aerialDuelSuccess, row.aerialDuelFail) },
+    { key: "defensive-duels", label: "Defensive Duel Success", value: (row) => percent(row.defensiveDuelSuccess, row.defensiveDuelFail) },
     { key: "set-piece-crosses", label: "Set-Piece Cross Accuracy", value: (row) => percent(row.setPieceCrossSuccess, row.setPieceCrossFail) },
   ];
   const percentageCharts = percentageDefinitions.map((metric) => ({
@@ -178,8 +243,10 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
 
   return (
     <AnalyticsPageShell
-      title="Evolution by Player"
+      title="Player Actions Evolution"
       description="Line charts tracking performance changes by matchday."
+      showPageExport={false}
+      showReportSummary={false}
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
         { label: "Player", value: player?.name },
@@ -201,14 +268,35 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
         searchQuery={searchQuery}
       />
 
-      <PlayerOverviewStats stats={overviewStats} />
+      <section id="player-evolution-summary" className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-[var(--font-heading)] text-xl font-semibold">Player Summary</h2>
+          <PdfExportButton
+            targetId="player-evolution-summary"
+            fileName={`${player?.name ?? "player"}-${selectedCompetition?.name ?? "competition"}-evolution-summary`}
+            label="Generate summary PDF"
+            orientation="landscape"
+          />
+        </div>
+        <PlayerOverviewStats stats={overviewStats} />
+      </section>
 
-      <Card>
+      <Card id="player-percentage-evolution">
         <CardHeader>
-          <CardTitle>Percentage Evolution</CardTitle>
-          <CardDescription>
-            Success rates for {player?.name ?? "the player"}, match by match.
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Percentage Evolution</CardTitle>
+              <CardDescription>
+                Success rates for {player?.name ?? "the player"}, match by match.
+              </CardDescription>
+            </div>
+            <PdfExportButton
+              targetId="player-percentage-evolution"
+              fileName={`${player?.name ?? "player"}-${selectedCompetition?.name ?? "competition"}-percentage-evolution`}
+              label="Generate percentage PDF"
+              orientation="landscape"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <PlayerEvolutionChartPanel
@@ -219,12 +307,22 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="player-numeric-evolution">
         <CardHeader>
-          <CardTitle>Numeric Actions Evolution</CardTitle>
-          <CardDescription>
-            Absolute action volumes for {player?.name ?? "the player"} in each match.
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Numeric Actions Evolution</CardTitle>
+              <CardDescription>
+                Absolute action volumes for {player?.name ?? "the player"} in each match.
+              </CardDescription>
+            </div>
+            <PdfExportButton
+              targetId="player-numeric-evolution"
+              fileName={`${player?.name ?? "player"}-${selectedCompetition?.name ?? "competition"}-numeric-evolution`}
+              label="Generate actions PDF"
+              orientation="landscape"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <PlayerEvolutionChartPanel

@@ -5,7 +5,18 @@ import { cn } from "@/lib/utils";
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
     <div className="relative w-full overflow-auto rounded-lg border border-border/75 bg-card/30">
-      <table ref={ref} className={cn("w-full caption-bottom border-collapse text-sm", className)} {...props} />
+      <table
+        ref={ref}
+        className={cn(
+          "w-full caption-bottom border-collapse text-sm",
+          "[&_thead_th:first-child]:sticky [&_thead_th:first-child]:left-0 [&_thead_th:first-child]:z-30 [&_thead_th:first-child]:bg-muted",
+          "[&_tbody_td:first-child]:sticky [&_tbody_td:first-child]:left-0 [&_tbody_td:first-child]:z-20 [&_tbody_td:first-child]:bg-card",
+          "[&_tfoot_td:first-child]:sticky [&_tfoot_td:first-child]:left-0 [&_tfoot_td:first-child]:z-20 [&_tfoot_td:first-child]:bg-muted",
+          "[&_tr>*:first-child]:shadow-[2px_0_0_0_hsl(var(--border))]",
+          className,
+        )}
+        {...props}
+      />
     </div>
   ),
 );

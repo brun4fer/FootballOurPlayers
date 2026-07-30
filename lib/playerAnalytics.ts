@@ -6,6 +6,7 @@ import {
   getPlayerCompetitionMatchStats,
 } from "@/lib/data";
 import {
+  aggregateGoalkeeperTotals,
   aggregateOutfieldTotals,
   buildComparisonMetrics,
   buildGoalkeeperPercentualActions,
@@ -89,12 +90,25 @@ export type ComparisonSummaryRow = {
   shortPassAccuracy: number;
   longPassAccuracy: number;
   crossAccuracy: number;
+  setPieceCrossAccuracy: number;
   individualActionAccuracy: number;
   throwAccuracy: number;
   shotAccuracy: number;
   duelAccuracy: number;
+  defensiveDuelAccuracy: number;
+  defensivePositioningToCorrect: number;
+  throughPasses: number;
+  runsInBehind: number;
+  interceptedCrosses: number;
+  foulsWon: number;
+  foulsCommitted: number;
   recoveries: number;
   interceptions: number;
+  offsides: number;
+  possessionLosses: number;
+  errorsLeadingToGoals: number;
+  yellowCards: number;
+  redCards: number;
   minutesPlayed: number;
   goals: number;
   assists: number;
@@ -143,7 +157,8 @@ export type EvolutionMetricKey =
   | "foulsCommitted"
   | "offsides"
   | "yellowCards"
-  | "redCards";
+  | "redCards"
+  | "responsibilityGoal";
 
 export type EvolutionMetricDefinition = {
   key: EvolutionMetricKey;
@@ -220,6 +235,7 @@ export const EVOLUTION_METRICS: EvolutionMetricDefinition[] = [
   { key: "offsides", label: "Offsides" },
   { key: "yellowCards", label: "Yellow Cards" },
   { key: "redCards", label: "Red Cards" },
+  { key: "responsibilityGoal", label: "Errors Leading to Goals" },
 ];
 
 export { COMPARISON_RANKING_METRICS, EVOLUTION_COLORS, getSeriesColor };
@@ -423,16 +439,14 @@ export function buildMetricEvolutionData(
 export function buildPlayerOverviewStats(
   totals: OutfieldTotals,
   matchesPlayed: number,
+  options: {
+    actionMetric?: "per90" | "total";
+    goalkeeperRows?: GoalkeeperMatchRow[];
+  } = {},
 ): OverviewStat[] {
   const numeric = buildNumericActions(
     totals,
-    {
-      minutesPlayed: 0,
-      saves: 0,
-      incompleteSaves: 0,
-      shotsConceded: 0,
-      goalsConceded: 0,
-    },
+    aggregateGoalkeeperTotals(options.goalkeeperRows ?? []),
     matchesPlayed,
   );
 
@@ -441,7 +455,9 @@ export function buildPlayerOverviewStats(
     { title: "Assists", value: totals.assists },
     { title: "Red Cards", value: totals.redCards },
     { title: "Yellow Cards", value: totals.yellowCards },
-    { title: "Actions / 90", value: formatMetric(numeric.actionsPer90) },
+    options.actionMetric === "total"
+      ? { title: "Total Actions", value: numeric.totalActions }
+      : { title: "Actions / 90", value: formatMetric(numeric.actionsPer90) },
     { title: "Minutes Played", value: totals.minutesPlayed },
   ];
 }
@@ -493,6 +509,12 @@ export function buildPlayerPercentageRows(totals: OutfieldTotals): PercentageRow
       percentage: percentualActions.aerialDuel.percentage,
     },
     {
+      metric: "Defensive Duels",
+      success: percentualActions.defensiveDuel.success,
+      fail: percentualActions.defensiveDuel.fail,
+      percentage: percentualActions.defensiveDuel.percentage,
+    },
+    {
       metric: "Set-Piece Crosses",
       success: percentualActions.setPieceCross.success,
       fail: percentualActions.setPieceCross.fail,
@@ -526,6 +548,7 @@ export function buildPlayerNumericRows(options: {
   totals: OutfieldTotals;
   goalkeeperRows?: GoalkeeperMatchRow[];
   matchesPlayed: number;
+  includeActionsPer90?: boolean;
 }): NumericRow[] {
   const goalkeeperTotals = options.goalkeeperRows
     ? options.goalkeeperRows.reduce(
@@ -558,7 +581,7 @@ export function buildPlayerNumericRows(options: {
     options.matchesPlayed,
   );
 
-  return [
+  const rows: NumericRow[] = [
     {
       metric: "Fouls Won",
       total: numericActions.foulsSufferedTotal,
@@ -585,9 +608,14 @@ export function buildPlayerNumericRows(options: {
       per90: numericActions.offsidesPer90,
     },
     {
-      metric: "Possession Losses",
+      metric: "Total Possession Losses (Derived)",
       total: numericActions.possessionLossesTotal,
       per90: numericActions.possessionLossesPer90,
+    },
+    {
+      metric: "Other Possession Losses",
+      total: numericActions.otherPossessionLossesTotal,
+      per90: numericActions.otherPossessionLossesPer90,
     },
     {
       metric: "Defensive Positioning to Correct",
@@ -640,12 +668,17 @@ export function buildPlayerNumericRows(options: {
       total: formatMetric(numericActions.averageMinutesPerMatch),
     },
     { metric: "Total Actions", total: numericActions.totalActions },
-    {
+  ];
+
+  if (options.includeActionsPer90 !== false) {
+    rows.push({
       metric: "Average Actions per 90",
       total: formatMetric(numericActions.actionsPer90),
       per90: numericActions.actionsPer90,
-    },
-  ];
+    });
+  }
+
+  return rows;
 }
 
 export function buildComparisonSummaryRows(
@@ -660,12 +693,25 @@ export function buildComparisonSummaryRows(
       shortPassAccuracy: percentualActions.shortPass.percentage,
       longPassAccuracy: percentualActions.longPass.percentage,
       crossAccuracy: metrics.crossAccuracy,
+      setPieceCrossAccuracy: percentualActions.setPieceCross.percentage,
       individualActionAccuracy: metrics.dribbleSuccess,
       throwAccuracy: percentualActions.throw.percentage,
       shotAccuracy: percentualActions.shot.percentage,
       duelAccuracy: metrics.duelSuccess,
+      defensiveDuelAccuracy: percentualActions.defensiveDuel.percentage,
+      defensivePositioningToCorrect: row.totals.defensivePositioningToCorrect,
+      throughPasses: row.totals.throughPasses,
+      runsInBehind: row.totals.runsInBehind,
+      interceptedCrosses: row.totals.interceptedCrosses,
+      foulsWon: row.totals.foulsSuffered,
+      foulsCommitted: row.totals.foulsCommitted,
       recoveries: row.totals.recoveries,
       interceptions: row.totals.interceptions,
+      offsides: row.totals.offsides,
+      possessionLosses: row.totals.possessionLosses,
+      errorsLeadingToGoals: row.totals.responsibilityGoal,
+      yellowCards: row.totals.yellowCards,
+      redCards: row.totals.redCards,
       minutesPlayed: row.totals.minutesPlayed,
       goals: row.totals.goals,
       assists: row.totals.assists,

@@ -25,7 +25,7 @@ export function PlayerPercentageTable({
             <TableRow>
               <TableHead>Metric</TableHead>
               <TableHead>Success</TableHead>
-              <TableHead>Insucesso</TableHead>
+              <TableHead>Unsuccessful</TableHead>
               <TableHead>Percentage</TableHead>
             </TableRow>
           </TableHeader>

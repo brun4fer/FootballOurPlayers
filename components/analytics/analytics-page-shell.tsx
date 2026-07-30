@@ -20,6 +20,8 @@ type AnalyticsPageShellProps = {
   searchQuery?: string;
   searchPlaceholder?: string;
   exportFileName?: string;
+  showPageExport?: boolean;
+  showReportSummary?: boolean;
   children: React.ReactNode;
 };
 
@@ -62,6 +64,8 @@ export function AnalyticsPageShell({
   searchQuery = "",
   searchPlaceholder = "Search per player, team, matchday, match or metric",
   exportFileName,
+  showPageExport = true,
+  showReportSummary = true,
   children,
 }: AnalyticsPageShellProps) {
   const router = useRouter();
@@ -187,7 +191,7 @@ export function AnalyticsPageShell({
           ) : null}
         </div>
 
-        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+        {showPageExport ? <div className="flex flex-col items-stretch gap-2 sm:items-end">
           <Button
             type="button"
             onClick={handleExport}
@@ -199,12 +203,12 @@ export function AnalyticsPageShell({
             ) : (
               <FileDown className="h-4 w-4" />
             )}
-            {isExporting ? "A gerar PDF" : "Gerar PDF"}
+            {isExporting ? "Generating PDF" : "Generate PDF"}
           </Button>
           {exportError ? (
             <p className="max-w-xs text-right text-xs text-red-300">{exportError}</p>
           ) : null}
-        </div>
+        </div> : null}
       </div>
 
       <div className="rounded-lg border border-border/60 bg-card/40 p-4">
@@ -228,7 +232,7 @@ export function AnalyticsPageShell({
           <div className="flex gap-2">
             <Button type="submit" className="gap-2">
               <Search className="h-4 w-4" />
-              Pesquisar
+              Search
             </Button>
             {currentSearchQuery ? (
               <Button
@@ -249,11 +253,11 @@ export function AnalyticsPageShell({
       </div>
 
       <div ref={contentRef} data-export-root className="space-y-6">
-        <div className="rounded-lg border border-border/60 bg-card/40 p-4">
+        {showReportSummary ? <div className="rounded-lg border border-border/60 bg-card/40 p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Relatorio
+                Report
               </p>
               <h2 className="font-[var(--font-heading)] text-xl font-semibold">{title}</h2>
               {description ? (
@@ -285,7 +289,7 @@ export function AnalyticsPageShell({
               ))}
             </div>
           ) : null}
-        </div>
+        </div> : null}
 
         {children}
       </div>

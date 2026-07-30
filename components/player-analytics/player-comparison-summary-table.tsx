@@ -14,8 +14,19 @@ import type {
 type SortKey =
   | "label"
   | ComparisonRankingMetricKey
+  | "defensivePositioningToCorrect"
+  | "throughPasses"
+  | "runsInBehind"
+  | "interceptedCrosses"
+  | "foulsWon"
+  | "foulsCommitted"
   | "recoveries"
   | "interceptions"
+  | "offsides"
+  | "possessionLosses"
+  | "errorsLeadingToGoals"
+  | "yellowCards"
+  | "redCards"
   | "goals"
   | "assists"
   | "minutesPlayed";
@@ -30,6 +41,7 @@ const columns: Array<{
   { key: "shortPassAccuracy", label: "Short Passes %", render: (row) => `${formatMetric(row.shortPassAccuracy)}%` },
   { key: "longPassAccuracy", label: "Long Passes %", render: (row) => `${formatMetric(row.longPassAccuracy)}%` },
   { key: "crossAccuracy", label: "Crosses %", render: (row) => `${formatMetric(row.crossAccuracy)}%` },
+  { key: "setPieceCrossAccuracy", label: "Set-Piece Crosses %", render: (row) => `${formatMetric(row.setPieceCrossAccuracy)}%` },
   {
     key: "individualActionAccuracy",
     label: "Individual Actions %",
@@ -37,11 +49,23 @@ const columns: Array<{
   },
   { key: "throwAccuracy", label: "Throw-ins %", render: (row) => `${formatMetric(row.throwAccuracy)}%` },
   { key: "shotAccuracy", label: "Shots %", render: (row) => `${formatMetric(row.shotAccuracy)}%` },
-  { key: "duelAccuracy", label: "Duels %", render: (row) => `${formatMetric(row.duelAccuracy)}%` },
+  { key: "duelAccuracy", label: "Aerial Duels %", render: (row) => `${formatMetric(row.duelAccuracy)}%` },
+  { key: "defensiveDuelAccuracy", label: "Defensive Duels %", render: (row) => `${formatMetric(row.defensiveDuelAccuracy)}%` },
   { key: "goals", label: "Goals", render: (row) => row.goals },
   { key: "assists", label: "Assists", render: (row) => row.assists },
+  { key: "defensivePositioningToCorrect", label: "Defensive Positioning to Correct", render: (row) => row.defensivePositioningToCorrect },
+  { key: "throughPasses", label: "Through Passes", render: (row) => row.throughPasses },
+  { key: "runsInBehind", label: "Runs in Behind", render: (row) => row.runsInBehind },
+  { key: "interceptedCrosses", label: "Intercepted Crosses", render: (row) => row.interceptedCrosses },
+  { key: "foulsWon", label: "Fouls Won", render: (row) => row.foulsWon },
+  { key: "foulsCommitted", label: "Fouls Committed", render: (row) => row.foulsCommitted },
   { key: "recoveries", label: "Recoveries", render: (row) => row.recoveries },
   { key: "interceptions", label: "Interceptions", render: (row) => row.interceptions },
+  { key: "offsides", label: "Offsides", render: (row) => row.offsides },
+  { key: "possessionLosses", label: "Possession Losses", render: (row) => row.possessionLosses },
+  { key: "errorsLeadingToGoals", label: "Errors Leading to Goals", render: (row) => row.errorsLeadingToGoals },
+  { key: "yellowCards", label: "Yellow Cards", render: (row) => row.yellowCards },
+  { key: "redCards", label: "Red Cards", render: (row) => row.redCards },
   { key: "minutesPlayed", label: "Minutes Played", render: (row) => row.minutesPlayed },
 ];
 
@@ -61,10 +85,12 @@ export function PlayerComparisonSummaryTable({
   rows,
   title = "Comparison Ranking",
   description = "Sortable table for comparing percentages and volume in large lists.",
+  showHeading = true,
 }: {
   rows: ComparisonSummaryRow[];
   title?: string;
   description?: string;
+  showHeading?: boolean;
 }) {
   const [sortKey, setSortKey] = React.useState<SortKey>("shortPassAccuracy");
   const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("desc");
@@ -82,18 +108,31 @@ export function PlayerComparisonSummaryTable({
     return sortDirection === "asc" ? result : -result;
   });
 
-  const maxValues = {
+  const bestValues = {
     shortPassAccuracy: Math.max(...rows.map((row) => row.shortPassAccuracy), 0),
     longPassAccuracy: Math.max(...rows.map((row) => row.longPassAccuracy), 0),
     crossAccuracy: Math.max(...rows.map((row) => row.crossAccuracy), 0),
+    setPieceCrossAccuracy: Math.max(...rows.map((row) => row.setPieceCrossAccuracy), 0),
     individualActionAccuracy: Math.max(...rows.map((row) => row.individualActionAccuracy), 0),
     throwAccuracy: Math.max(...rows.map((row) => row.throwAccuracy), 0),
     shotAccuracy: Math.max(...rows.map((row) => row.shotAccuracy), 0),
     duelAccuracy: Math.max(...rows.map((row) => row.duelAccuracy), 0),
+    defensiveDuelAccuracy: Math.max(...rows.map((row) => row.defensiveDuelAccuracy), 0),
+    defensivePositioningToCorrect: Math.min(...rows.map((row) => row.defensivePositioningToCorrect)),
+    throughPasses: Math.max(...rows.map((row) => row.throughPasses), 0),
+    runsInBehind: Math.max(...rows.map((row) => row.runsInBehind), 0),
+    interceptedCrosses: Math.max(...rows.map((row) => row.interceptedCrosses), 0),
+    foulsWon: Math.max(...rows.map((row) => row.foulsWon), 0),
+    foulsCommitted: Math.min(...rows.map((row) => row.foulsCommitted)),
     goals: Math.max(...rows.map((row) => row.goals), 0),
     assists: Math.max(...rows.map((row) => row.assists), 0),
     recoveries: Math.max(...rows.map((row) => row.recoveries), 0),
     interceptions: Math.max(...rows.map((row) => row.interceptions), 0),
+    offsides: Math.max(...rows.map((row) => row.offsides), 0),
+    possessionLosses: Math.min(...rows.map((row) => row.possessionLosses)),
+    errorsLeadingToGoals: Math.min(...rows.map((row) => row.errorsLeadingToGoals)),
+    yellowCards: Math.min(...rows.map((row) => row.yellowCards)),
+    redCards: Math.min(...rows.map((row) => row.redCards)),
     minutesPlayed: Math.max(...rows.map((row) => row.minutesPlayed), 0),
   };
 
@@ -109,10 +148,10 @@ export function PlayerComparisonSummaryTable({
 
   return (
     <div className="space-y-3">
-      <div className="space-y-1">
+      {showHeading ? <div className="space-y-1">
         <h3 className="font-[var(--font-heading)] text-lg font-semibold">{title}</h3>
         <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
+      </div> : null}
 
       <div className="overflow-x-auto rounded-xl border border-border/60">
         <Table>
@@ -153,7 +192,7 @@ export function PlayerComparisonSummaryTable({
                 {columns.map((column) => {
                   const bestValue =
                     isNumericSortKey(column.key) && rows.length > 1
-                      ? row[column.key] === maxValues[column.key]
+                      ? row[column.key] === bestValues[column.key]
                       : false;
 
                   return (

@@ -26,11 +26,14 @@ export function PlayerMetricFocusChart({ rows }: { rows: ComparisonSummaryRow[] 
   const selectedMetric =
     COMPARISON_RANKING_METRICS.find((metric) => metric.key === selectedMetricKey) ??
     COMPARISON_RANKING_METRICS[0];
-  const chartData = rows.map((row) => ({
-    label: row.label,
-    value: row[selectedMetricKey],
-    color: getSeriesColor(row.label),
-  }));
+  const chartData = rows
+    .map((row) => ({
+      label: row.label,
+      value: row[selectedMetricKey],
+      color: getSeriesColor(row.label),
+    }))
+    .sort((left, right) => right.value - left.value);
+  const chartHeight = Math.max(320, chartData.length * 38);
 
   return (
     <div className="space-y-4">
@@ -50,12 +53,23 @@ export function PlayerMetricFocusChart({ rows }: { rows: ComparisonSummaryRow[] 
         </NativeSelect>
       </div>
 
-      <div className="h-[320px] w-full">
+      <div className="w-full" style={{ height: chartHeight }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
+          <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" />
-            <XAxis dataKey="label" stroke="rgba(148,163,184,0.8)" tick={{ fontSize: 12 }} />
-            <YAxis stroke="rgba(148,163,184,0.8)" domain={[0, 100]} tick={{ fontSize: 12 }} />
+            <XAxis
+              type="number"
+              stroke="rgba(148,163,184,0.8)"
+              domain={[0, 100]}
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis
+              type="category"
+              dataKey="label"
+              width={140}
+              stroke="rgba(148,163,184,0.8)"
+              tick={{ fontSize: 12 }}
+            />
             <Tooltip
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) {
@@ -111,7 +125,7 @@ export function PlayerMetricFocusChart({ rows }: { rows: ComparisonSummaryRow[] 
             <Bar
               dataKey="value"
               name={selectedMetric?.label ?? "Metric"}
-              radius={[4, 4, 0, 0]}
+              radius={[0, 4, 4, 0]}
             >
               {chartData.map((entry) => (
                 <Cell key={entry.label} fill={entry.color} />

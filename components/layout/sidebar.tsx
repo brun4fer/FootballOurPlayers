@@ -14,13 +14,36 @@ const links = [
     label: "Player Analysis",
     icon: BarChart3,
     children: [
-      { href: "/players/total-competition", label: "Competition Totals" },
-      { href: "/players/total-all-matchdays", label: "Totals by Player (All Matches)" },
-      { href: "/players/single-matchday", label: "Player by Match" },
-      { href: "/players/evolution", label: "Evolution by Player" },
-      { href: "/players/comparison-matchdays", label: "Matchday Player Comparison" },
-      { href: "/players/comparison-total", label: "Overall Comparison" },
-      { href: "/players/action-profile", label: "Action Profile" },
+      {
+        href: "/players/total-competition",
+        label: "Players Comparison – Total Actions",
+        description: "Ranks players by action efficiency across all matches in the competition.",
+      },
+      {
+        href: "/players/total-all-matchdays",
+        label: "Player Total Actions",
+        description: "Evaluates the player's total actions across all matches.",
+      },
+      {
+        href: "/players/single-matchday",
+        label: "Player Actions by Match",
+        description: "Evaluates the players' actions in a specific match.",
+      },
+      {
+        href: "/players/evolution",
+        label: "Player Actions Evolution",
+        description: "Shows the player's action evolution from matchday to matchday.",
+      },
+      {
+        href: "/players/comparison-matchdays",
+        label: "Players Comparison – by Match",
+        description: "Ranks players by action efficiency in a specific match.",
+      },
+      {
+        href: "/players/comparison-total",
+        label: "Filter Comparison",
+        description: "Compares selected players action by action.",
+      },
     ],
   },
   {
@@ -89,6 +112,7 @@ export function Sidebar() {
                       <Link
                         key={child.href}
                         href={child.href}
+                        title={"description" in child ? child.description : undefined}
                         className={cn(
                           "flex min-h-9 items-start gap-2 rounded-lg px-3 py-2 text-sm leading-5 transition-colors",
                           childIsActive

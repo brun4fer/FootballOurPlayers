@@ -1,7 +1,12 @@
 import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
+import { PdfExportButton } from "@/components/pdf/pdf-export-button";
+import { TablePdfExportButton } from "@/components/pdf/table-pdf-export-button";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerComparisonSummaryTable } from "@/components/player-analytics/player-comparison-summary-table";
-import { PlayerCompetitionTotalsTable } from "@/components/player-analytics/player-competition-totals-table";
+import {
+  competitionPlayerTotalsColumns,
+  PlayerCompetitionTotalsTable,
+} from "@/components/player-analytics/player-competition-totals-table";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
 import { PlayerRankingInsights } from "@/components/player-analytics/player-ranking-insights";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +35,9 @@ export default async function TotalCompetitionPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Competition Totals"
+        title="Players Comparison – Total Actions"
+        showPageExport={false}
+        showReportSummary={false}
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -83,8 +90,10 @@ export default async function TotalCompetitionPage({
 
   return (
     <AnalyticsPageShell
-      title="Competition Totals"
+      title="Players Comparison – Total Actions"
       description="Aggregated view of all players in the selected competition, without matchday filtering."
+      showPageExport={false}
+      showReportSummary={false}
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
         {
@@ -112,26 +121,51 @@ export default async function TotalCompetitionPage({
         searchQuery={searchQuery}
       />
 
-      <Card>
+      <Card id="competition-comparison-ranking">
         <CardHeader>
-          <CardTitle>Classificacao Comparativa</CardTitle>
-          <CardDescription>
-            Aggregated charts are hidden in this view to preserve readability with many players.
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Comparison Ranking</CardTitle>
+              <CardDescription>
+                Sortable ranking with every tracked action across all competition matches.
+              </CardDescription>
+            </div>
+            <PdfExportButton
+              targetId="competition-comparison-ranking"
+              fileName={`${selectedCompetition?.name ?? "competition"}-comparison-ranking`}
+              label="Generate ranking PDF"
+              orientation="landscape"
+            />
+          </div>
         </CardHeader>
         <CardContent>
-          <PlayerComparisonSummaryTable rows={comparisonRows} />
+          <PlayerComparisonSummaryTable rows={comparisonRows} showHeading={false} />
         </CardContent>
       </Card>
 
-      <PlayerRankingInsights rows={comparisonRows} />
+      <PlayerRankingInsights
+        rows={comparisonRows}
+        enablePdfExport
+        pdfFileNamePrefix={`${selectedCompetition?.name ?? "competition"}-percentage-ranking`}
+      />
 
-      <Card>
+      <Card id="aggregated-player-totals">
         <CardHeader>
-          <CardTitle>Aggregated Player Totals</CardTitle>
-          <CardDescription>
-            {visibleCompetitionPlayerTotals.length} of {allCompetitionPlayerTotals.length} players visible.
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Aggregated Player Totals</CardTitle>
+              <CardDescription>
+                {visibleCompetitionPlayerTotals.length} of {allCompetitionPlayerTotals.length} players visible.
+              </CardDescription>
+            </div>
+            <TablePdfExportButton
+              title={`Aggregated Player Totals — ${selectedCompetition?.name ?? "Competition"}`}
+              fileName={`${selectedCompetition?.name ?? "competition"}-aggregated-player-totals`}
+              columns={competitionPlayerTotalsColumns}
+              rows={visibleCompetitionPlayerTotals}
+              label="Generate totals PDF"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <PlayerCompetitionTotalsTable rows={visibleCompetitionPlayerTotals} />

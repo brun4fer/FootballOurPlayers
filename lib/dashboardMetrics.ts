@@ -334,6 +334,17 @@ export function buildNumericActions(
   matchesPlayed: number,
 ) {
   const minutes = outfieldTotals.minutesPlayed;
+  const recordedFailedPossessionActions =
+    outfieldTotals.shortPassFail +
+    outfieldTotals.longPassFail +
+    outfieldTotals.crossFail +
+    outfieldTotals.dribbleFail +
+    outfieldTotals.throwFail +
+    outfieldTotals.shotsOffTarget;
+  const otherPossessionLosses = Math.max(
+    0,
+    outfieldTotals.possessionLosses - recordedFailedPossessionActions,
+  );
   const totalActions =
     outfieldTotals.shortPassSuccess +
     outfieldTotals.shortPassFail +
@@ -349,16 +360,27 @@ export function buildNumericActions(
     outfieldTotals.shotsOffTarget +
     outfieldTotals.aerialDuelSuccess +
     outfieldTotals.aerialDuelFail +
+    outfieldTotals.defensiveDuelSuccess +
+    outfieldTotals.defensiveDuelFail +
     outfieldTotals.defensivePositioningToCorrect +
     outfieldTotals.throughPasses +
     outfieldTotals.runsInBehind +
     outfieldTotals.setPieceCrossSuccess +
     outfieldTotals.setPieceCrossFail +
     outfieldTotals.interceptedCrosses +
+    outfieldTotals.goals +
+    outfieldTotals.assists +
     outfieldTotals.recoveries +
     outfieldTotals.interceptions +
+    outfieldTotals.offsides +
+    otherPossessionLosses +
+    outfieldTotals.responsibilityGoal +
+    outfieldTotals.yellowCards +
+    outfieldTotals.redCards +
     outfieldTotals.foulsCommitted +
-    outfieldTotals.foulsSuffered;
+    outfieldTotals.foulsSuffered +
+    goalkeeperTotals.saves +
+    goalkeeperTotals.incompleteSaves;
 
   return {
     foulsSufferedTotal: outfieldTotals.foulsSuffered,
@@ -373,6 +395,8 @@ export function buildNumericActions(
     offsidesPer90: per90(outfieldTotals.offsides, minutes),
     possessionLossesTotal: outfieldTotals.possessionLosses,
     possessionLossesPer90: per90(outfieldTotals.possessionLosses, minutes),
+    otherPossessionLossesTotal: otherPossessionLosses,
+    otherPossessionLossesPer90: per90(otherPossessionLosses, minutes),
     defensivePositioningToCorrectTotal: outfieldTotals.defensivePositioningToCorrect,
     defensivePositioningToCorrectPer90: per90(outfieldTotals.defensivePositioningToCorrect, minutes),
     throughPassesTotal: outfieldTotals.throughPasses,
@@ -481,7 +505,7 @@ export function buildRadarProfileData(totals: OutfieldTotals) {
     { metric: "Passe", value: clamp(metrics.passAccuracy) },
     { metric: "Crossing", value: clamp(metrics.crossAccuracy) },
     { metric: "Action Individual", value: clamp(metrics.dribbleSuccess) },
-    { metric: "Duels", value: clamp(metrics.duelSuccess) },
+    { metric: "Aerial Duels", value: clamp(metrics.duelSuccess) },
     { metric: "Defesa", value: clamp((defenseImpact / 20) * 100) },
     { metric: "Finalizaction", value: clamp(shotAccuracy * 0.6 + ((finishingVolume / 6) * 100) * 0.4) },
   ];

@@ -2,10 +2,12 @@ export type ComparisonRankingMetricKey =
   | "shortPassAccuracy"
   | "longPassAccuracy"
   | "crossAccuracy"
+  | "setPieceCrossAccuracy"
   | "individualActionAccuracy"
   | "throwAccuracy"
   | "shotAccuracy"
-  | "duelAccuracy";
+  | "duelAccuracy"
+  | "defensiveDuelAccuracy";
 
 const SERIES_COLORS = [
   "#00e7ff",
@@ -23,10 +25,12 @@ export const COMPARISON_RANKING_METRICS: Array<{
   { key: "shortPassAccuracy", label: "Short Passes %" },
   { key: "longPassAccuracy", label: "Long Passes %" },
   { key: "crossAccuracy", label: "Crosses %" },
+  { key: "setPieceCrossAccuracy", label: "Set-Piece Crosses %" },
   { key: "individualActionAccuracy", label: "Individual Actions %" },
   { key: "throwAccuracy", label: "Throw-ins %" },
   { key: "shotAccuracy", label: "Shots %" },
-  { key: "duelAccuracy", label: "Duels %" },
+  { key: "duelAccuracy", label: "Aerial Duels %" },
+  { key: "defensiveDuelAccuracy", label: "Defensive Duels %" },
 ];
 
 export const EVOLUTION_COLORS = SERIES_COLORS;

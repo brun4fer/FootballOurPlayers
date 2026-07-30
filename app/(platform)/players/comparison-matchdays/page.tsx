@@ -1,4 +1,6 @@
 import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
+import { PlayerMetricFocusChart } from "@/components/charts/player-metric-focus-chart";
+import { PdfExportButton } from "@/components/pdf/pdf-export-button";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerComparisonSummaryTable } from "@/components/player-analytics/player-comparison-summary-table";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
@@ -36,7 +38,9 @@ export default async function ComparisonMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Matchday Player Comparison"
+        title="Players Comparison – by Match"
+        showPageExport={false}
+        showReportSummary={false}
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -95,8 +99,10 @@ export default async function ComparisonMatchdaysPage({
 
   return (
     <AnalyticsPageShell
-      title="Matchday Player Comparison"
+      title="Players Comparison – by Match"
       description="Automatically compares all outfield players used on the selected matchday. Goalkeepers are excluded."
+      showPageExport={false}
+      showReportSummary={false}
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
         { label: "Match", value: selectedMatch ? formatMatchLabel(selectedMatch) : "Incomplete selection" },
@@ -128,32 +134,72 @@ export default async function ComparisonMatchdaysPage({
             selectedMatchId
               ? searchQuery
                 ? "No players match the current search"
-                : "No players outfield used"
+                : "No outfield players used"
               : "Incomplete selection"
           }
           description={
             selectedMatchId
               ? searchQuery
                 ? "The current search did not find any outfield players on this matchday."
-                : "There are no players outfield with recorded minutes on this matchday."
+                : "There are no outfield players with recorded minutes on this matchday."
               : "Choose a matchday to compare the players used."
           }
         />
       ) : (
         <>
-          <Card>
+          <Card id="match-player-comparison-ranking">
             <CardHeader>
-              <CardTitle>Matchday Ranking</CardTitle>
-              <CardDescription>
-                {selectedMatch ? formatMatchLabel(selectedMatch) : "Matchday -"} - {comparisonRows.length} outfield players
-              </CardDescription>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1.5">
+                  <CardTitle>Comparison Ranking</CardTitle>
+                  <CardDescription>
+                    {selectedMatch ? formatMatchLabel(selectedMatch) : "Match -"} - {comparisonRows.length} outfield players
+                  </CardDescription>
+                </div>
+                <PdfExportButton
+                  targetId="match-player-comparison-ranking"
+                  fileName={`${selectedCompetition?.name ?? "competition"}-match-${selectedMatch?.matchdayNumber ?? selectedMatchId}-player-ranking`}
+                  label="Generate ranking PDF"
+                  orientation="landscape"
+                />
+              </div>
             </CardHeader>
             <CardContent>
-              <PlayerComparisonSummaryTable rows={comparisonRows} />
+              <PlayerComparisonSummaryTable rows={comparisonRows} showHeading={false} />
             </CardContent>
           </Card>
 
-          {comparisonRows.length > 1 ? <PlayerRankingInsights rows={comparisonRows} /> : null}
+          {comparisonRows.length > 1 ? (
+            <>
+              <Card id="match-player-comparison-chart">
+                <CardHeader>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1.5">
+                      <CardTitle>Action Efficiency Chart</CardTitle>
+                      <CardDescription>
+                        Select an action to compare every player used in the match.
+                      </CardDescription>
+                    </div>
+                    <PdfExportButton
+                      targetId="match-player-comparison-chart"
+                      fileName={`${selectedCompetition?.name ?? "competition"}-match-${selectedMatch?.matchdayNumber ?? selectedMatchId}-efficiency-chart`}
+                      label="Generate chart PDF"
+                      orientation="landscape"
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <PlayerMetricFocusChart rows={comparisonRows} />
+                </CardContent>
+              </Card>
+
+              <PlayerRankingInsights
+                rows={comparisonRows}
+                enablePdfExport
+                pdfFileNamePrefix={`${selectedCompetition?.name ?? "competition"}-match-${selectedMatch?.matchdayNumber ?? selectedMatchId}-percentage-ranking`}
+              />
+            </>
+          ) : null}
         </>
       )}
     </AnalyticsPageShell>
