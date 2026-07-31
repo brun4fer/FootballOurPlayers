@@ -4,7 +4,7 @@ import { TablePdfExportButton } from "@/components/pdf/table-pdf-export-button";
 import { PlayerAnalyticsFilters } from "@/components/player-analytics/player-analytics-filters";
 import { PlayerComparisonSummaryTable } from "@/components/player-analytics/player-comparison-summary-table";
 import {
-  competitionPlayerTotalsColumns,
+  getCompetitionPlayerTotalsColumns,
   PlayerCompetitionTotalsTable,
 } from "@/components/player-analytics/player-competition-totals-table";
 import { PlayerEmptyStateCard } from "@/components/player-analytics/player-empty-state-card";
@@ -81,6 +81,7 @@ export default async function TotalCompetitionPage({
     totals: toOutfieldTotalsFromAggregate(row as Record<string, unknown>),
   }));
   const comparisonRows = buildComparisonSummaryRows(comparisonScopes);
+  const totalsColumns = getCompetitionPlayerTotalsColumns(baseData.manualPossessionLosses);
   const resetFiltersHref =
     selectedTeamIds.length > 0
       ? `/players/total-competition?competitionId=${baseData.selectedCompetitionId}${
@@ -161,14 +162,17 @@ export default async function TotalCompetitionPage({
             <TablePdfExportButton
               title={`Aggregated Player Totals — ${selectedCompetition?.name ?? "Competition"}`}
               fileName={`${selectedCompetition?.name ?? "competition"}-aggregated-player-totals`}
-              columns={competitionPlayerTotalsColumns}
+              columns={totalsColumns}
               rows={visibleCompetitionPlayerTotals}
               label="Generate totals PDF"
             />
           </div>
         </CardHeader>
         <CardContent>
-          <PlayerCompetitionTotalsTable rows={visibleCompetitionPlayerTotals} />
+          <PlayerCompetitionTotalsTable
+            rows={visibleCompetitionPlayerTotals}
+            columns={totalsColumns}
+          />
         </CardContent>
       </Card>
     </AnalyticsPageShell>

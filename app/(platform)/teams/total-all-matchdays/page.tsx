@@ -1,8 +1,13 @@
 import { AnalyticsPageShell } from "@/components/analytics/analytics-page-shell";
 import { TeamAnalyticsTable } from "@/components/dashboard/team-analytics-table";
+import {
+  TeamActionEfficiencyChart,
+  TeamActionVolumeChart,
+} from "@/components/dashboard/team-action-charts";
 import { TeamNumericTable } from "@/components/dashboard/team-numeric-table";
 import { TeamOverviewStats } from "@/components/dashboard/team-overview-stats";
 import { TeamPercentageTable } from "@/components/dashboard/team-percentage-table";
+import { PdfExportButton } from "@/components/pdf/pdf-export-button";
 import { TeamAnalyticsFilters } from "@/components/team-analytics/team-analytics-filters";
 import { TeamEmptyStateCard } from "@/components/team-analytics/team-empty-state-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +47,9 @@ export default async function TeamTotalAllMatchdaysPage({
   if (!baseData.selectedCompetitionId) {
     return (
       <AnalyticsPageShell
-        title="Totals (All Matchdays)"
+        title="Team Evaluation Actions – All Matches"
+        showPageExport={false}
+        showReportSummary={false}
         filters={[{ label: "Competition", value: "No competitions available" }]}
         searchQuery={searchQuery}
       >
@@ -65,11 +72,13 @@ export default async function TeamTotalAllMatchdaysPage({
   if (visibleMatchAggregates.length === 0) {
     return (
       <AnalyticsPageShell
-        title="Totals (All Matchdays)"
-        description="Consolidated team view across all competition matchdays."
+        title="Team Evaluation Actions – All Matches"
+        description="Evaluates team action efficiency across all competition matches."
+        showPageExport={false}
+        showReportSummary={false}
         filters={[
           { label: "Competition", value: selectedCompetition?.name },
-          { label: "Team", value: "Feirense" },
+          { label: "Team", value: baseData.teamName },
           { label: "Matches", value: searchQuery ? "No matches in the current filter" : "No data" },
         ]}
         searchQuery={searchQuery}
@@ -85,7 +94,7 @@ export default async function TeamTotalAllMatchdaysPage({
           description={
             searchQuery
               ? "The current search did not find matches for the team."
-              : "There are not are matchdays with records to display totals aggregated."
+              : "There are no matchdays with recorded team data in this competition."
           }
         />
       </AnalyticsPageShell>
@@ -94,18 +103,20 @@ export default async function TeamTotalAllMatchdaysPage({
 
   const totals = aggregateTeamDashboardTotals(visibleMatchAggregates);
   const overviewStats = buildTeamOverviewStats(visibleMatchAggregates, totals);
-  const analyticsRows = buildTeamAnalyticsTableRows(totals);
+  const analyticsRows = buildTeamAnalyticsTableRows(totals, visibleMatchAggregates.length);
   const percentageRows = buildTeamPercentageRows(totals);
-  const numericRows = buildTeamNumericRows(totals);
+  const numericRows = buildTeamNumericRows(totals, visibleMatchAggregates.length);
   const goalkeeperSummary = buildGoalkeeperSummary(totals);
 
   return (
     <AnalyticsPageShell
-      title="Totals (All Matchdays)"
-      description="Leitura consolidada of the team throughout the entire competition, without filtering per matchday."
+      title="Team Evaluation Actions – All Matches"
+      description="Evaluates team action efficiency across all competition matches."
+      showPageExport={false}
+      showReportSummary={false}
       filters={[
         { label: "Competition", value: selectedCompetition?.name },
-        { label: "Team", value: "Feirense" },
+        { label: "Team", value: baseData.teamName },
         {
           label: "Matches",
           value: describeList(visibleMatchAggregates.map(formatMatchLabel), "All matchdays"),
@@ -116,36 +127,128 @@ export default async function TeamTotalAllMatchdaysPage({
       <TeamAnalyticsFilters
         competitions={baseData.competitions}
         selectedCompetitionId={baseData.selectedCompetitionId}
-        description="No matchday filter. This view resume the entire competition."
+        description="This view combines all recorded matchdays in the selected competition."
         searchQuery={searchQuery}
       />
 
-      <TeamOverviewStats stats={overviewStats} />
-
-      <Card>
+      <Card id="team-all-matches-efficiency-summary">
         <CardHeader>
-          <CardTitle>Totals Estruturados</CardTitle>
-          <CardDescription>
-            Totals, percentages and per-90 volume across {visibleMatchAggregates.length} matchday(s).
-          </CardDescription>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Average Action Efficiency</CardTitle>
+              <CardDescription>
+                Weighted efficiency using every recorded action across {visibleMatchAggregates.length} matchday(s).
+              </CardDescription>
+            </div>
+            <PdfExportButton
+              targetId="team-all-matches-efficiency-summary"
+              fileName={`${selectedCompetition?.name ?? "competition"}-team-action-efficiency-summary`}
+              label="Generate summary PDF"
+              orientation="landscape"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <TeamOverviewStats stats={overviewStats} />
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card id="team-all-matches-efficiency-chart">
+          <CardHeader>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-1.5">
+                <CardTitle>Action Efficiency Chart</CardTitle>
+                <CardDescription>
+                  Success percentage for every recorded action type.
+                </CardDescription>
+              </div>
+              <PdfExportButton
+                targetId="team-all-matches-efficiency-chart"
+                fileName={`${selectedCompetition?.name ?? "competition"}-team-action-efficiency-chart`}
+                label="Generate chart PDF"
+                orientation="landscape"
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TeamActionEfficiencyChart rows={percentageRows} />
+          </CardContent>
+        </Card>
+
+        <Card id="team-all-matches-volume-chart">
+          <CardHeader>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-1.5">
+                <CardTitle>Action Volume Chart</CardTitle>
+                <CardDescription>
+                  Successful and unsuccessful actions across all matchdays.
+                </CardDescription>
+              </div>
+              <PdfExportButton
+                targetId="team-all-matches-volume-chart"
+                fileName={`${selectedCompetition?.name ?? "competition"}-team-action-volume-chart`}
+                label="Generate chart PDF"
+                orientation="landscape"
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TeamActionVolumeChart rows={percentageRows} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card id="team-all-matches-structured-totals">
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1.5">
+              <CardTitle>Structured Totals</CardTitle>
+              <CardDescription>
+                Totals, percentages and correct team per-90 volume across {visibleMatchAggregates.length} matchday(s).
+              </CardDescription>
+            </div>
+            <PdfExportButton
+              targetId="team-all-matches-structured-totals"
+              fileName={`${selectedCompetition?.name ?? "competition"}-team-structured-totals`}
+              label="Generate totals PDF"
+              orientation="landscape"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <TeamAnalyticsTable rows={analyticsRows} />
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="team-all-matches-percentage-metrics">
         <CardHeader>
-          <CardTitle>Percentage Metrics</CardTitle>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <CardTitle>Percentage Metrics</CardTitle>
+            <PdfExportButton
+              targetId="team-all-matches-percentage-metrics"
+              fileName={`${selectedCompetition?.name ?? "competition"}-team-percentage-metrics`}
+              label="Generate percentages PDF"
+              orientation="landscape"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <TeamPercentageTable rows={percentageRows} goalkeeper={goalkeeperSummary} />
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="team-all-matches-volume-metrics">
         <CardHeader>
-          <CardTitle>Volume Metrics</CardTitle>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <CardTitle>Volume Metrics</CardTitle>
+            <PdfExportButton
+              targetId="team-all-matches-volume-metrics"
+              fileName={`${selectedCompetition?.name ?? "competition"}-team-volume-metrics`}
+              label="Generate volume PDF"
+              orientation="landscape"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <TeamNumericTable rows={numericRows} />

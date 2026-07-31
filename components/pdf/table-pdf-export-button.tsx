@@ -56,6 +56,8 @@ export function TablePdfExportButton({
   async function handleExport() {
     setIsExporting(true);
     setExportError("");
+    const usePolishedLayout =
+      document.querySelector('[data-polished-pdf="true"]') !== null;
 
     try {
       const { jsPDF } = await import("jspdf");
@@ -85,7 +87,7 @@ export function TablePdfExportButton({
         pdf.setTextColor(15, 23, 42);
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(12);
-        pdf.text(title, margin, 10);
+        pdf.text(usePolishedLayout ? `AP - Action Map  |  ${title}` : title, margin, 10);
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(7.5);
         pdf.setTextColor(71, 85, 105);
@@ -106,7 +108,12 @@ export function TablePdfExportButton({
           ...headerLines.map((lines) => lines.length * lineHeight + cellPadding * 2),
         );
         let x = margin;
-        const y = 19;
+        if (usePolishedLayout) {
+          pdf.setDrawColor(6, 182, 212);
+          pdf.setLineWidth(0.6);
+          pdf.line(margin, 17.5, pageWidth - margin, 17.5);
+        }
+        const y = usePolishedLayout ? 20 : 19;
 
         activeColumns.forEach((column, index) => {
           pdf.setFillColor(index < fixedColumns.length ? 8 : 15, index < fixedColumns.length ? 47 : 23, index < fixedColumns.length ? 73 : 42);
@@ -177,6 +184,9 @@ export function TablePdfExportButton({
         pdf.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - margin, pageHeight - 3, {
           align: "right",
         });
+        if (usePolishedLayout) {
+          pdf.text("AP - Action Map", margin, pageHeight - 3);
+        }
       }
 
       pdf.save(buildPdfFilename(fileName));

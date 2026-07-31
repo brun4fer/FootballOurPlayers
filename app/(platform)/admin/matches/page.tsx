@@ -5,15 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatMatchLabel, getAnalyzedTeamIds, getCompetitions, getMatches, getTeams } from "@/lib/data";
+import { formatMatchLabel, getAnalyzedTeam, getAnalyzedTeamIds, getCompetitions, getMatches, getTeams } from "@/lib/data";
 
 export default async function AdminMatchesPage() {
-  const [competitionList, matchList, teamList, analyzedTeamIds] = await Promise.all([
+  const [competitionList, matchList, teamList, analyzedTeamIds, analyzedTeam] = await Promise.all([
     getCompetitions(),
     getMatches(),
     getTeams(),
     getAnalyzedTeamIds(),
+    getAnalyzedTeam(),
   ]);
+  const homeTeamName = analyzedTeam?.name ?? "Home Team";
   const analyzedTeamIdSet = new Set(analyzedTeamIds);
   const opponentOptions = teamList.filter((team) => !analyzedTeamIdSet.has(team.id));
 
@@ -29,7 +31,7 @@ export default async function AdminMatchesPage() {
             <form action={createMatchAction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div className="space-y-2">
                 <Label>Home Team</Label>
-                <Input value="CD Feirense" disabled />
+                <Input value={homeTeamName} disabled />
               </div>
               <div className="space-y-2">
               <Label htmlFor="matchdayNumber">Matchday Number</Label>
@@ -96,7 +98,7 @@ export default async function AdminMatchesPage() {
                         opponentTeamName: match.opponentTeamName,
                         matchdayNumber: match.matchdayNumber,
                         homeAway: match.homeAway,
-                      })}
+                      }, homeTeamName)}
                     </p>
                   </TableCell>
                   <TableCell>{match.competitionName}</TableCell>
@@ -127,7 +129,7 @@ export default async function AdminMatchesPage() {
                           </option>
                           ))}
                         </NativeSelect>
-                        <Input value="CD Feirense (Home)" disabled />
+                        <Input value={`${homeTeamName} (Home)`} disabled />
                         <Input name="date" type="date" defaultValue={match.date} required />
                         <Button variant="outline" size="sm">
                           Update

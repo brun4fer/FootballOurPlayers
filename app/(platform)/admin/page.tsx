@@ -11,7 +11,7 @@ const links = [
   },
   { href: "/admin/teams", title: "Teams", description: "Manage teams and their competition links." },
   { href: "/admin/players", title: "Players", description: "Registar perfis and positions of the players." },
-  { href: "/admin/matches", title: "Matches", description: "Create Feirense matches against opponents." },
+  { href: "/admin/matches", title: "Matches", description: "Create home-team matches against opponents." },
   { href: "/admin/stats", title: "Enter Statistics", description: "Enter player, goalkeeper and team totals." },
 ];
 

@@ -8,9 +8,10 @@ import type { TeamEvolutionChartSeries } from "@/lib/teamDashboardMetrics";
 
 type TeamEvolutionChartsProps = {
   charts: TeamEvolutionChartSeries[];
+  teamName: string;
 };
 
-export function TeamEvolutionCharts({ charts }: TeamEvolutionChartsProps) {
+export function TeamEvolutionCharts({ charts, teamName }: TeamEvolutionChartsProps) {
   const [selectedKey, setSelectedKey] = React.useState(charts[0]?.key ?? "");
 
   React.useEffect(() => {
@@ -54,11 +55,12 @@ export function TeamEvolutionCharts({ charts }: TeamEvolutionChartsProps) {
           lines={[
             {
               dataKey: "team",
-              label: "Feirense",
+              label: teamName,
               color: selectedChart.color,
             },
           ]}
           displayMode={selectedChart.displayMode ?? "percentage"}
+          homeTeamName={teamName}
         />
       </div>
     </div>

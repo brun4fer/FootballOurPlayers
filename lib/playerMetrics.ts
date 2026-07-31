@@ -225,9 +225,9 @@ export function computePer90Metrics(totals: PlayerMetricsTotals) {
   };
 }
 
-export function buildMatchEvolutionSeries(rows: PlayerMatchMetricsRow[]) {
+export function buildMatchEvolutionSeries(rows: PlayerMatchMetricsRow[], teamName = "Home Team") {
   return rows.map((row) => ({
-    matchLabel: `Feirense x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`,
+    matchLabel: `${teamName} x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`,
     shots: row.shotsOnTarget + row.shotsOffTarget,
     assists: row.assists,
     goals: row.goals,

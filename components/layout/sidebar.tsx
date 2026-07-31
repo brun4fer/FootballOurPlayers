@@ -51,9 +51,21 @@ const links = [
     label: "Team Analysis",
     icon: BarChart3,
     children: [
-      { href: "/teams/total-all-matchdays", label: "Totals (All Matchdays)" },
-      { href: "/teams/single-matchday", label: "By Matchday" },
-      { href: "/teams/evolution", label: "Evolution" },
+      {
+        href: "/teams/total-all-matchdays",
+        label: "Team Evaluation Actions – All Matches",
+        description: "Evaluates team action efficiency across all matches.",
+      },
+      {
+        href: "/teams/single-matchday",
+        label: "Team Actions by Match",
+        description: "Evaluates team action efficiency in a selected match.",
+      },
+      {
+        href: "/teams/evolution",
+        label: "Team Actions Evolution",
+        description: "Shows team action evolution from matchday to matchday.",
+      },
     ],
   },
   { href: "/admin", label: "Administration", icon: Shield },

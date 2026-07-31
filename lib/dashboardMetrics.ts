@@ -41,6 +41,7 @@ export type OutfieldMatchRow = {
   responsibilityGoal: number;
   yellowCards: number;
   redCards: number;
+  manualPossessionLosses: boolean;
 };
 
 export type GoalkeeperMatchRow = {
@@ -58,7 +59,7 @@ export type GoalkeeperMatchRow = {
 
 export type OutfieldTotals = Omit<
   OutfieldMatchRow,
-  "playerId" | "playerName" | "matchId" | "matchdayNumber" | "date" | "opponentTeamName"
+  "playerId" | "playerName" | "matchId" | "matchdayNumber" | "date" | "opponentTeamName" | "manualPossessionLosses"
 >;
 
 export type GoalkeeperTotals = Omit<
@@ -169,17 +170,19 @@ export function normalizeOutfieldRows(
       recoveries: toNumber(row.recoveries),
       interceptions: toNumber(row.interceptions),
       offsides: toNumber(row.offsides),
-      possessionLosses:
-        toNumber(row.shortPassFail) +
-        toNumber(row.longPassFail) +
-        toNumber(row.crossFail) +
-        toNumber(row.dribbleFail) +
-        toNumber(row.throwFail) +
-        toNumber(row.shotsOffTarget) +
-        toNumber(row.possessionLosses),
+      possessionLosses: row.manualPossessionLosses
+        ? toNumber(row.possessionLosses)
+        : toNumber(row.shortPassFail) +
+          toNumber(row.longPassFail) +
+          toNumber(row.crossFail) +
+          toNumber(row.dribbleFail) +
+          toNumber(row.throwFail) +
+          toNumber(row.shotsOffTarget) +
+          toNumber(row.possessionLosses),
       responsibilityGoal: toNumber(row.responsibilityGoal),
       yellowCards: toNumber(row.yellowCards),
       redCards: toNumber(row.redCards),
+      manualPossessionLosses: row.manualPossessionLosses === true,
     }))
     .sort(
       (a, b) =>
@@ -470,11 +473,12 @@ export function toOutfieldTotalsFromAggregate(row: UnknownRow): OutfieldTotals {
     recoveries: toNumber(row.recoveries),
     interceptions: toNumber(row.interceptions),
     offsides: toNumber(row.offsides),
-    possessionLosses:
-      toNumber(row.shortPassFail) + toNumber(row.longPassFail) +
-      toNumber(row.crossFail) + toNumber(row.dribbleFail) +
-      toNumber(row.throwFail) + toNumber(row.shotsOffTarget) +
-      toNumber(row.possessionLosses),
+    possessionLosses: row.manualPossessionLosses
+      ? toNumber(row.possessionLosses)
+      : toNumber(row.shortPassFail) + toNumber(row.longPassFail) +
+        toNumber(row.crossFail) + toNumber(row.dribbleFail) +
+        toNumber(row.throwFail) + toNumber(row.shotsOffTarget) +
+        toNumber(row.possessionLosses),
     responsibilityGoal: toNumber(row.responsibilityGoal),
     yellowCards: toNumber(row.yellowCards),
     redCards: toNumber(row.redCards),
@@ -522,9 +526,9 @@ export function buildRadarComparisonData(primary: OutfieldTotals, secondary: Out
   }));
 }
 
-export function buildEvolutionChartData(rows: OutfieldMatchRow[]) {
+export function buildEvolutionChartData(rows: OutfieldMatchRow[], teamName = "Home Team") {
   return rows.map((row) => ({
-    matchLabel: `Feirense x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`,
+    matchLabel: `${teamName} x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`,
     remates: row.shotsOnTarget + row.shotsOffTarget,
     assists: row.assists,
     goals: row.goals,

@@ -15,6 +15,7 @@ type MatchOption = {
 };
 
 type TeamDashboardFiltersProps = {
+  teamName?: string;
   competitions: CompetitionOption[];
   matches: MatchOption[];
   selectedCompetitionId?: number;
@@ -24,6 +25,7 @@ type TeamDashboardFiltersProps = {
 };
 
 export function TeamDashboardFilters({
+  teamName = "Home Team",
   competitions,
   matches,
   selectedCompetitionId,
@@ -73,7 +75,7 @@ export function TeamDashboardFilters({
             >
               {matches.map((match) => (
                 <option key={match.id} value={match.id}>
-                  Feirense x {match.opponentTeamName} (Matchday {match.matchdayNumber})
+                  {teamName} x {match.opponentTeamName} (Matchday {match.matchdayNumber})
                 </option>
               ))}
             </select>

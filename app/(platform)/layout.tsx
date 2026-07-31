@@ -3,6 +3,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { APP_NAME } from "@/lib/app-config";
 import { requireUser } from "@/lib/auth";
 import { logoutAction } from "@/actions/auth";
+import { usesPolishedPdfExports } from "@/lib/workspace-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,10 @@ export default async function PlatformLayout({
 }) {
   const user = await requireUser({ allowPasswordChange: true });
   return (
-    <div className="min-h-screen md:flex">
+    <div
+      className="min-h-screen md:flex"
+      data-polished-pdf={usesPolishedPdfExports(user.workspaceId) ? "true" : undefined}
+    >
       <Sidebar />
       <main className="min-w-0 flex-1">
         <header className="flex items-center justify-between border-b border-border/50 px-4 py-3 sm:px-6">

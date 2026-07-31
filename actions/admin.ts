@@ -31,7 +31,7 @@ async function requireMutableTeam(id: number) {
   const row = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
     .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
   if (!row[0]) throw new Error("Invalid team.");
-  if (row[0].isFixedHomeTeam) throw new Error("CD Feirense is the fixed home team and cannot be deleted.");
+  if (row[0].isFixedHomeTeam) throw new Error("The fixed home team cannot be deleted.");
   return workspaceId;
 }
 
@@ -46,7 +46,7 @@ async function getFixedHomeTeamId() {
   const workspaceId = await getWorkspaceId();
   const row = await db.select({ id: teams.id }).from(teams)
     .where(and(eq(teams.workspaceId, workspaceId), eq(teams.isFixedHomeTeam, true))).limit(1);
-  if (!row[0]) throw new Error("The fixed CD Feirense team is missing.");
+  if (!row[0]) throw new Error("The fixed home team is missing.");
   return row[0].id;
 }
 
@@ -229,10 +229,13 @@ export async function createTeamAction(formData: FormData) {
 export async function updateTeamAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
   const workspaceId = await requireOwnedTeam(id);
-  const fixedTeam = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
+  const fixedTeam = await db.select({
+    isFixedHomeTeam: teams.isFixedHomeTeam,
+    name: teams.name,
+  }).from(teams)
     .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
   const name = fixedTeam[0]?.isFixedHomeTeam
-    ? "CD Feirense"
+    ? fixedTeam[0].name
     : optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The team name must be at least 2 characters long.");

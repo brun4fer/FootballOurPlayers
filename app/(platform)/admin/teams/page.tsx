@@ -34,7 +34,7 @@ export default async function AdminTeamsPage() {
             <form action={createTeamAction} className="grid gap-3">
               <div className="space-y-2">
                 <Label htmlFor="name">Team Name</Label>
-                <Input id="name" name="name" required placeholder="CD Feirense" />
+                <Input id="name" name="name" required placeholder="Team name" />
               </div>
               <ImageUrlInput
                 id="emblemUrl"
@@ -120,7 +120,7 @@ export default async function AdminTeamsPage() {
                     <form action={updateTeamAction} className="grid gap-2">
                       <input type="hidden" name="id" value={team.id} />
                       <Input name="name" defaultValue={team.name} minLength={2} required disabled={team.isFixedHomeTeam} />
-                      {team.isFixedHomeTeam ? <input type="hidden" name="name" value="CD Feirense" /> : null}
+                      {team.isFixedHomeTeam ? <input type="hidden" name="name" value={team.name} /> : null}
                       <ImageUrlInput
                         id={`emblemUrl-${team.id}`}
                         name="emblemUrl"

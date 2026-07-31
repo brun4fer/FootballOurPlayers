@@ -171,7 +171,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     key: "total-actions",
     title: "Total Actions",
     data: visibleOutfieldRows.map((row) => ({
-      matchLabel: `CD Feirense vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
+      matchLabel: `${baseData.teamName} vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
       matchdayNumber: row.matchdayNumber,
       opponentTeamName: row.opponentTeamName,
       [`player_${selectedPlayerId}`]: buildNumericActions(
@@ -191,7 +191,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     key: "other-possession-losses",
     title: "Other Possession Losses",
     data: visibleOutfieldRows.map((row) => ({
-      matchLabel: `CD Feirense vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
+      matchLabel: `${baseData.teamName} vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
       matchdayNumber: row.matchdayNumber,
       opponentTeamName: row.opponentTeamName,
       [`player_${selectedPlayerId}`]: Math.max(
@@ -211,9 +211,14 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     ...EVOLUTION_METRICS.map((metric) => ({
       key: metric.key,
       title: metric.label,
-      data: buildMetricEvolutionData(metric.key, chartRowsByPlayer, evolutionLines),
+      data: buildMetricEvolutionData(
+        metric.key,
+        chartRowsByPlayer,
+        evolutionLines,
+        baseData.teamName,
+      ),
     })),
-    otherPossessionLossesChart,
+    ...(baseData.manualPossessionLosses ? [] : [otherPossessionLossesChart]),
   ];
   const percentageDefinitions: Array<{
     key: string;
@@ -234,7 +239,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
     key: metric.key,
     title: metric.label,
     data: visibleOutfieldRows.map((row) => ({
-      matchLabel: `CD Feirense vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
+      matchLabel: `${baseData.teamName} vs ${row.opponentTeamName} - Matchday ${row.matchdayNumber}`,
       matchdayNumber: row.matchdayNumber,
       opponentTeamName: row.opponentTeamName,
       [`player_${selectedPlayerId}`]: metric.value(row),
@@ -303,6 +308,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
             charts={percentageCharts}
             lines={evolutionLines}
             displayMode="percentage"
+            homeTeamName={baseData.teamName}
           />
         </CardContent>
       </Card>
@@ -329,6 +335,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
             charts={evolutionCharts}
             lines={evolutionLines}
             displayMode="raw"
+            homeTeamName={baseData.teamName}
           />
         </CardContent>
       </Card>

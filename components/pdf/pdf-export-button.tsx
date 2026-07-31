@@ -12,6 +12,7 @@ type PdfExportButtonProps = {
   orientation?: "portrait" | "landscape";
   expandDetails?: boolean;
   topFiveOnly?: boolean;
+  polishedLayout?: boolean;
 };
 
 function buildPdfFilename(value: string) {
@@ -41,6 +42,7 @@ export function PdfExportButton({
   orientation = "portrait",
   expandDetails = false,
   topFiveOnly = false,
+  polishedLayout,
 }: PdfExportButtonProps) {
   const [isExporting, setIsExporting] = React.useState(false);
   const [exportError, setExportError] = React.useState("");
@@ -55,6 +57,9 @@ export function PdfExportButton({
 
     setIsExporting(true);
     setExportError("");
+    const usePolishedLayout =
+      polishedLayout ??
+      document.querySelector('[data-polished-pdf="true"]') !== null;
 
     try {
       await waitForPaint();
@@ -108,6 +113,54 @@ export function PdfExportButton({
             #${targetId} .overflow-x-auto {
               overflow: visible !important;
             }
+            ${usePolishedLayout ? `
+              #${targetId} {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                padding: 24px !important;
+                border-radius: 0 !important;
+              }
+              #${targetId},
+              #${targetId} [class*="bg-card"],
+              #${targetId} [class*="bg-background"],
+              #${targetId} [class*="bg-muted"] {
+                background-color: #ffffff !important;
+              }
+              #${targetId} [class*="text-muted-foreground"] {
+                color: #475569 !important;
+              }
+              #${targetId} [class*="text-foreground"],
+              #${targetId} h1,
+              #${targetId} h2,
+              #${targetId} h3,
+              #${targetId} h4,
+              #${targetId} p,
+              #${targetId} td {
+                color: #0f172a !important;
+              }
+              #${targetId} th {
+                background-color: #e2e8f0 !important;
+                color: #0f172a !important;
+              }
+              #${targetId} table,
+              #${targetId} tr,
+              #${targetId} th,
+              #${targetId} td,
+              #${targetId} [class*="border"] {
+                border-color: #cbd5e1 !important;
+              }
+              #${targetId} [class*="shadow"] {
+                box-shadow: none !important;
+              }
+              #${targetId} .recharts-cartesian-grid line {
+                stroke: #cbd5e1 !important;
+              }
+              #${targetId} .recharts-cartesian-axis-tick text,
+              #${targetId} .recharts-legend-item-text {
+                fill: #334155 !important;
+                color: #334155 !important;
+              }
+            ` : ""}
           `;
           clonedDocument.head.appendChild(style);
         },
@@ -118,11 +171,13 @@ export function PdfExportButton({
         format: "a4",
         compress: true,
       });
-      const margin = 8;
+      const margin = usePolishedLayout ? 10 : 8;
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const printableWidth = pageWidth - margin * 2;
-      const printableHeight = pageHeight - margin * 2;
+      const contentTop = usePolishedLayout ? 19 : margin;
+      const contentBottom = usePolishedLayout ? 11 : margin;
+      const printableHeight = pageHeight - contentTop - contentBottom;
       const captureScale = canvas.width / exportWidth;
       const sliceWidth = Math.min(
         canvas.width,
@@ -166,11 +221,35 @@ export function PdfExportButton({
             pageCanvas.toDataURL("image/png", 1),
             "PNG",
             margin,
-            margin,
+            contentTop,
             printableWidth,
             renderedHeight,
           );
           pageIndex += 1;
+        }
+      }
+
+      if (usePolishedLayout) {
+        const totalPages = pdf.getNumberOfPages();
+        const generatedDate = new Date().toLocaleDateString("en-GB");
+
+        for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+          pdf.setPage(pageNumber);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(10);
+          pdf.setTextColor(15, 23, 42);
+          pdf.text("AP - Action Map", margin, 9);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(7.5);
+          pdf.setTextColor(71, 85, 105);
+          pdf.text(fileName, margin, 14);
+          pdf.text(`Generated on ${generatedDate}`, pageWidth - margin, 9, { align: "right" });
+          pdf.setDrawColor(203, 213, 225);
+          pdf.line(margin, 16, pageWidth - margin, 16);
+          pdf.line(margin, pageHeight - 8, pageWidth - margin, pageHeight - 8);
+          pdf.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - margin, pageHeight - 4, {
+            align: "right",
+          });
         }
       }
 

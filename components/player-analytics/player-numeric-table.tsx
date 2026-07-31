@@ -5,9 +5,11 @@ import type { NumericRow } from "@/lib/playerAnalytics";
 export function PlayerNumericTable({
   rows,
   showTotalActionsNote = false,
+  manualPossessionLosses = false,
 }: {
   rows: NumericRow[];
   showTotalActionsNote?: boolean;
+  manualPossessionLosses?: boolean;
 }) {
   return (
     <div className="space-y-3">
@@ -33,9 +35,9 @@ export function PlayerNumericTable({
       </div>
       {showTotalActionsNote ? (
         <p className="text-xs leading-5 text-muted-foreground">
-          Total Possession Losses is a derived metric and is not added again to Total Actions.
-          Failed passes, crosses, individual actions, throw-ins and shots are already counted in
-          Percentage Metrics; only Other Possession Losses is added separately.
+          {manualPossessionLosses
+            ? "Possession Losses is entered manually. Total Actions only adds losses that are not already represented by unsuccessful actions."
+            : "Total Possession Losses is a derived metric and is not added again to Total Actions. Failed passes, crosses, individual actions, throw-ins and shots are already counted in Percentage Metrics; only Other Possession Losses is added separately."}
         </p>
       ) : null}
     </div>

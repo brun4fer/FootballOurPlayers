@@ -96,11 +96,12 @@ export default async function PlayerReportPage({ params, searchParams }: PagePro
       recoveries: Number(row.recoveries ?? 0),
       interceptions: Number(row.interceptions ?? 0),
       offsides: Number(row.offsides ?? 0),
-      possessionLosses:
-        Number(row.shortPassFail ?? 0) + Number(row.longPassFail ?? 0) +
-        Number(row.crossFail ?? 0) + Number(row.dribbleFail ?? 0) +
-        Number(row.throwFail ?? 0) + Number(row.shotsOffTarget ?? 0) +
-        Number(row.possessionLosses ?? 0),
+      possessionLosses: row.manualPossessionLosses
+        ? Number(row.possessionLosses ?? 0)
+        : Number(row.shortPassFail ?? 0) + Number(row.longPassFail ?? 0) +
+          Number(row.crossFail ?? 0) + Number(row.dribbleFail ?? 0) +
+          Number(row.throwFail ?? 0) + Number(row.shotsOffTarget ?? 0) +
+          Number(row.possessionLosses ?? 0),
       responsibilityGoal: Number(row.responsibilityGoal ?? 0),
       yellowCards: Number(row.yellowCards ?? 0),
       redCards: Number(row.redCards ?? 0),

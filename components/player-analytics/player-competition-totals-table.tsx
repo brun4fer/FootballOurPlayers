@@ -39,10 +39,11 @@ type CompetitionPlayerTotalsRow = {
   responsibilityGoal: number;
   yellowCards: number;
   redCards: number;
+  manualPossessionLosses?: boolean;
 };
 
 export const competitionPlayerTotalsColumns: Array<{
-  key: Exclude<keyof CompetitionPlayerTotalsRow, "playerId" | "teamId">;
+  key: Exclude<keyof CompetitionPlayerTotalsRow, "playerId" | "teamId" | "manualPossessionLosses">;
   label: string;
 }> = [
   { key: "playerName", label: "Player" },
@@ -83,17 +84,31 @@ export const competitionPlayerTotalsColumns: Array<{
   { key: "minutesPlayed", label: "Minutes Played" },
 ];
 
+export function getCompetitionPlayerTotalsColumns(manualPossessionLosses: boolean) {
+  if (!manualPossessionLosses) {
+    return competitionPlayerTotalsColumns;
+  }
+
+  return competitionPlayerTotalsColumns.map((column) =>
+    column.key === "possessionLosses"
+      ? { ...column, label: "Possession Losses" }
+      : column,
+  );
+}
+
 export function PlayerCompetitionTotalsTable({
   rows,
+  columns = competitionPlayerTotalsColumns,
 }: {
   rows: CompetitionPlayerTotalsRow[];
+  columns?: typeof competitionPlayerTotalsColumns;
 }) {
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            {competitionPlayerTotalsColumns.map((column) => (
+            {columns.map((column) => (
               <TableHead key={column.key} className="whitespace-nowrap">
                 {column.label}
               </TableHead>
@@ -104,7 +119,7 @@ export function PlayerCompetitionTotalsTable({
           {rows.length > 0 ? (
             rows.map((row) => (
               <TableRow key={row.playerId}>
-                {competitionPlayerTotalsColumns.map((column) => (
+                {columns.map((column) => (
                   <TableCell key={column.key} className="whitespace-nowrap">
                     {row[column.key]}
                   </TableCell>
@@ -114,7 +129,7 @@ export function PlayerCompetitionTotalsTable({
           ) : (
             <TableRow>
               <TableCell
-                colSpan={competitionPlayerTotalsColumns.length}
+                colSpan={columns.length}
                 className="py-8 text-center text-sm text-muted-foreground"
               >
                 No players match the selected filters.

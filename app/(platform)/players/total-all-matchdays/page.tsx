@@ -168,6 +168,7 @@ export default async function TotalAllMatchdaysPage({
     goalkeeperRows: visibleGoalkeeperRows,
     matchesPlayed,
     includeActionsPer90: false,
+    manualPossessionLosses: baseData.manualPossessionLosses,
   });
   const goalkeeperSummary = player?.isGoalkeeper
     ? buildGoalkeeperSummary(visibleGoalkeeperRows)
@@ -246,7 +247,11 @@ export default async function TotalAllMatchdaysPage({
           </div>
         </CardHeader>
         <CardContent>
-          <PlayerNumericTable rows={numericRows} showTotalActionsNote />
+          <PlayerNumericTable
+            rows={numericRows}
+            showTotalActionsNote
+            manualPossessionLosses={baseData.manualPossessionLosses}
+          />
         </CardContent>
       </Card>
     </AnalyticsPageShell>

@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { getWorkspaceId } from "@/lib/auth";
+import { usesManualPossessionLosses } from "@/lib/workspace-settings";
 import {
   competitions,
   goalkeeperMatchStats,
@@ -39,6 +40,29 @@ export async function getAnalyzedTeamIds() {
   return rows.map((row) => row.id);
 }
 
+export async function getAnalyzedTeam() {
+  const workspaceId = await getWorkspaceId();
+  const fixedTeam = await db.query.teams.findFirst({
+    columns: { id: true, name: true },
+    where: (table, { and, eq }) =>
+      and(eq(table.workspaceId, workspaceId), eq(table.isFixedHomeTeam, true)),
+  });
+
+  if (fixedTeam) {
+    return fixedTeam;
+  }
+
+  const [fallbackTeam] = await db
+    .selectDistinct({ id: teams.id, name: teams.name })
+    .from(teams)
+    .innerJoin(players, eq(players.teamId, teams.id))
+    .where(eq(teams.workspaceId, workspaceId))
+    .orderBy(asc(teams.name))
+    .limit(1);
+
+  return fallbackTeam;
+}
+
 async function getCompetitionAnalyzedTeamIds(competitionId: number) {
   const workspaceId = await getWorkspaceId();
   const rows = await db
@@ -67,8 +91,8 @@ export function formatMatchLabel(match: {
   opponentTeamName: string;
   matchdayNumber: number;
   homeAway: "home" | "away";
-}) {
-  return `CD Feirense vs ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+}, homeTeamName = "Home Team") {
+  return `${homeTeamName} vs ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {
@@ -365,6 +389,7 @@ export type TeamDashboardMatchAggregate = {
   setPieceCrossFail: number;
   interceptedCrosses: number;
   goals: number;
+  assists: number;
   foulsSuffered: number;
   foulsCommitted: number;
   recoveries: number;
@@ -378,6 +403,7 @@ export type TeamDashboardMatchAggregate = {
   incompleteSaves: number;
   shotsConceded: number;
   goalsConceded: number;
+  manualPossessionLosses: boolean;
 };
 
 export async function getCalculatedTeamTotalsByMatch(
@@ -506,7 +532,8 @@ export async function getPlayerCompetitionMatchStats(
     conditions.push(inArray(matches.id, matchIds));
   }
 
-  return db
+  const [rows, workspaceRow] = await Promise.all([
+    db
     .select({
       id: playerMatchStats.id,
       matchId: playerMatchStats.matchId,
@@ -553,7 +580,17 @@ export async function getPlayerCompetitionMatchStats(
     .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
     .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
     .where(and(...conditions))
-    .orderBy(asc(matches.matchdayNumber), asc(matches.date));
+    .orderBy(asc(matches.matchdayNumber), asc(matches.date)),
+    db
+      .select({ workspaceId: teams.workspaceId })
+      .from(players)
+      .innerJoin(teams, eq(players.teamId, teams.id))
+      .where(eq(players.id, playerId))
+      .limit(1),
+  ]);
+
+  const manualPossessionLosses = usesManualPossessionLosses(workspaceRow[0]?.workspaceId);
+  return rows.map((row) => ({ ...row, manualPossessionLosses }));
 }
 
 export async function getGoalkeeperCompetitionMatchStats(
@@ -599,7 +636,9 @@ export async function getCompetitionPlayerTotals(competitionId?: number, matchId
       ? and(eq(matches.competitionId, competitionId), inArray(matches.id, matchIds))
       : eq(matches.competitionId, competitionId);
 
-  return db
+  const workspaceId = await getWorkspaceId();
+  const manualPossessionLosses = usesManualPossessionLosses(workspaceId);
+  const rows = await db
     .select({
       playerId: players.id,
       playerName: players.name,
@@ -647,6 +686,8 @@ export async function getCompetitionPlayerTotals(competitionId?: number, matchId
     .where(whereCondition)
     .groupBy(players.id, players.name, teams.id, teams.name)
     .orderBy(sql`coalesce(sum(${playerMatchStats.goals}), 0) desc`, asc(players.name));
+
+  return rows.map((row) => ({ ...row, manualPossessionLosses }));
 }
 
 export async function getPlayerForReport(playerId: number) {
@@ -689,7 +730,8 @@ export async function getReportOutfieldStats(playerId: number, competitionId?: n
     ? and(eq(playerMatchStats.playerId, playerId), eq(matches.competitionId, competitionId))
     : eq(playerMatchStats.playerId, playerId);
 
-  return db
+  const [rows, workspaceRow] = await Promise.all([
+    db
     .select({
       matchdayNumber: matches.matchdayNumber,
       competitionId: matches.competitionId,
@@ -735,7 +777,17 @@ export async function getReportOutfieldStats(playerId: number, competitionId?: n
     .innerJoin(matches, eq(playerMatchStats.matchId, matches.id))
     .innerJoin(teams, eq(matches.opponentTeamId, teams.id))
     .where(whereClause)
-    .orderBy(asc(matches.matchdayNumber), asc(matches.date));
+    .orderBy(asc(matches.matchdayNumber), asc(matches.date)),
+    db
+      .select({ workspaceId: teams.workspaceId })
+      .from(players)
+      .innerJoin(teams, eq(players.teamId, teams.id))
+      .where(eq(players.id, playerId))
+      .limit(1),
+  ]);
+
+  const manualPossessionLosses = usesManualPossessionLosses(workspaceRow[0]?.workspaceId);
+  return rows.map((row) => ({ ...row, manualPossessionLosses }));
 }
 
 export async function getReportGoalkeeperStats(playerId: number, competitionId?: number) {
@@ -843,6 +895,9 @@ export async function getAnalyzedTeamMatchAggregates(
     return [];
   }
 
+  const workspaceId = await getWorkspaceId();
+  const manualPossessionLosses = usesManualPossessionLosses(workspaceId);
+
   const matchConditions = [eq(matches.competitionId, competitionId)];
   if (matchIds && matchIds.length > 0) {
     matchConditions.push(inArray(matches.id, matchIds));
@@ -892,6 +947,7 @@ export async function getAnalyzedTeamMatchAggregates(
       setPieceCrossFail: 0,
       interceptedCrosses: 0,
       goals: 0,
+      assists: 0,
       foulsSuffered: 0,
       foulsCommitted: 0,
       recoveries: 0,
@@ -905,6 +961,7 @@ export async function getAnalyzedTeamMatchAggregates(
       incompleteSaves: 0,
       shotsConceded: 0,
       goalsConceded: 0,
+      manualPossessionLosses,
     }));
   }
 
@@ -937,6 +994,7 @@ export async function getAnalyzedTeamMatchAggregates(
       setPieceCrossFail: sql<number>`coalesce(sum(${playerMatchStats.setPieceCrossFail}), 0)`,
       interceptedCrosses: sql<number>`coalesce(sum(${playerMatchStats.interceptedCrosses}), 0)`,
       goals: sql<number>`coalesce(sum(${playerMatchStats.goals}), 0)`,
+      assists: sql<number>`coalesce(sum(${playerMatchStats.assists}), 0)`,
       foulsSuffered: sql<number>`coalesce(sum(${playerMatchStats.foulsSuffered}), 0)`,
       foulsCommitted: sql<number>`coalesce(sum(${playerMatchStats.foulsCommitted}), 0)`,
       recoveries: sql<number>`coalesce(sum(${playerMatchStats.recoveries}), 0)`,
@@ -1005,6 +1063,7 @@ export async function getAnalyzedTeamMatchAggregates(
       setPieceCrossFail: toSafeNumber(outfield?.setPieceCrossFail),
       interceptedCrosses: toSafeNumber(outfield?.interceptedCrosses),
       goals: toSafeNumber(outfield?.goals),
+      assists: toSafeNumber(outfield?.assists),
       foulsSuffered: toSafeNumber(outfield?.foulsSuffered),
       foulsCommitted: toSafeNumber(outfield?.foulsCommitted),
       recoveries: toSafeNumber(outfield?.recoveries),
@@ -1018,6 +1077,7 @@ export async function getAnalyzedTeamMatchAggregates(
       incompleteSaves: toSafeNumber(goalkeeper?.incompleteSaves),
       shotsConceded: toSafeNumber(goalkeeper?.shotsConceded),
       goalsConceded: toSafeNumber(goalkeeper?.goalsConceded),
+      manualPossessionLosses,
     };
   });
 }

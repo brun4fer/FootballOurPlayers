@@ -2,7 +2,7 @@ import type { TeamDashboardMatchAggregate } from "@/lib/data";
 
 export type TeamDashboardTotals = Omit<
   TeamDashboardMatchAggregate,
-  "matchId" | "matchdayNumber" | "date" | "opponentTeamName"
+  "matchId" | "matchdayNumber" | "date" | "opponentTeamName" | "manualPossessionLosses"
 >;
 
 export type TeamOffensiveChartDatum = {
@@ -77,6 +77,7 @@ const EMPTY_TOTALS: TeamDashboardTotals = {
   setPieceCrossFail: 0,
   interceptedCrosses: 0,
   goals: 0,
+  assists: 0,
   foulsSuffered: 0,
   foulsCommitted: 0,
   recoveries: 0,
@@ -112,14 +113,6 @@ function per90(value: number, totalMinutes: number) {
   return (value / totalMinutes) * 90;
 }
 
-function average(values: number[]) {
-  if (values.length === 0) {
-    return 0;
-  }
-
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
 function aerialDuelPercentage(values: {
   aerialDuelSuccess: number;
   aerialDuelFail: number;
@@ -141,8 +134,8 @@ function throwInAccuracy(values: {
   return percent(values.throwSuccess, values.throwFail);
 }
 
-function formatMatchLabel(row: TeamDashboardMatchAggregate) {
-  return `Feirense x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`;
+function formatMatchLabel(row: TeamDashboardMatchAggregate, teamName: string) {
+  return `${teamName} x ${row.opponentTeamName} (Matchday ${row.matchdayNumber})`;
 }
 
 export function formatMetric(value: number, digits = 2) {
@@ -178,15 +171,18 @@ export function aggregateTeamDashboardTotals(
       setPieceCrossFail: acc.setPieceCrossFail + toSafeNumber(row.setPieceCrossFail),
       interceptedCrosses: acc.interceptedCrosses + toSafeNumber(row.interceptedCrosses),
       goals: acc.goals + toSafeNumber(row.goals),
+      assists: acc.assists + toSafeNumber(row.assists),
       foulsSuffered: acc.foulsSuffered + toSafeNumber(row.foulsSuffered),
       foulsCommitted: acc.foulsCommitted + toSafeNumber(row.foulsCommitted),
       recoveries: acc.recoveries + toSafeNumber(row.recoveries),
       interceptions: acc.interceptions + toSafeNumber(row.interceptions),
       offsides: acc.offsides + toSafeNumber(row.offsides),
-      possessionLosses: acc.possessionLosses + toSafeNumber(row.shortPassFail) +
-        toSafeNumber(row.longPassFail) + toSafeNumber(row.crossFail) +
-        toSafeNumber(row.dribbleFail) + toSafeNumber(row.throwFail) +
-        toSafeNumber(row.shotsOffTarget) + toSafeNumber(row.possessionLosses),
+      possessionLosses: acc.possessionLosses + (row.manualPossessionLosses
+        ? toSafeNumber(row.possessionLosses)
+        : toSafeNumber(row.shortPassFail) + toSafeNumber(row.longPassFail) +
+          toSafeNumber(row.crossFail) + toSafeNumber(row.dribbleFail) +
+          toSafeNumber(row.throwFail) + toSafeNumber(row.shotsOffTarget) +
+          toSafeNumber(row.possessionLosses)),
       yellowCards: acc.yellowCards + toSafeNumber(row.yellowCards),
       redCards: acc.redCards + toSafeNumber(row.redCards),
       responsibilityGoal: acc.responsibilityGoal + toSafeNumber(row.responsibilityGoal),
@@ -256,6 +252,12 @@ export function buildTeamPercentageRows(totals: TeamDashboardTotals): TeamPercen
       percentage: percent(totals.aerialDuelSuccess, totals.aerialDuelFail),
     },
     {
+      metric: "Defensive Duels",
+      success: totals.defensiveDuelSuccess,
+      fail: totals.defensiveDuelFail,
+      percentage: percent(totals.defensiveDuelSuccess, totals.defensiveDuelFail),
+    },
+    {
       metric: "Set-Piece Crosses",
       success: totals.setPieceCrossSuccess,
       fail: totals.setPieceCrossFail,
@@ -270,8 +272,11 @@ export function buildTeamPercentageRows(totals: TeamDashboardTotals): TeamPercen
   ];
 }
 
-export function buildTeamNumericRows(totals: TeamDashboardTotals): TeamNumericRow[] {
-  const totalMinutes = totals.minutesPlayed;
+export function buildTeamNumericRows(
+  totals: TeamDashboardTotals,
+  matchCount: number,
+): TeamNumericRow[] {
+  const totalMinutes = matchCount * 90;
   const totalShots = totals.shotsOnTarget + totals.shotsOffTarget;
 
   return [
@@ -344,6 +349,11 @@ export function buildTeamNumericRows(totals: TeamDashboardTotals): TeamNumericRo
       total: totals.goals,
       per90: per90(totals.goals, totalMinutes),
     },
+    {
+      metric: "Assists",
+      total: totals.assists,
+      per90: per90(totals.assists, totalMinutes),
+    },
   ];
 }
 
@@ -359,69 +369,74 @@ export function buildTeamOverviewStats(
   rows: TeamDashboardMatchAggregate[],
   totals: TeamDashboardTotals,
 ): TeamOverviewStat[] {
-  const shortPassAverage = average(
-    rows.map((row) => percent(row.shortPassSuccess, row.shortPassFail)),
-  );
-  const longPassAverage = average(
-    rows.map((row) => percent(row.longPassSuccess, row.longPassFail)),
-  );
-  const crossAverage = average(rows.map((row) => percent(row.crossSuccess, row.crossFail)));
-  const dribbleAverage = average(
-    rows.map((row) => percent(row.dribbleSuccess, row.dribbleFail)),
-  );
-  const aerialDuelAverage = average(rows.map((row) => aerialDuelPercentage(row)));
-  const shotAccuracyAverage = average(rows.map((row) => shotAccuracy(row)));
-  const throwInAverage = average(rows.map((row) => throwInAccuracy(row)));
-  const goalsPer90 = per90(totals.goals, totals.minutesPlayed);
+  const matchCount = rows.length;
+  const goalsPerMatchday = matchCount ? totals.goals / matchCount : 0;
+  const efficiencyDescription = `Weighted efficiency across ${matchCount} recorded matchday(s).`;
 
   return [
     {
-      title: "Average Short Pass Accuracy",
-      value: `${formatMetric(shortPassAverage)}%`,
-      description: "Percentage average per matchday no current filter.",
+      title: "Average Short Pass Efficiency",
+      value: `${formatMetric(percent(totals.shortPassSuccess, totals.shortPassFail))}%`,
+      description: efficiencyDescription,
     },
     {
-      title: "Average Long Pass Accuracy",
-      value: `${formatMetric(longPassAverage)}%`,
-      description: "Average ability to connect with long passes.",
+      title: "Average Long Pass Efficiency",
+      value: `${formatMetric(percent(totals.longPassSuccess, totals.longPassFail))}%`,
+      description: efficiencyDescription,
     },
     {
-      title: "Average Cross Accuracy",
-      value: `${formatMetric(crossAverage)}%`,
-      description: "Average quality of deliveries into the box.",
+      title: "Average Cross Efficiency",
+      value: `${formatMetric(percent(totals.crossSuccess, totals.crossFail))}%`,
+      description: efficiencyDescription,
     },
     {
-      title: "Average Individual Actions",
-      value: `${formatMetric(dribbleAverage)}%`,
-      description: "Average individual-action success rate.",
+      title: "Average Set-Piece Cross Efficiency",
+      value: `${formatMetric(percent(totals.setPieceCrossSuccess, totals.setPieceCrossFail))}%`,
+      description: efficiencyDescription,
     },
     {
-      title: "Average Aerial Duels",
-      value: `${formatMetric(aerialDuelAverage)}%`,
-      description: "Average aerial-duel success rate.",
+      title: "Average Individual Action Efficiency",
+      value: `${formatMetric(percent(totals.dribbleSuccess, totals.dribbleFail))}%`,
+      description: efficiencyDescription,
     },
     {
-      title: "Average Shot Accuracy",
-      value: `${formatMetric(shotAccuracyAverage)}%`,
-      description: "Shots on target as a percentage of all shots.",
+      title: "Average Throw-in Efficiency",
+      value: `${formatMetric(percent(totals.throwSuccess, totals.throwFail))}%`,
+      description: efficiencyDescription,
     },
     {
-      title: "Average Throw-ins",
-      value: `${formatMetric(throwInAverage)}%`,
-      description: "Average throw-in success rate.",
+      title: "Average Shot Efficiency",
+      value: `${formatMetric(percent(totals.shotsOnTarget, totals.shotsOffTarget))}%`,
+      description: efficiencyDescription,
+    },
+    {
+      title: "Average Aerial Duel Efficiency",
+      value: `${formatMetric(percent(totals.aerialDuelSuccess, totals.aerialDuelFail))}%`,
+      description: efficiencyDescription,
+    },
+    {
+      title: "Average Defensive Duel Efficiency",
+      value: `${formatMetric(percent(totals.defensiveDuelSuccess, totals.defensiveDuelFail))}%`,
+      description: efficiencyDescription,
+    },
+    {
+      title: "Average Save Efficiency",
+      value: `${formatMetric(percent(totals.saves, totals.incompleteSaves))}%`,
+      description: efficiencyDescription,
     },
     {
       title: "Goals per Matchday",
-      value: formatMetric(goalsPer90),
-      description: `${rows.length} matchdays in the filtered period.`,
+      value: formatMetric(goalsPerMatchday),
+      description: `${matchCount} matchdays in the filtered period.`,
     },
   ];
 }
 
 export function buildTeamAnalyticsTableRows(
   totals: TeamDashboardTotals,
+  matchCount: number,
 ): TeamAnalyticsTableRow[] {
-  const totalMinutes = totals.minutesPlayed;
+  const totalMinutes = matchCount * 90;
 
   return [
     {
@@ -467,6 +482,12 @@ export function buildTeamAnalyticsTableRows(
       per90: per90(totals.aerialDuelSuccess + totals.aerialDuelFail, totalMinutes),
     },
     {
+      metric: "Defensive Duels",
+      total: totals.defensiveDuelSuccess + totals.defensiveDuelFail,
+      percentage: percent(totals.defensiveDuelSuccess, totals.defensiveDuelFail),
+      per90: per90(totals.defensiveDuelSuccess + totals.defensiveDuelFail, totalMinutes),
+    },
+    {
       metric: "Set-Piece Crosses",
       total: totals.setPieceCrossSuccess + totals.setPieceCrossFail,
       percentage: percent(totals.setPieceCrossSuccess, totals.setPieceCrossFail),
@@ -475,8 +496,76 @@ export function buildTeamAnalyticsTableRows(
   ];
 }
 
+function teamMatchPossessionLosses(row: TeamDashboardMatchAggregate) {
+  if (row.manualPossessionLosses) {
+    return row.possessionLosses;
+  }
+
+  return (
+    row.shortPassFail +
+    row.longPassFail +
+    row.crossFail +
+    row.dribbleFail +
+    row.throwFail +
+    row.shotsOffTarget +
+    row.possessionLosses
+  );
+}
+
+function teamMatchTotalActions(row: TeamDashboardMatchAggregate) {
+  const recordedFailedPossessionActions =
+    row.shortPassFail +
+    row.longPassFail +
+    row.crossFail +
+    row.dribbleFail +
+    row.throwFail +
+    row.shotsOffTarget;
+  const additionalPossessionLosses = row.manualPossessionLosses
+    ? Math.max(0, row.possessionLosses - recordedFailedPossessionActions)
+    : row.possessionLosses;
+
+  return (
+    row.shortPassSuccess +
+    row.shortPassFail +
+    row.longPassSuccess +
+    row.longPassFail +
+    row.crossSuccess +
+    row.crossFail +
+    row.dribbleSuccess +
+    row.dribbleFail +
+    row.throwSuccess +
+    row.throwFail +
+    row.shotsOnTarget +
+    row.shotsOffTarget +
+    row.aerialDuelSuccess +
+    row.aerialDuelFail +
+    row.defensiveDuelSuccess +
+    row.defensiveDuelFail +
+    row.defensivePositioningToCorrect +
+    row.throughPasses +
+    row.runsInBehind +
+    row.setPieceCrossSuccess +
+    row.setPieceCrossFail +
+    row.interceptedCrosses +
+    row.goals +
+    row.assists +
+    row.foulsSuffered +
+    row.foulsCommitted +
+    row.recoveries +
+    row.interceptions +
+    row.offsides +
+    additionalPossessionLosses +
+    row.responsibilityGoal +
+    row.yellowCards +
+    row.redCards +
+    row.saves +
+    row.incompleteSaves
+  );
+}
+
 export function buildTeamEvolutionCharts(
   rows: TeamDashboardMatchAggregate[],
+  teamName: string,
 ): TeamEvolutionChartSeries[] {
   const percentageMetrics: Array<{
     key: string;
@@ -506,6 +595,13 @@ export function buildTeamEvolutionCharts(
       description: "Team efficiency when delivering the ball into the box.",
       color: "#22d3ee",
       value: (row) => percent(row.crossSuccess, row.crossFail),
+    },
+    {
+      key: "set-piece-crossing",
+      title: "Set-Piece Crosses %",
+      description: "Set-piece cross efficiency by matchday.",
+      color: "#0891b2",
+      value: (row) => percent(row.setPieceCrossSuccess, row.setPieceCrossFail),
     },
     {
       key: "individual-actions",
@@ -538,6 +634,22 @@ export function buildTeamEvolutionCharts(
       displayMode: "percentage",
       value: (row) => aerialDuelPercentage(row),
     },
+    {
+      key: "defensive-duels",
+      title: "Defensive Duels %",
+      description: "Defensive-duel efficiency by matchday.",
+      color: "#10b981",
+      displayMode: "percentage",
+      value: (row) => percent(row.defensiveDuelSuccess, row.defensiveDuelFail),
+    },
+    {
+      key: "saves",
+      title: "Save Efficiency %",
+      description: "Goalkeeper save efficiency by matchday.",
+      color: "#3b82f6",
+      displayMode: "percentage",
+      value: (row) => percent(row.saves, row.incompleteSaves),
+    },
   ];
 
   const numericMetrics: Array<{
@@ -548,6 +660,14 @@ export function buildTeamEvolutionCharts(
     displayMode?: "raw" | "percentage" | "per90";
     value: (row: TeamDashboardMatchAggregate) => number;
   }> = [
+    {
+      key: "total-actions",
+      title: "Total Actions",
+      description: "All recorded team actions by matchday.",
+      color: "#00e7ff",
+      displayMode: "raw",
+      value: (row) => teamMatchTotalActions(row),
+    },
     {
       key: "short-pass-success",
       title: "Successful Short Passes",
@@ -571,6 +691,14 @@ export function buildTeamEvolutionCharts(
       color: "#06b6d4",
       displayMode: "raw",
       value: (row) => row.crossSuccess,
+    },
+    {
+      key: "set-piece-cross-success",
+      title: "Successful Set-Piece Crosses",
+      description: "Successful set-piece cross volume per matchday.",
+      color: "#0891b2",
+      displayMode: "raw",
+      value: (row) => row.setPieceCrossSuccess,
     },
     {
       key: "individual-actions-success",
@@ -605,6 +733,46 @@ export function buildTeamEvolutionCharts(
       value: (row) => row.aerialDuelSuccess,
     },
     {
+      key: "defensive-duels-success",
+      title: "Defensive Duels Won",
+      description: "Defensive duels won per matchday.",
+      color: "#10b981",
+      displayMode: "raw",
+      value: (row) => row.defensiveDuelSuccess,
+    },
+    {
+      key: "defensive-positioning",
+      title: "Defensive Positioning to Correct",
+      description: "Defensive positioning corrections per matchday.",
+      color: "#fb7185",
+      displayMode: "raw",
+      value: (row) => row.defensivePositioningToCorrect,
+    },
+    {
+      key: "through-passes",
+      title: "Through Passes",
+      description: "Through-pass volume per matchday.",
+      color: "#8b5cf6",
+      displayMode: "raw",
+      value: (row) => row.throughPasses,
+    },
+    {
+      key: "runs-in-behind",
+      title: "Runs in Behind",
+      description: "Runs in behind per matchday.",
+      color: "#d946ef",
+      displayMode: "raw",
+      value: (row) => row.runsInBehind,
+    },
+    {
+      key: "intercepted-crosses",
+      title: "Intercepted Crosses",
+      description: "Intercepted crosses per matchday.",
+      color: "#0d9488",
+      displayMode: "raw",
+      value: (row) => row.interceptedCrosses,
+    },
+    {
       key: "recoveries",
       title: "Recoveries",
       description: "Recovery volume per matchday.",
@@ -626,7 +794,31 @@ export function buildTeamEvolutionCharts(
       description: "Possession-loss volume per matchday.",
       color: "#ef4444",
       displayMode: "raw",
-      value: (row) => row.possessionLosses,
+      value: (row) => teamMatchPossessionLosses(row),
+    },
+    {
+      key: "fouls-won",
+      title: "Fouls Won",
+      description: "Fouls won per matchday.",
+      color: "#2dd4bf",
+      displayMode: "raw",
+      value: (row) => row.foulsSuffered,
+    },
+    {
+      key: "fouls-committed",
+      title: "Fouls Committed",
+      description: "Fouls committed per matchday.",
+      color: "#f43f5e",
+      displayMode: "raw",
+      value: (row) => row.foulsCommitted,
+    },
+    {
+      key: "offsides",
+      title: "Offsides",
+      description: "Offsides per matchday.",
+      color: "#e879f9",
+      displayMode: "raw",
+      value: (row) => row.offsides,
     },
     {
       key: "goals",
@@ -635,6 +827,70 @@ export function buildTeamEvolutionCharts(
       color: "#eab308",
       displayMode: "raw",
       value: (row) => row.goals,
+    },
+    {
+      key: "assists",
+      title: "Assists",
+      description: "Assists per matchday.",
+      color: "#a3e635",
+      displayMode: "raw",
+      value: (row) => row.assists,
+    },
+    {
+      key: "errors-leading-to-goals",
+      title: "Errors Leading to Goals",
+      description: "Errors leading to goals per matchday.",
+      color: "#dc2626",
+      displayMode: "raw",
+      value: (row) => row.responsibilityGoal,
+    },
+    {
+      key: "yellow-cards",
+      title: "Yellow Cards",
+      description: "Yellow cards per matchday.",
+      color: "#facc15",
+      displayMode: "raw",
+      value: (row) => row.yellowCards,
+    },
+    {
+      key: "red-cards",
+      title: "Red Cards",
+      description: "Red cards per matchday.",
+      color: "#ef4444",
+      displayMode: "raw",
+      value: (row) => row.redCards,
+    },
+    {
+      key: "goalkeeper-saves",
+      title: "Saves",
+      description: "Goalkeeper saves per matchday.",
+      color: "#60a5fa",
+      displayMode: "raw",
+      value: (row) => row.saves,
+    },
+    {
+      key: "incomplete-saves",
+      title: "Incomplete Saves",
+      description: "Incomplete goalkeeper saves per matchday.",
+      color: "#818cf8",
+      displayMode: "raw",
+      value: (row) => row.incompleteSaves,
+    },
+    {
+      key: "shots-faced",
+      title: "Shots Faced",
+      description: "Shots faced per matchday.",
+      color: "#6366f1",
+      displayMode: "raw",
+      value: (row) => row.shotsConceded,
+    },
+    {
+      key: "goals-conceded",
+      title: "Goals Conceded",
+      description: "Goals conceded per matchday.",
+      color: "#be123c",
+      displayMode: "raw",
+      value: (row) => row.goalsConceded,
     },
   ];
 
@@ -645,7 +901,7 @@ export function buildTeamEvolutionCharts(
     color: metric.color,
     displayMode: metric.displayMode ?? "percentage",
     data: rows.map((row) => ({
-      matchLabel: formatMatchLabel(row),
+      matchLabel: formatMatchLabel(row, teamName),
       matchdayNumber: row.matchdayNumber,
       opponentTeamName: row.opponentTeamName,
       team: metric.value(row),

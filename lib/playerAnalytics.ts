@@ -1,10 +1,13 @@
 import {
+  getAnalyzedTeam,
   getCompetitionOptions,
   getDashboardPlayersByCompetition,
   getGoalkeeperCompetitionMatchStats,
   getMatchOptionsByCompetition,
   getPlayerCompetitionMatchStats,
 } from "@/lib/data";
+import { getWorkspaceId } from "@/lib/auth";
+import { usesManualPossessionLosses } from "@/lib/workspace-settings";
 import {
   aggregateGoalkeeperTotals,
   aggregateOutfieldTotals,
@@ -52,6 +55,8 @@ export type MatchOption = {
 };
 
 export type PlayerAnalyticsBaseData = {
+  teamName: string;
+  manualPossessionLosses: boolean;
   competitions: CompetitionOption[];
   selectedCompetitionId?: number;
   playerOptions: PlayerOption[];
@@ -289,7 +294,14 @@ export function resolveSingleId(
 export async function getPlayerAnalyticsBaseData(
   params: PlayerAnalyticsSearchParams,
 ): Promise<PlayerAnalyticsBaseData> {
-  const competitions = (await getCompetitionOptions()) as CompetitionOption[];
+  const [competitionRows, analyzedTeam, workspaceId] = await Promise.all([
+    getCompetitionOptions(),
+    getAnalyzedTeam(),
+    getWorkspaceId(),
+  ]);
+  const competitions = competitionRows as CompetitionOption[];
+  const teamName = analyzedTeam?.name ?? "Home Team";
+  const manualPossessionLosses = usesManualPossessionLosses(workspaceId);
   const availableCompetitionIds = new Set(competitions.map((competition) => competition.id));
   const requestedCompetitionId = parseOptionalId(params.competitionId);
   const selectedCompetitionId =
@@ -299,6 +311,8 @@ export async function getPlayerAnalyticsBaseData(
 
   if (!selectedCompetitionId) {
     return {
+      teamName,
+      manualPossessionLosses,
       competitions,
       selectedCompetitionId: undefined,
       playerOptions: [],
@@ -314,6 +328,8 @@ export async function getPlayerAnalyticsBaseData(
   ]);
 
   return {
+    teamName,
+    manualPossessionLosses,
     competitions,
     selectedCompetitionId,
     playerOptions: playerOptions as PlayerOption[],
@@ -390,6 +406,7 @@ export function buildMetricEvolutionData(
   metricKey: EvolutionMetricKey,
   rowsByPlayer: Map<number, OutfieldMatchRow[]>,
   lines: EvolutionLine[],
+  teamName = "Home Team",
 ): EvolutionPoint[] {
   const linesByPlayer = new Map(lines.map((line) => [line.playerId, line]));
   const byMatch = new Map<
@@ -422,7 +439,7 @@ export function buildMetricEvolutionData(
     .sort((a, b) => a.matchdayNumber - b.matchdayNumber || a.date.localeCompare(b.date))
     .map((entry) => {
       const point: EvolutionPoint = {
-        matchLabel: `Feirense x ${entry.opponentTeamName} - Matchday ${entry.matchdayNumber}`,
+        matchLabel: `${teamName} x ${entry.opponentTeamName} - Matchday ${entry.matchdayNumber}`,
         matchdayNumber: entry.matchdayNumber,
         opponentTeamName: entry.opponentTeamName,
       };
@@ -549,6 +566,7 @@ export function buildPlayerNumericRows(options: {
   goalkeeperRows?: GoalkeeperMatchRow[];
   matchesPlayed: number;
   includeActionsPer90?: boolean;
+  manualPossessionLosses?: boolean;
 }): NumericRow[] {
   const goalkeeperTotals = options.goalkeeperRows
     ? options.goalkeeperRows.reduce(
@@ -607,16 +625,24 @@ export function buildPlayerNumericRows(options: {
       total: numericActions.offsidesTotal,
       per90: numericActions.offsidesPer90,
     },
-    {
-      metric: "Total Possession Losses (Derived)",
-      total: numericActions.possessionLossesTotal,
-      per90: numericActions.possessionLossesPer90,
-    },
-    {
-      metric: "Other Possession Losses",
-      total: numericActions.otherPossessionLossesTotal,
-      per90: numericActions.otherPossessionLossesPer90,
-    },
+    ...(options.manualPossessionLosses
+      ? [{
+          metric: "Possession Losses",
+          total: numericActions.possessionLossesTotal,
+          per90: numericActions.possessionLossesPer90,
+        }]
+      : [
+          {
+            metric: "Total Possession Losses (Derived)",
+            total: numericActions.possessionLossesTotal,
+            per90: numericActions.possessionLossesPer90,
+          },
+          {
+            metric: "Other Possession Losses",
+            total: numericActions.otherPossessionLossesTotal,
+            per90: numericActions.otherPossessionLossesPer90,
+          },
+        ]),
     {
       metric: "Defensive Positioning to Correct",
       total: numericActions.defensivePositioningToCorrectTotal,

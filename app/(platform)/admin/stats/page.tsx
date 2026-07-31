@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import {
   formatMatchLabel,
+  getAnalyzedTeam,
   getAnalyzedTeamPlayerOptionsByCompetition,
   getCalculatedTeamTotalsByMatch,
   getCompetitionOptions,
@@ -16,6 +17,9 @@ import {
   getMatchOptionsByCompetition,
 } from "@/lib/data";
 import { goalkeeperStatFields, outfieldStatFields } from "@/lib/stat-fields";
+import { getWorkspaceId } from "@/lib/auth";
+import { usesManualPossessionLosses } from "@/lib/workspace-settings";
+
 
 type StatsPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -85,11 +89,23 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
     : undefined;
   const selectedPlayer = playerOptions.find((player) => player.id === selectedPlayerId);
 
-  const [existingPlayerStats, existingGoalkeeperStats, calculatedTeamTotals] = await Promise.all([
+  const [existingPlayerStats, existingGoalkeeperStats, calculatedTeamTotals, analyzedTeam, workspaceId] = await Promise.all([
     getExistingPlayerMatchStats(selectedPlayerId, selectedMatchId),
     getExistingGoalkeeperStats(selectedPlayerId, selectedMatchId),
     getCalculatedTeamTotalsByMatch(selectedMatchId),
+    getAnalyzedTeam(),
+    getWorkspaceId(),
   ]);
+  const homeTeamName = analyzedTeam?.name ?? "Home Team";
+  const manualPossessionLosses = usesManualPossessionLosses(workspaceId);
+  const workspaceOutfieldStatFields = outfieldStatFields.map((field) =>
+    manualPossessionLosses && field.key === "possessionLosses"
+      ? { ...field, label: "Possession Losses" }
+      : field,
+  );
+  const teamTotalStatFields = workspaceOutfieldStatFields.filter(
+    (field) => field.key !== "minutesPlayed",
+  );
 
   const totalsByKey: Record<string, number> = {
     ...emptyTeamTotals,
@@ -146,7 +162,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
                       opponentTeamName: match.opponentTeamName,
                       matchdayNumber: match.matchdayNumber,
                       homeAway: match.homeAway,
-                    })}
+                    }, homeTeamName)}
                   </option>
                 ))}
               </NativeSelect>
@@ -183,7 +199,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {outfieldStatFields.map((field) => (
+              {teamTotalStatFields.map((field) => (
                 <div key={field.key} className="rounded-lg border border-border/70 bg-card/40 px-3 py-2">
                   <p className="text-xs text-muted-foreground">{field.label}</p>
                   <p className="mt-1 text-lg font-semibold text-cyan-200">{totalsByKey[field.key] ?? 0}</p>
@@ -216,7 +232,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
             <form action={upsertPlayerStatsAction} className="space-y-4">
               <input type="hidden" name="matchId" value={selectedMatchId} />
               <input type="hidden" name="playerId" value={selectedPlayerId} />
-              <NumericStatFields fields={outfieldStatFields} values={existingPlayerStats ?? undefined} />
+              <NumericStatFields fields={workspaceOutfieldStatFields} values={existingPlayerStats ?? undefined} />
               <Button>Save Player Statistics</Button>
             </form>
           </CardContent>

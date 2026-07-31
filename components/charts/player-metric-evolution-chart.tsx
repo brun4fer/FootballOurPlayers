@@ -163,10 +163,12 @@ export function PlayerMetricEvolutionChart({
   data,
   lines,
   displayMode = "raw",
+  homeTeamName = "Home Team",
 }: {
   data: EvolutionPoint[];
   lines: EvolutionLine[];
   displayMode?: DisplayMode;
+  homeTeamName?: string;
 }) {
   const displayData = data.map((point) => {
     const nextPoint: EvolutionPoint = { ...point };
@@ -308,7 +310,7 @@ export function PlayerMetricEvolutionChart({
                       Matchday {meta.matchday || "-"}
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      Feirense x {meta.opponent || "-"}
+                      {homeTeamName} x {meta.opponent || "-"}
                     </p>
                     <div className="mt-3 space-y-2">
                       {currentEntries.map((entry) => (

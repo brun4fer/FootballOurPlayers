@@ -26,10 +26,12 @@ export function PlayerEvolutionChartPanel({
   charts,
   lines,
   displayMode = "per90",
+  homeTeamName = "Home Team",
 }: {
   charts: ChartOption[];
   lines: EvolutionLine[];
   displayMode?: "raw" | "percentage" | "per90";
+  homeTeamName?: string;
 }) {
   const [selectedChartKey, setSelectedChartKey] = React.useState(charts[0]?.key ?? "");
   const selectedChart =
@@ -65,6 +67,7 @@ export function PlayerEvolutionChartPanel({
           data={selectedChart.data}
           lines={lines}
           displayMode={displayMode}
+          homeTeamName={homeTeamName}
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import {
+  getAnalyzedTeam,
   getCompetitionOptions,
   getMatchOptionsByCompetition,
 } from "@/lib/data";
@@ -20,6 +21,7 @@ export type TeamMatchOption = {
 };
 
 export type TeamAnalyticsBaseData = {
+  teamName: string;
   competitions: CompetitionOption[];
   selectedCompetitionId?: number;
   matchOptions: TeamMatchOption[];
@@ -70,7 +72,12 @@ export function resolveSingleId(
 export async function getTeamAnalyticsBaseData(
   params: TeamAnalyticsSearchParams,
 ): Promise<TeamAnalyticsBaseData> {
-  const competitions = (await getCompetitionOptions()) as CompetitionOption[];
+  const [competitionRows, analyzedTeam] = await Promise.all([
+    getCompetitionOptions(),
+    getAnalyzedTeam(),
+  ]);
+  const competitions = competitionRows as CompetitionOption[];
+  const teamName = analyzedTeam?.name ?? "Analyzed Team";
   const availableCompetitionIds = new Set(competitions.map((competition) => competition.id));
   const requestedCompetitionId = parseOptionalId(params.competitionId);
   const selectedCompetitionId =
@@ -80,6 +87,7 @@ export async function getTeamAnalyticsBaseData(
 
   if (!selectedCompetitionId) {
     return {
+      teamName,
       competitions,
       selectedCompetitionId: undefined,
       matchOptions: [],
@@ -95,6 +103,7 @@ export async function getTeamAnalyticsBaseData(
   }));
 
   return {
+    teamName,
     competitions,
     selectedCompetitionId,
     matchOptions,
