@@ -11,7 +11,16 @@ import { sessions, users, workspaces } from "@/db/schema";
 
 const scrypt = promisify(scryptCallback);
 const COOKIE_NAME = "ap_session";
+const ADMIN_COOKIE_NAME = "ap_admin_access";
 const SESSION_DAYS = 30;
+
+export function getSessionCookieName() {
+  return COOKIE_NAME;
+}
+
+export function getAdminCookieName() {
+  return ADMIN_COOKIE_NAME;
+}
 
 function tokenHash(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -55,6 +64,7 @@ export async function destroySession() {
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (token) await db.delete(sessions).where(eq(sessions.tokenHash, tokenHash(token)));
   cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete(ADMIN_COOKIE_NAME);
 }
 
 export async function getCurrentUser() {
@@ -66,6 +76,7 @@ export async function getCurrentUser() {
       username: users.username,
       workspaceId: users.workspaceId,
       workspaceName: workspaces.name,
+      workspaceSlug: workspaces.slug,
       mustChangePassword: users.mustChangePassword,
     })
     .from(sessions)

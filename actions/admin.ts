@@ -16,10 +16,10 @@ import {
   teams,
 } from "@/db/schema";
 import { parseGoalkeeperStats, parseOutfieldStats } from "@/lib/validators";
-import { getWorkspaceId } from "@/lib/auth";
+import { getAdminWorkspaceId } from "@/lib/admin-auth";
 
 async function requireOwnedTeam(id: number) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ id: teams.id }).from(teams)
     .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
   if (!row[0]) throw new Error("Invalid team.");
@@ -27,7 +27,7 @@ async function requireOwnedTeam(id: number) {
 }
 
 async function requireMutableTeam(id: number) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
     .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
   if (!row[0]) throw new Error("Invalid team.");
@@ -36,14 +36,14 @@ async function requireMutableTeam(id: number) {
 }
 
 async function requireOpponentTeam(id: number) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ isFixedHomeTeam: teams.isFixedHomeTeam }).from(teams)
     .where(and(eq(teams.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
   if (!row[0] || row[0].isFixedHomeTeam) throw new Error("Select a valid opponent team.");
 }
 
 async function getFixedHomeTeamId() {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ id: teams.id }).from(teams)
     .where(and(eq(teams.workspaceId, workspaceId), eq(teams.isFixedHomeTeam, true))).limit(1);
   if (!row[0]) throw new Error("The fixed home team is missing.");
@@ -51,7 +51,7 @@ async function getFixedHomeTeamId() {
 }
 
 async function requireOwnedCompetition(id: number) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ id: competitions.id }).from(competitions)
     .where(and(eq(competitions.id, id), eq(competitions.workspaceId, workspaceId))).limit(1);
   if (!row[0]) throw new Error("Invalid competition.");
@@ -59,7 +59,7 @@ async function requireOwnedCompetition(id: number) {
 }
 
 async function requireOwnedPlayer(id: number) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ id: players.id }).from(players)
     .innerJoin(teams, eq(players.teamId, teams.id))
     .where(and(eq(players.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
@@ -67,7 +67,7 @@ async function requireOwnedPlayer(id: number) {
 }
 
 async function requireOwnedMatch(id: number) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const row = await db.select({ id: matches.id }).from(matches)
     .innerJoin(competitions, eq(matches.competitionId, competitions.id))
     .where(and(eq(matches.id, id), eq(competitions.workspaceId, workspaceId))).limit(1);
@@ -121,7 +121,7 @@ function toRequiredId(value: FormDataEntryValue | null) {
 }
 
 export async function createSeasonAction(formData: FormData) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The season name must be at least 2 characters long.");
@@ -132,7 +132,7 @@ export async function createSeasonAction(formData: FormData) {
 }
 
 export async function updateSeasonAction(formData: FormData) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const id = toRequiredId(formData.get("id"));
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
@@ -144,7 +144,7 @@ export async function updateSeasonAction(formData: FormData) {
 }
 
 export async function deleteSeasonAction(formData: FormData) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const id = toRequiredId(formData.get("id"));
   await db.delete(seasons).where(and(eq(seasons.id, id), eq(seasons.workspaceId, workspaceId)));
   revalidatePath("/admin/seasons");
@@ -156,7 +156,7 @@ export async function deleteSeasonAction(formData: FormData) {
 export async function createCompetitionAction(formData: FormData) {
   const name = optionalText(formData.get("name"), 120);
   const seasonId = toRequiredId(formData.get("seasonId"));
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const ownedSeason = await db.select({ id: seasons.id }).from(seasons)
     .where(and(eq(seasons.id, seasonId), eq(seasons.workspaceId, workspaceId))).limit(1);
   if (!ownedSeason[0]) throw new Error("Invalid season.");
@@ -214,7 +214,7 @@ export async function deleteCompetitionAction(formData: FormData) {
 }
 
 export async function createTeamAction(formData: FormData) {
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const name = optionalText(formData.get("name"), 120);
   if (!name || name.length < 2) {
     throw new Error("The team name must be at least 2 characters long.");
@@ -282,7 +282,7 @@ export async function assignTeamCompetitionAction(formData: FormData) {
 
 export async function removeTeamCompetitionAction(formData: FormData) {
   const id = toRequiredId(formData.get("id"));
-  const workspaceId = await getWorkspaceId();
+  const workspaceId = await getAdminWorkspaceId();
   const ownedLink = await db.select({ id: teamCompetitions.id }).from(teamCompetitions)
     .innerJoin(teams, eq(teamCompetitions.teamId, teams.id))
     .where(and(eq(teamCompetitions.id, id), eq(teams.workspaceId, workspaceId))).limit(1);
