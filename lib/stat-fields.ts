@@ -14,6 +14,8 @@ export const outfieldStatFields = [
   { key: "shotsOffTarget", label: "Shots off Target" },
   { key: "aerialDuelSuccess", label: "Aerial Duels Won" },
   { key: "aerialDuelFail", label: "Aerial Duels Lost" },
+  { key: "defensiveDuelSuccess", label: "Defensive Duels Won" },
+  { key: "defensiveDuelFail", label: "Defensive Duels Lost" },
   { key: "defensivePositioningToCorrect", label: "Defensive Positioning to Correct" },
   { key: "throughPasses", label: "Through Passes" },
   { key: "runsInBehind", label: "Runs in Behind" },

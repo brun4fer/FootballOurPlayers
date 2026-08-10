@@ -49,6 +49,8 @@ const emptyTeamTotals: Record<string, number> = {
   shotsOffTarget: 0,
   aerialDuelSuccess: 0,
   aerialDuelFail: 0,
+  defensiveDuelSuccess: 0,
+  defensiveDuelFail: 0,
   defensivePositioningToCorrect: 0,
   throughPasses: 0,
   runsInBehind: 0,
