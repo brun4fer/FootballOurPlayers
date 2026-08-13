@@ -181,8 +181,7 @@ export function aggregateTeamDashboardTotals(
         ? toSafeNumber(row.possessionLosses)
         : toSafeNumber(row.shortPassFail) + toSafeNumber(row.longPassFail) +
           toSafeNumber(row.crossFail) + toSafeNumber(row.dribbleFail) +
-          toSafeNumber(row.throwFail) + toSafeNumber(row.shotsOffTarget) +
-          toSafeNumber(row.possessionLosses)),
+          toSafeNumber(row.throwFail) + toSafeNumber(row.possessionLosses)),
       yellowCards: acc.yellowCards + toSafeNumber(row.yellowCards),
       redCards: acc.redCards + toSafeNumber(row.redCards),
       responsibilityGoal: acc.responsibilityGoal + toSafeNumber(row.responsibilityGoal),
@@ -507,7 +506,6 @@ function teamMatchPossessionLosses(row: TeamDashboardMatchAggregate) {
     row.crossFail +
     row.dribbleFail +
     row.throwFail +
-    row.shotsOffTarget +
     row.possessionLosses
   );
 }
@@ -518,8 +516,7 @@ function teamMatchTotalActions(row: TeamDashboardMatchAggregate) {
     row.longPassFail +
     row.crossFail +
     row.dribbleFail +
-    row.throwFail +
-    row.shotsOffTarget;
+    row.throwFail;
   const additionalPossessionLosses = row.manualPossessionLosses
     ? Math.max(0, row.possessionLosses - recordedFailedPossessionActions)
     : row.possessionLosses;

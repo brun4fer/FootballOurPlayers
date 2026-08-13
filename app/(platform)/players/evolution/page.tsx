@@ -201,8 +201,7 @@ export default async function EvolutionPage({ searchParams }: EvolutionPageProps
           row.longPassFail -
           row.crossFail -
           row.dribbleFail -
-          row.throwFail -
-          row.shotsOffTarget,
+          row.throwFail,
       ),
     })),
   };

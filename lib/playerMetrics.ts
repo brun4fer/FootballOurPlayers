@@ -107,8 +107,7 @@ export function normalizePlayerRows(rows: UnknownRow[]): PlayerMatchMetricsRow[]
       possessionLosses:
         toNumber(row.shortPassFail) + toNumber(row.longPassFail) +
         toNumber(row.crossFail) + toNumber(row.dribbleFail) +
-        toNumber(row.throwFail) + toNumber(row.shotsOffTarget) +
-        toNumber(row.possessionLosses),
+        toNumber(row.throwFail) + toNumber(row.possessionLosses),
       responsibilityGoal: toNumber(row.responsibilityGoal),
       yellowCards: toNumber(row.yellowCards),
       redCards: toNumber(row.redCards),

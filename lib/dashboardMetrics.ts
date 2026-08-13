@@ -177,7 +177,6 @@ export function normalizeOutfieldRows(
           toNumber(row.crossFail) +
           toNumber(row.dribbleFail) +
           toNumber(row.throwFail) +
-          toNumber(row.shotsOffTarget) +
           toNumber(row.possessionLosses),
       responsibilityGoal: toNumber(row.responsibilityGoal),
       yellowCards: toNumber(row.yellowCards),
@@ -342,8 +341,7 @@ export function buildNumericActions(
     outfieldTotals.longPassFail +
     outfieldTotals.crossFail +
     outfieldTotals.dribbleFail +
-    outfieldTotals.throwFail +
-    outfieldTotals.shotsOffTarget;
+    outfieldTotals.throwFail;
   const otherPossessionLosses = Math.max(
     0,
     outfieldTotals.possessionLosses - recordedFailedPossessionActions,
@@ -477,8 +475,7 @@ export function toOutfieldTotalsFromAggregate(row: UnknownRow): OutfieldTotals {
       ? toNumber(row.possessionLosses)
       : toNumber(row.shortPassFail) + toNumber(row.longPassFail) +
         toNumber(row.crossFail) + toNumber(row.dribbleFail) +
-        toNumber(row.throwFail) + toNumber(row.shotsOffTarget) +
-        toNumber(row.possessionLosses),
+        toNumber(row.throwFail) + toNumber(row.possessionLosses),
     responsibilityGoal: toNumber(row.responsibilityGoal),
     yellowCards: toNumber(row.yellowCards),
     redCards: toNumber(row.redCards),
