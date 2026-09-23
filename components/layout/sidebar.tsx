@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ClipboardPen, Database, Home, Shield, Users } from "lucide-react";
+import { BarChart3, ClipboardPen, Database, Home, Link2, Shield, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/app-config";
@@ -75,6 +75,7 @@ const links = [
   { href: "/admin/players", label: "Players", icon: Users },
   { href: "/admin/matches", label: "Matches", icon: ClipboardPen },
   { href: "/admin/stats", label: "Enter Statistics", icon: ClipboardPen },
+  { href: "/admin/integrations", label: "Integrations", icon: Link2 },
 ];
 
 export function Sidebar() {

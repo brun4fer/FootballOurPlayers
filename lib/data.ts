@@ -90,9 +90,14 @@ function formatHomeAwayLabel(value: "home" | "away") {
 export function formatMatchLabel(match: {
   opponentTeamName: string;
   matchdayNumber: number;
+  roundName?: string | null;
   homeAway: "home" | "away";
 }, homeTeamName = "Home Team") {
-  return `${homeTeamName} vs ${match.opponentTeamName} - Matchday ${match.matchdayNumber} (${formatHomeAwayLabel(match.homeAway)})`;
+  const round = match.roundName?.trim() || `Matchday ${match.matchdayNumber}`;
+  const fixture = match.homeAway === "home"
+    ? `${homeTeamName} vs ${match.opponentTeamName}`
+    : `${match.opponentTeamName} vs ${homeTeamName}`;
+  return `${fixture} - ${round} (${formatHomeAwayLabel(match.homeAway)})`;
 }
 
 export async function getSeasons() {
@@ -173,6 +178,7 @@ export async function getMatches() {
     .select({
       id: matches.id,
       matchdayNumber: matches.matchdayNumber,
+      roundName: matches.roundName,
       competitionId: matches.competitionId,
       competitionName: competitions.name,
       seasonName: seasons.name,
@@ -220,6 +226,9 @@ export async function getMatchOptionsByCompetition(competitionId?: number) {
     return [] as Array<{
       id: number;
       matchdayNumber: number;
+      roundName: string | null;
+      videoAnalysisId: string | null;
+      videoAnalysisSyncedAt: string | null;
       opponentTeamName: string;
       homeAway: "home" | "away";
       date: string;
@@ -231,6 +240,9 @@ export async function getMatchOptionsByCompetition(competitionId?: number) {
     .select({
       id: matches.id,
       matchdayNumber: matches.matchdayNumber,
+      roundName: matches.roundName,
+      videoAnalysisId: matches.videoAnalysisId,
+      videoAnalysisSyncedAt: matches.videoAnalysisSyncedAt,
       opponentTeamName: teams.name,
       homeAway: matches.homeAway,
       date: matches.date,

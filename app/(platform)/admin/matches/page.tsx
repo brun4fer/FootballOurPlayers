@@ -97,6 +97,7 @@ export default async function AdminMatchesPage() {
                       {formatMatchLabel({
                         opponentTeamName: match.opponentTeamName,
                         matchdayNumber: match.matchdayNumber,
+                        roundName: match.roundName,
                         homeAway: match.homeAway,
                       }, homeTeamName)}
                     </p>

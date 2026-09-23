@@ -57,6 +57,27 @@
       "when": 1785456000000,
       "tag": "0007_players_fixed_team",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790168400000,
+      "tag": "0008_video_analysis_integration",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790169300000,
+      "tag": "0009_user_linked_video_analysis",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790172000000,
+      "tag": "0010_workspace_admin_password",
+      "breakpoints": true
     }
   ]
 }

@@ -81,6 +81,22 @@ Calculadas no código, sem persistência:
 - `npm run db:studio`
 - `npm run db:seed`
 
+## Integração com VideoAnaliseJogadores
+
+O endpoint `POST /api/integrations/video-analysis` recebe épocas, competições,
+equipas/plantéis e snapshots completos de jogos. Cada entidade fica ligada pelo
+ID estável da aplicação de vídeo, pelo que reenviar um jogo atualiza os dados em
+vez de os duplicar.
+
+Cada utilizador liga a sua própria conta: em `Administração → Integrações` cria
+um código temporário e cola-o no ecrã `Structure` do VideoAnaliseJogadores. O
+código expira ao fim de 30 minutos, só pode ser usado uma vez e cria uma
+credencial exclusiva e revogável para os dois espaços de trabalho. Não são
+necessários tokens globais em variáveis de ambiente.
+
+Os jogos sincronizados ficam apenas de leitura na introdução manual de
+estatísticas; as correções devem ser feitas na análise de vídeo e reenviadas.
+
 ## Estrutura do Projeto
 
 - `app/` rotas e layouts

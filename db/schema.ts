@@ -68,9 +68,57 @@ export const workspaces = pgTable(
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
     slug: varchar("slug", { length: 80 }).notNull(),
+    adminPasswordHash: text("admin_password_hash"),
+    adminMustChangePassword: boolean("admin_must_change_password").notNull().default(false),
   },
   (table) => ({
     slugUnique: uniqueIndex("workspaces_slug_unique").on(table.slug),
+  }),
+);
+
+export const videoAnalysisLinkTokens = pgTable(
+  "video_analysis_link_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    tokenHash: varchar("token_hash", { length: 64 }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true, mode: "string" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    tokenUnique: uniqueIndex("video_analysis_link_tokens_token_hash_unique").on(table.tokenHash),
+    workspaceIdx: index("video_analysis_link_tokens_workspace_id_idx").on(table.workspaceId),
+    expiresIdx: index("video_analysis_link_tokens_expires_at_idx").on(table.expiresAt),
+  }),
+);
+
+export const videoAnalysisConnections = pgTable(
+  "video_analysis_connections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    externalWorkspaceId: varchar("external_workspace_id", { length: 191 }).notNull(),
+    externalWorkspaceName: varchar("external_workspace_name", { length: 120 }).notNull(),
+    tokenHash: varchar("token_hash", { length: 64 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: "string" }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true, mode: "string" }),
+  },
+  (table) => ({
+    workspaceUnique: uniqueIndex("video_analysis_connections_workspace_id_unique").on(table.workspaceId),
+    externalWorkspaceUnique: uniqueIndex("video_analysis_connections_external_workspace_id_unique").on(
+      table.externalWorkspaceId,
+    ),
+    tokenUnique: uniqueIndex("video_analysis_connections_token_hash_unique").on(table.tokenHash),
   }),
 );
 
@@ -119,12 +167,14 @@ export const seasons = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
+    videoAnalysisId: varchar("video_analysis_id", { length: 191 }),
     workspaceId: integer("workspace_id")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
   },
   (table) => ({
     nameUnique: uniqueIndex("seasons_name_workspace_unique").on(table.name, table.workspaceId),
+    videoAnalysisUnique: uniqueIndex("seasons_video_analysis_id_unique").on(table.videoAnalysisId),
   }),
 );
 
@@ -133,6 +183,7 @@ export const competitions = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
+    videoAnalysisId: varchar("video_analysis_id", { length: 191 }),
     seasonId: integer("season_id")
       .notNull()
       .references(() => seasons.id, { onDelete: "cascade" }),
@@ -146,6 +197,7 @@ export const competitions = pgTable(
       table.name,
       table.seasonId,
     ),
+    videoAnalysisUnique: uniqueIndex("competitions_video_analysis_id_unique").on(table.videoAnalysisId),
   }),
 );
 
@@ -154,6 +206,7 @@ export const teams = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 120 }).notNull(),
+    videoAnalysisId: varchar("video_analysis_id", { length: 191 }),
     emblemUrl: text("emblem_url"),
     isFixedHomeTeam: boolean("is_fixed_home_team").notNull().default(false),
     workspaceId: integer("workspace_id")
@@ -163,6 +216,7 @@ export const teams = pgTable(
   (table) => ({
     nameUnique: uniqueIndex("teams_name_workspace_unique").on(table.name, table.workspaceId),
     fixedHomeTeamIdx: index("teams_fixed_home_team_idx").on(table.workspaceId, table.isFixedHomeTeam),
+    videoAnalysisUnique: uniqueIndex("teams_video_analysis_id_unique").on(table.videoAnalysisId),
   }),
 );
 
@@ -194,6 +248,7 @@ export const players = pgTable(
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 140 }).notNull(),
+    videoAnalysisId: varchar("video_analysis_id", { length: 191 }),
     photo: text("photo"),
     height: integer("height"),
     weight: integer("weight"),
@@ -210,6 +265,7 @@ export const players = pgTable(
   (table) => ({
     teamIdx: index("players_team_id_idx").on(table.teamId),
     keeperIdx: index("players_is_goalkeeper_idx").on(table.isGoalkeeper),
+    videoAnalysisUnique: uniqueIndex("players_video_analysis_id_unique").on(table.videoAnalysisId),
   }),
 );
 
@@ -218,6 +274,8 @@ export const matches = pgTable(
   {
     id: serial("id").primaryKey(),
     matchdayNumber: integer("matchday_number").notNull(),
+    roundName: varchar("round_name", { length: 120 }),
+    videoAnalysisId: varchar("video_analysis_id", { length: 191 }),
     competitionId: integer("competition_id")
       .notNull()
       .references(() => competitions.id, { onDelete: "cascade" }),
@@ -226,15 +284,16 @@ export const matches = pgTable(
       .references(() => teams.id, { onDelete: "cascade" }),
     homeAway: homeAwayEnum("home_away").notNull(),
     date: date("date", { mode: "string" }).notNull(),
+    videoAnalysisSyncedAt: timestamp("video_analysis_synced_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
   },
   (table) => ({
     competitionIdx: index("matches_competition_id_idx").on(table.competitionId),
     opponentIdx: index("matches_opponent_team_id_idx").on(table.opponentTeamId),
     dateIdx: index("matches_date_idx").on(table.date),
-    matchdayCompetitionUnique: uniqueIndex("matches_matchday_competition_unique").on(
-      table.matchdayNumber,
-      table.competitionId,
-    ),
+    videoAnalysisUnique: uniqueIndex("matches_video_analysis_id_unique").on(table.videoAnalysisId),
   }),
 );
 
@@ -430,6 +489,7 @@ export type PlayerMatchStats = typeof playerMatchStats.$inferSelect;
 export type GoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferSelect;
 export type TeamMatchStats = typeof teamMatchStats.$inferSelect;
 export type PublicReport = typeof publicReports.$inferSelect;
+export type VideoAnalysisConnection = typeof videoAnalysisConnections.$inferSelect;
 
 export type NewSeason = typeof seasons.$inferInsert;
 export type NewCompetition = typeof competitions.$inferInsert;

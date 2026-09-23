@@ -86,6 +86,8 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
   const selectedMatchId = matchOptions.some((match) => match.id === requestedMatchId)
     ? requestedMatchId
     : undefined;
+  const selectedMatch = matchOptions.find((match) => match.id === selectedMatchId);
+  const synchronizedMatch = Boolean(selectedMatch?.videoAnalysisId);
   const selectedPlayerId = playerOptions.some((player) => player.id === requestedPlayerId)
     ? requestedPlayerId
     : undefined;
@@ -163,6 +165,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
                     {formatMatchLabel({
                       opponentTeamName: match.opponentTeamName,
                       matchdayNumber: match.matchdayNumber,
+                      roundName: match.roundName,
                       homeAway: match.homeAway,
                     }, homeTeamName)}
                   </option>
@@ -212,6 +215,18 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
         </Card>
       ) : null}
 
+      {synchronizedMatch ? (
+        <Card className="border-cyan-400/30 bg-cyan-400/5">
+          <CardHeader>
+            <CardTitle>Managed by VideoAnaliseJogadores</CardTitle>
+            <CardDescription>
+              These statistics are read-only here. Correct the analysis or minutes in
+              VideoAnaliseJogadores and synchronize the complete match again.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
+
       {selectedMatchId && selectedPlayerId ? (
         <Card>
           <CardHeader>
@@ -232,10 +247,12 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
               </Button>
             </div>
             <form action={upsertPlayerStatsAction} className="space-y-4">
+              <fieldset disabled={synchronizedMatch} className="space-y-4 disabled:opacity-70">
               <input type="hidden" name="matchId" value={selectedMatchId} />
               <input type="hidden" name="playerId" value={selectedPlayerId} />
               <NumericStatFields fields={workspaceOutfieldStatFields} values={existingPlayerStats ?? undefined} />
               <Button>Save Player Statistics</Button>
+              </fieldset>
             </form>
           </CardContent>
         </Card>
@@ -252,6 +269,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
           </CardHeader>
           <CardContent>
             <form action={upsertGoalkeeperStatsAction} className="space-y-4">
+              <fieldset disabled={synchronizedMatch} className="space-y-4 disabled:opacity-70">
               <input type="hidden" name="matchId" value={selectedMatchId} />
               <input type="hidden" name="playerId" value={selectedPlayerId} />
               <NumericStatFields
@@ -259,6 +277,7 @@ export default async function AdminStatsPage({ searchParams }: StatsPageProps) {
                 values={existingGoalkeeperStats ?? undefined}
               />
               <Button>Save Goalkeeper Statistics</Button>
+              </fieldset>
             </form>
           </CardContent>
         </Card>

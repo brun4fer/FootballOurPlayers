@@ -68,10 +68,17 @@ async function requireOwnedPlayer(id: number) {
 
 async function requireOwnedMatch(id: number) {
   const workspaceId = await getAdminWorkspaceId();
-  const row = await db.select({ id: matches.id }).from(matches)
+  const row = await db.select({ id: matches.id, videoAnalysisId: matches.videoAnalysisId }).from(matches)
     .innerJoin(competitions, eq(matches.competitionId, competitions.id))
     .where(and(eq(matches.id, id), eq(competitions.workspaceId, workspaceId))).limit(1);
   if (!row[0]) throw new Error("Invalid match.");
+  return row[0];
+}
+
+function requireManualStatsMatch(match: { videoAnalysisId: string | null }) {
+  if (match.videoAnalysisId) {
+    throw new Error("This match is managed by VideoAnaliseJogadores. Correct it there and synchronize it again.");
+  }
 }
 
 function optionalText(value: FormDataEntryValue | null, max = 255) {
@@ -391,7 +398,7 @@ export async function createMatchAction(formData: FormData) {
 
   await db
     .insert(matches)
-    .values({ matchdayNumber, competitionId, opponentTeamId, homeAway, date })
+    .values({ matchdayNumber, roundName: String(matchdayNumber), competitionId, opponentTeamId, homeAway, date })
     .onConflictDoNothing();
 
   revalidatePath("/admin/matches");
@@ -410,7 +417,7 @@ export async function updateMatchAction(formData: FormData) {
 
   await db
     .update(matches)
-    .set({ matchdayNumber, competitionId, opponentTeamId, homeAway, date })
+    .set({ matchdayNumber, roundName: String(matchdayNumber), competitionId, opponentTeamId, homeAway, date })
     .where(eq(matches.id, id));
 
   revalidatePath("/admin/matches");
@@ -432,7 +439,8 @@ export async function upsertPlayerStatsAction(formData: FormData) {
   if (!data.playerId) {
     throw new Error("A player is required.");
   }
-  await Promise.all([requireOwnedPlayer(data.playerId), requireOwnedMatch(data.matchId)]);
+  const [, match] = await Promise.all([requireOwnedPlayer(data.playerId), requireOwnedMatch(data.matchId)]);
+  requireManualStatsMatch(match);
 
   await db
     .insert(playerMatchStats)
@@ -520,7 +528,8 @@ export async function upsertPlayerStatsAction(formData: FormData) {
 
 export async function upsertGoalkeeperStatsAction(formData: FormData) {
   const data = parseGoalkeeperStats(formData);
-  await Promise.all([requireOwnedPlayer(data.playerId), requireOwnedMatch(data.matchId)]);
+  const [, match] = await Promise.all([requireOwnedPlayer(data.playerId), requireOwnedMatch(data.matchId)]);
+  requireManualStatsMatch(match);
 
   await db
     .insert(goalkeeperMatchStats)
@@ -553,7 +562,8 @@ export async function upsertTeamStatsAction(formData: FormData) {
   if (!data.teamId) {
     throw new Error("A team is required.");
   }
-  await Promise.all([requireOwnedTeam(data.teamId), requireOwnedMatch(data.matchId)]);
+  const [, match] = await Promise.all([requireOwnedTeam(data.teamId), requireOwnedMatch(data.matchId)]);
+  requireManualStatsMatch(match);
 
   await db
     .insert(teamMatchStats)

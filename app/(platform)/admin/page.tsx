@@ -13,6 +13,8 @@ const links = [
   { href: "/admin/players", title: "Players", description: "Registar perfis and positions of the players." },
   { href: "/admin/matches", title: "Matches", description: "Create home-team matches against opponents." },
   { href: "/admin/stats", title: "Enter Statistics", description: "Enter player, goalkeeper and team totals." },
+  { href: "/admin/integrations", title: "Integrations", description: "Link this account to VideoAnaliseJogadores." },
+  { href: "/admin-password", title: "Administration Password", description: "Change the password that protects this area." },
 ];
 
 export default function AdminHomePage() {
