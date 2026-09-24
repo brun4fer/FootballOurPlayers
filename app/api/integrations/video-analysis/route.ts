@@ -56,6 +56,21 @@ const payloadSchema = z.discriminatedUnion("kind", [
   z.object({ version: z.literal(1), kind: z.literal("team"), sourceWorkspaceId: z.string().min(1), team: teamSchema }),
   z.object({
     version: z.literal(1),
+    kind: z.literal("player"),
+    sourceWorkspaceId: z.string().min(1),
+    team: z.object({ id: z.string().min(1), name: z.string().trim().min(1).max(120) }),
+    player: playerSchema,
+  }),
+  z.object({
+    version: z.literal(1),
+    kind: z.literal("opponent"),
+    sourceWorkspaceId: z.string().min(1),
+    season: seasonSchema,
+    competition: competitionSchema,
+    opponent: z.object({ id: z.string().min(1), name: z.string().trim().min(1).max(120) }),
+  }),
+  z.object({
+    version: z.literal(1),
     kind: z.literal("match"),
     sourceWorkspaceId: z.string().min(1),
     season: seasonSchema,
@@ -257,6 +272,18 @@ export async function POST(request: Request) {
     if (payload.kind === "team") {
       const teamId = await syncTeam(workspaceId, payload.team, true);
       return NextResponse.json({ synchronized: true, kind: payload.kind, teamId, playerCount: payload.team.players.length });
+    }
+    if (payload.kind === "player") {
+      const teamId = await syncTeam(workspaceId, { ...payload.team, players: [] }, true);
+      const playerId = await syncPlayer(teamId, payload.player);
+      return NextResponse.json({ synchronized: true, kind: payload.kind, teamId, playerId });
+    }
+    if (payload.kind === "opponent") {
+      const seasonId = await syncSeason(workspaceId, payload.season);
+      const competitionId = await syncCompetition(workspaceId, payload.competition, seasonId);
+      const opponentTeamId = await syncOpponent(workspaceId, payload.opponent);
+      await linkTeamCompetition(opponentTeamId, competitionId);
+      return NextResponse.json({ synchronized: true, kind: payload.kind, seasonId, competitionId, opponentTeamId });
     }
 
     const result = await syncMatch(workspaceId, payload);
