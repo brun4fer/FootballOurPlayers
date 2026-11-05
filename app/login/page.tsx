@@ -1,18 +1,23 @@
 import { redirect } from "next/navigation";
 
 import { loginAction } from "@/actions/auth";
+import { getAnalyticsDestination } from "@/lib/analytics-navigation";
 import { getCurrentUser } from "@/lib/auth";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  if (await getCurrentUser()) redirect("/");
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
+  const destination = getAnalyticsDestination(next);
+
+  if (await getCurrentUser()) redirect(destination);
+
   return (
     <main className="grid min-h-screen place-items-center px-4">
       <form action={loginAction} className="w-full max-w-sm space-y-4 rounded-xl border bg-card p-6 shadow-xl">
+        <input type="hidden" name="next" value={destination} />
         <div>
           <h1 className="text-2xl font-semibold">Sign in</h1>
           <p className="text-sm text-muted-foreground">Introduza as suas credenciais.</p>

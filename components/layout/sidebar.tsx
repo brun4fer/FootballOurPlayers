@@ -80,6 +80,16 @@ const links = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const analyticsScope = pathname.startsWith("/teams")
+    ? "teams"
+    : pathname.startsWith("/players")
+      ? "players"
+      : "all";
+  const visibleLinks = links.filter(({ href }) => {
+    if (analyticsScope === "teams") return href !== "/players";
+    if (analyticsScope === "players") return href !== "/teams";
+    return true;
+  });
 
   return (
     <aside className="w-full shrink-0 border-b border-border/60 bg-card/60 backdrop-blur md:sticky md:top-0 md:h-screen md:w-72 md:overflow-y-auto md:border-b-0 md:border-r">
@@ -96,7 +106,7 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="grid grid-cols-2 gap-1 p-2 md:grid-cols-1">
-        {links.map(({ href, label, icon: Icon, children }) => {
+        {visibleLinks.map(({ href, label, icon: Icon, children }) => {
           const childActive = children?.some((child) => pathname === child.href) ?? false;
           const active =
             childActive || pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
