@@ -377,7 +377,7 @@ export const playerGpsMatchStats = pgTable(
     matchId: integer("match_id")
       .notNull()
       .references(() => matches.id, { onDelete: "cascade" }),
-    minutesPlayed: doublePrecision("minutes_played").notNull().default(0),
+    minutesPlayed: integer("minutes_played").notNull().default(0),
     totalDistance: doublePrecision("total_distance").notNull().default(0),
     runningDistance: doublePrecision("running_distance").notNull().default(0),
     sprintDistance: doublePrecision("sprint_distance").notNull().default(0),

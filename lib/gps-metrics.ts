@@ -1,5 +1,5 @@
 export const gpsMetricDefinitions = [
-  { key: "minutesPlayed", label: "Minutes Played", shortLabel: "Minutes", unit: "min", step: 0.1, aggregation: "sum" },
+  { key: "minutesPlayed", label: "Minutes Played", shortLabel: "Minutes", unit: "min", step: 1, aggregation: "sum" },
   { key: "totalDistance", label: "Total Distance", shortLabel: "Total Distance", unit: "m", step: 0.01, aggregation: "sum" },
   { key: "runningDistance", label: "Running Distance", shortLabel: "Running Distance", unit: "m", step: 0.01, aggregation: "sum" },
   { key: "sprintDistance", label: "Sprint Distance", shortLabel: "Sprint Distance", unit: "m", step: 0.01, aggregation: "sum" },
@@ -22,6 +22,17 @@ export const gpsMetricKeys = gpsMetricDefinitions.map((metric) => metric.key);
 
 export function isGpsMetricKey(value: unknown): value is GpsMetricKey {
   return typeof value === "string" && gpsMetricKeys.includes(value as GpsMetricKey);
+}
+
+export function parseGpsMetricKeys(value: unknown, legacyValue?: unknown): GpsMetricKey[] {
+  const rawValues = Array.isArray(value) ? value : value ? [value] : [];
+  const legacyValues = Array.isArray(legacyValue)
+    ? legacyValue
+    : legacyValue
+      ? [legacyValue]
+      : [];
+  const selected = [...new Set([...rawValues, ...legacyValues].filter(isGpsMetricKey))];
+  return selected.length ? selected : ["totalDistance"];
 }
 
 export function emptyGpsValues(): GpsValues {

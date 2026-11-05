@@ -16,7 +16,7 @@ export function GpsFilters({
   competitionId,
   playerIds = [],
   matchIds = [],
-  metricKey,
+  metricKeys,
   showPlayers,
 }: {
   competitions: Option[];
@@ -25,7 +25,7 @@ export function GpsFilters({
   competitionId?: number;
   playerIds?: number[];
   matchIds?: number[];
-  metricKey: GpsMetricKey;
+  metricKeys: GpsMetricKey[];
   showPlayers: boolean;
 }) {
   return (
@@ -68,12 +68,13 @@ export function GpsFilters({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="metric">Chart Metric</Label>
-            <NativeSelect id="metric" name="metric" defaultValue={metricKey}>
+            <Label htmlFor="metrics">Chart Metrics</Label>
+            <select id="metrics" name="metrics" multiple defaultValue={metricKeys} className="h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
               {gpsMetricDefinitions.map((metric) => (
                 <option key={metric.key} value={metric.key}>{metric.label}</option>
               ))}
-            </NativeSelect>
+            </select>
+            <p className="text-xs text-muted-foreground">Use Ctrl/Cmd to select several metrics.</p>
           </div>
 
           <div className="flex items-end gap-2 lg:col-span-4">
