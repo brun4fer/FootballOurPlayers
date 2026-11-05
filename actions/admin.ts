@@ -8,6 +8,7 @@ import {
   competitions,
   goalkeeperMatchStats,
   matches,
+  playerGpsMatchStats,
   playerMatchStats,
   players,
   seasons,
@@ -15,7 +16,7 @@ import {
   teamMatchStats,
   teams,
 } from "@/db/schema";
-import { parseGoalkeeperStats, parseOutfieldStats } from "@/lib/validators";
+import { parseGoalkeeperStats, parseGpsStats, parseOutfieldStats } from "@/lib/validators";
 import { getAdminWorkspaceId } from "@/lib/admin-auth";
 
 async function requireOwnedTeam(id: number) {
@@ -555,6 +556,43 @@ export async function upsertGoalkeeperStatsAction(formData: FormData) {
 
   revalidatePath("/admin/stats");
   revalidatePath("/dashboard");
+}
+
+export async function upsertGpsStatsAction(formData: FormData) {
+  const data = parseGpsStats(formData);
+  const [workspaceId] = await Promise.all([
+    getAdminWorkspaceId(),
+    requireOwnedPlayer(data.playerId),
+    requireOwnedMatch(data.matchId),
+  ]);
+
+  await db
+    .insert(playerGpsMatchStats)
+    .values({ workspaceId, ...data })
+    .onConflictDoUpdate({
+      target: [playerGpsMatchStats.playerId, playerGpsMatchStats.matchId],
+      set: {
+        workspaceId,
+        minutesPlayed: data.minutesPlayed,
+        totalDistance: data.totalDistance,
+        runningDistance: data.runningDistance,
+        sprintDistance: data.sprintDistance,
+        hsrDistance: data.hsrDistance,
+        maximumSpeed: data.maximumSpeed,
+        sprints: data.sprints,
+        repeatedSprints: data.repeatedSprints,
+        hsrRuns: data.hsrRuns,
+        totalAccelerations: data.totalAccelerations,
+        highIntensityAccelerations: data.highIntensityAccelerations,
+        totalDecelerations: data.totalDecelerations,
+        highIntensityDecelerations: data.highIntensityDecelerations,
+        changesOfDirection: data.changesOfDirection,
+      },
+    });
+
+  revalidatePath("/admin/gps");
+  revalidatePath("/gps/players");
+  revalidatePath("/gps/teams");
 }
 
 export async function upsertTeamStatsAction(formData: FormData) {

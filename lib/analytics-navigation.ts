@@ -10,8 +10,10 @@ export function getAnalyticsDestination(value: unknown) {
       destination.pathname === "/teams" || destination.pathname.startsWith("/teams/");
     const isPlayerArea =
       destination.pathname === "/players" || destination.pathname.startsWith("/players/");
+    const isGpsArea =
+      destination.pathname === "/gps" || destination.pathname.startsWith("/gps/");
 
-    return isLocal && (isTeamArea || isPlayerArea)
+    return isLocal && (isTeamArea || isPlayerArea || isGpsArea)
       ? `${destination.pathname}${destination.search}`
       : "/";
   } catch {

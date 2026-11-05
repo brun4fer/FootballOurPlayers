@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -363,6 +364,45 @@ export const teamMatchStats = pgTable(
   }),
 );
 
+export const playerGpsMatchStats = pgTable(
+  "player_gps_match_stats",
+  {
+    id: serial("id").primaryKey(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    playerId: integer("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    matchId: integer("match_id")
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    minutesPlayed: doublePrecision("minutes_played").notNull().default(0),
+    totalDistance: doublePrecision("total_distance").notNull().default(0),
+    runningDistance: doublePrecision("running_distance").notNull().default(0),
+    sprintDistance: doublePrecision("sprint_distance").notNull().default(0),
+    hsrDistance: doublePrecision("hsr_distance").notNull().default(0),
+    maximumSpeed: doublePrecision("maximum_speed").notNull().default(0),
+    sprints: integer("sprints").notNull().default(0),
+    repeatedSprints: integer("repeated_sprints").notNull().default(0),
+    hsrRuns: integer("hsr_runs").notNull().default(0),
+    totalAccelerations: integer("total_accelerations").notNull().default(0),
+    highIntensityAccelerations: integer("high_intensity_accelerations").notNull().default(0),
+    totalDecelerations: integer("total_decelerations").notNull().default(0),
+    highIntensityDecelerations: integer("high_intensity_decelerations").notNull().default(0),
+    changesOfDirection: integer("changes_of_direction").notNull().default(0),
+  },
+  (table) => ({
+    workspaceIdx: index("player_gps_match_stats_workspace_id_idx").on(table.workspaceId),
+    playerIdx: index("player_gps_match_stats_player_id_idx").on(table.playerId),
+    matchIdx: index("player_gps_match_stats_match_id_idx").on(table.matchId),
+    playerMatchUnique: uniqueIndex("player_gps_match_stats_player_match_unique").on(
+      table.playerId,
+      table.matchId,
+    ),
+  }),
+);
+
 export const publicReports = pgTable(
   "public_reports",
   {
@@ -421,6 +461,7 @@ export const playersRelations = relations(players, ({ one, many }) => ({
   }),
   playerMatchStats: many(playerMatchStats),
   goalkeeperMatchStats: many(goalkeeperMatchStats),
+  playerGpsMatchStats: many(playerGpsMatchStats),
 }));
 
 export const matchesRelations = relations(matches, ({ one, many }) => ({
@@ -435,6 +476,7 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
   playerMatchStats: many(playerMatchStats),
   goalkeeperMatchStats: many(goalkeeperMatchStats),
   teamMatchStats: many(teamMatchStats),
+  playerGpsMatchStats: many(playerGpsMatchStats),
 }));
 
 export const playerMatchStatsRelations = relations(
@@ -476,6 +518,21 @@ export const teamMatchStatsRelations = relations(teamMatchStats, ({ one }) => ({
   }),
 }));
 
+export const playerGpsMatchStatsRelations = relations(playerGpsMatchStats, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [playerGpsMatchStats.workspaceId],
+    references: [workspaces.id],
+  }),
+  player: one(players, {
+    fields: [playerGpsMatchStats.playerId],
+    references: [players.id],
+  }),
+  match: one(matches, {
+    fields: [playerGpsMatchStats.matchId],
+    references: [matches.id],
+  }),
+}));
+
 export type Season = typeof seasons.$inferSelect;
 export type Workspace = typeof workspaces.$inferSelect;
 export type User = typeof users.$inferSelect;
@@ -488,6 +545,7 @@ export type Match = typeof matches.$inferSelect;
 export type PlayerMatchStats = typeof playerMatchStats.$inferSelect;
 export type GoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferSelect;
 export type TeamMatchStats = typeof teamMatchStats.$inferSelect;
+export type PlayerGpsMatchStats = typeof playerGpsMatchStats.$inferSelect;
 export type PublicReport = typeof publicReports.$inferSelect;
 export type VideoAnalysisConnection = typeof videoAnalysisConnections.$inferSelect;
 
@@ -500,4 +558,5 @@ export type NewMatch = typeof matches.$inferInsert;
 export type NewPlayerMatchStats = typeof playerMatchStats.$inferInsert;
 export type NewGoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferInsert;
 export type NewTeamMatchStats = typeof teamMatchStats.$inferInsert;
+export type NewPlayerGpsMatchStats = typeof playerGpsMatchStats.$inferInsert;
 export type NewPublicReport = typeof publicReports.$inferInsert;

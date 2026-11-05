@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ClipboardPen, Database, Home, Link2, Shield, Users } from "lucide-react";
+import { Activity, BarChart3, ClipboardPen, Database, Home, Link2, Shield, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { APP_NAME } from "@/lib/app-config";
@@ -68,6 +68,8 @@ const links = [
       },
     ],
   },
+  { href: "/gps/players", label: "Player GPS", icon: Activity },
+  { href: "/gps/teams", label: "Team GPS", icon: Activity },
   { href: "/admin", label: "Administration", icon: Shield },
   { href: "/admin/seasons", label: "Seasons", icon: Database },
   { href: "/admin/competitions", label: "Competitions", icon: Database },
@@ -75,6 +77,7 @@ const links = [
   { href: "/admin/players", label: "Players", icon: Users },
   { href: "/admin/matches", label: "Matches", icon: ClipboardPen },
   { href: "/admin/stats", label: "Enter Statistics", icon: ClipboardPen },
+  { href: "/admin/gps", label: "Enter GPS Statistics", icon: Activity },
   { href: "/admin/integrations", label: "Integrations", icon: Link2 },
 ];
 
@@ -84,12 +87,23 @@ export function Sidebar() {
     ? "teams"
     : pathname.startsWith("/players")
       ? "players"
-      : "all";
+      : pathname.startsWith("/gps/teams")
+        ? "gps-teams"
+        : pathname.startsWith("/gps/players")
+          ? "gps-players"
+          : "all";
   const visibleLinks = links.filter(({ href }) => {
-    if (analyticsScope === "teams") return href !== "/players";
-    if (analyticsScope === "players") return href !== "/teams";
+    if (analyticsScope === "teams") return href !== "/players" && !href.startsWith("/gps/");
+    if (analyticsScope === "players") return href !== "/teams" && !href.startsWith("/gps/");
+    if (analyticsScope === "gps-teams") {
+      return href !== "/players" && href !== "/teams" && href !== "/gps/players";
+    }
+    if (analyticsScope === "gps-players") {
+      return href !== "/players" && href !== "/teams" && href !== "/gps/teams";
+    }
     return true;
   });
+  const productName = pathname.startsWith("/gps") ? "AP - GPS" : APP_NAME;
 
   return (
     <aside className="w-full shrink-0 border-b border-border/60 bg-card/60 backdrop-blur md:sticky md:top-0 md:h-screen md:w-72 md:overflow-y-auto md:border-b-0 md:border-r">
@@ -101,7 +115,7 @@ export function Sidebar() {
           className="h-9 w-9 shrink-0 rounded-md border border-border/70 bg-background object-contain"
         />
         <div className="min-w-0">
-          <p className="truncate font-semibold tracking-wide text-cyan-300">{APP_NAME}</p>
+          <p className="truncate font-semibold tracking-wide text-cyan-300">{productName}</p>
           <p className="text-xs text-muted-foreground">Management and performance analysis</p>
         </div>
       </div>

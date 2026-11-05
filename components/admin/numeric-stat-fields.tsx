@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 type Field = {
   key: string;
   label: string;
+  step?: number;
 };
 
 type NumericStatFieldsProps = {
@@ -22,6 +23,7 @@ export function NumericStatFields({ fields, values = {} }: NumericStatFieldsProp
             name={field.key}
             type="number"
             min={0}
+            step={field.step ?? 1}
             defaultValue={values[field.key] ?? 0}
             required={field.key === "minutesPlayed"}
           />

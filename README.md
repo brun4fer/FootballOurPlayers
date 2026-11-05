@@ -18,6 +18,7 @@ Plataforma de análise tática de futebol com estatísticas agregadas.
   - `/admin/teams`
   - `/admin/players`
   - `/admin/matches`
+  - `/admin/gps` (GPS values by player and match)
   - `/admin/stats` (fluxo competição -> jogo -> equipa -> jogador)
 - Painel:
   - `/dashboard`
@@ -44,6 +45,7 @@ O schema Drizzle e a migração inicial incluem:
 - `player_match_stats`
 - `goalkeeper_match_stats`
 - `team_match_stats`
+- `player_gps_match_stats`
 
 ## Métricas Dinâmicas
 
