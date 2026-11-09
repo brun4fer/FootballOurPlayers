@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { gpsMetricDefinitions, type GpsMetricKey } from "@/lib/gps-metrics";
+import { MultiSelectFilter } from "@/components/gps/multi-select-filter";
 
 type Option = { id: number; name: string };
 type MatchOption = { id: number; matchdayNumber: number; opponentTeamName: string };
@@ -31,7 +32,7 @@ export function GpsFilters({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>GPS Filters</CardTitle>
+        <CardTitle>GPS Match Filters</CardTitle>
         <CardDescription>
           Select a competition, optional matches{showPlayers ? " and one or more players" : ""}, and the metric shown in the charts.
         </CardDescription>
@@ -48,34 +49,12 @@ export function GpsFilters({
           </div>
 
           {showPlayers ? (
-            <div className="space-y-2">
-              <Label htmlFor="playerIds">Players</Label>
-              <select id="playerIds" name="playerIds" multiple defaultValue={playerIds.map(String)} className="h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
-                {players.map((player) => (
-                  <option key={player.id} value={player.id}>{player.name}</option>
-                ))}
-              </select>
-            </div>
+            <MultiSelectFilter id="playerIds" name="playerIds" label="Players" options={players.map((player) => ({ value: String(player.id), label: player.name }))} defaultValues={playerIds.map(String)} />
           ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="matchIds">Matches (optional)</Label>
-            <select id="matchIds" name="matchIds" multiple defaultValue={matchIds.map(String)} className="h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
-              {matches.map((match) => (
-                <option key={match.id} value={match.id}>Matchday {match.matchdayNumber} x {match.opponentTeamName}</option>
-              ))}
-            </select>
-          </div>
+          <MultiSelectFilter id="matchIds" name="matchIds" label="Matches (optional)" options={matches.map((match) => ({ value: String(match.id), label: `Matchday ${match.matchdayNumber} x ${match.opponentTeamName}` }))} defaultValues={matchIds.map(String)} />
 
-          <div className="space-y-2">
-            <Label htmlFor="metrics">Chart Metrics</Label>
-            <select id="metrics" name="metrics" multiple defaultValue={metricKeys} className="h-36 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
-              {gpsMetricDefinitions.map((metric) => (
-                <option key={metric.key} value={metric.key}>{metric.label}</option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">Use Ctrl/Cmd to select several metrics.</p>
-          </div>
+          <MultiSelectFilter id="metrics" name="metrics" label="Chart Metrics" options={gpsMetricDefinitions.map((metric) => ({ value: metric.key, label: metric.label }))} defaultValues={metricKeys} hint="Use Ctrl/Cmd to select several metrics." />
 
           <div className="flex items-end gap-2 lg:col-span-4">
             <Button>Apply Filters</Button>

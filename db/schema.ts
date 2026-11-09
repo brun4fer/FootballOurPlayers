@@ -403,6 +403,100 @@ export const playerGpsMatchStats = pgTable(
   }),
 );
 
+export const trainingSessions = pgTable(
+  "training_sessions",
+  {
+    id: serial("id").primaryKey(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    teamId: integer("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    seasonId: integer("season_id")
+      .notNull()
+      .references(() => seasons.id, { onDelete: "cascade" }),
+    trainingDate: date("training_date", { mode: "string" }).notNull(),
+    microcycleNumber: integer("microcycle_number").notNull(),
+    trainingUnitNumber: integer("training_unit_number").notNull(),
+    durationMinutes: integer("duration_minutes").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workspaceIdx: index("training_sessions_workspace_id_idx").on(table.workspaceId),
+    seasonIdx: index("training_sessions_season_id_idx").on(table.seasonId),
+    teamIdx: index("training_sessions_team_id_idx").on(table.teamId),
+    dateIdx: index("training_sessions_date_idx").on(table.trainingDate),
+    unitUnique: uniqueIndex("training_sessions_team_season_microcycle_unit_unique").on(
+      table.teamId,
+      table.seasonId,
+      table.microcycleNumber,
+      table.trainingUnitNumber,
+    ),
+  }),
+);
+
+export const trainingParticipants = pgTable(
+  "training_participants",
+  {
+    id: serial("id").primaryKey(),
+    trainingSessionId: integer("training_session_id")
+      .notNull()
+      .references(() => trainingSessions.id, { onDelete: "cascade" }),
+    playerId: integer("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+  },
+  (table) => ({
+    trainingIdx: index("training_participants_training_session_id_idx").on(table.trainingSessionId),
+    playerIdx: index("training_participants_player_id_idx").on(table.playerId),
+    participantUnique: uniqueIndex("training_participants_training_player_unique").on(
+      table.trainingSessionId,
+      table.playerId,
+    ),
+  }),
+);
+
+export const playerGpsTrainingStats = pgTable(
+  "player_gps_training_stats",
+  {
+    id: serial("id").primaryKey(),
+    workspaceId: integer("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    trainingSessionId: integer("training_session_id")
+      .notNull()
+      .references(() => trainingSessions.id, { onDelete: "cascade" }),
+    playerId: integer("player_id")
+      .notNull()
+      .references(() => players.id, { onDelete: "cascade" }),
+    totalDistance: doublePrecision("total_distance").notNull().default(0),
+    runningDistance: doublePrecision("running_distance").notNull().default(0),
+    sprintDistance: doublePrecision("sprint_distance").notNull().default(0),
+    hsrDistance: doublePrecision("hsr_distance").notNull().default(0),
+    maximumSpeed: doublePrecision("maximum_speed").notNull().default(0),
+    sprints: integer("sprints").notNull().default(0),
+    repeatedSprints: integer("repeated_sprints").notNull().default(0),
+    hsrRuns: integer("hsr_runs").notNull().default(0),
+    totalAccelerations: integer("total_accelerations").notNull().default(0),
+    highIntensityAccelerations: integer("high_intensity_accelerations").notNull().default(0),
+    totalDecelerations: integer("total_decelerations").notNull().default(0),
+    highIntensityDecelerations: integer("high_intensity_decelerations").notNull().default(0),
+    changesOfDirection: integer("changes_of_direction").notNull().default(0),
+  },
+  (table) => ({
+    workspaceIdx: index("player_gps_training_stats_workspace_id_idx").on(table.workspaceId),
+    trainingIdx: index("player_gps_training_stats_training_session_id_idx").on(table.trainingSessionId),
+    playerIdx: index("player_gps_training_stats_player_id_idx").on(table.playerId),
+    playerTrainingUnique: uniqueIndex("player_gps_training_stats_player_training_unique").on(
+      table.playerId,
+      table.trainingSessionId,
+    ),
+  }),
+);
+
 export const publicReports = pgTable(
   "public_reports",
   {
@@ -422,6 +516,7 @@ export const publicReports = pgTable(
 
 export const seasonsRelations = relations(seasons, ({ many }) => ({
   competitions: many(competitions),
+  trainingSessions: many(trainingSessions),
 }));
 
 export const competitionsRelations = relations(competitions, ({ one, many }) => ({
@@ -438,6 +533,7 @@ export const teamsRelations = relations(teams, ({ many }) => ({
   teamCompetitions: many(teamCompetitions),
   teamMatchStats: many(teamMatchStats),
   opponentMatches: many(matches),
+  trainingSessions: many(trainingSessions),
 }));
 
 export const teamCompetitionsRelations = relations(
@@ -462,6 +558,8 @@ export const playersRelations = relations(players, ({ one, many }) => ({
   playerMatchStats: many(playerMatchStats),
   goalkeeperMatchStats: many(goalkeeperMatchStats),
   playerGpsMatchStats: many(playerGpsMatchStats),
+  trainingParticipants: many(trainingParticipants),
+  playerGpsTrainingStats: many(playerGpsTrainingStats),
 }));
 
 export const matchesRelations = relations(matches, ({ one, many }) => ({
@@ -533,6 +631,49 @@ export const playerGpsMatchStatsRelations = relations(playerGpsMatchStats, ({ on
   }),
 }));
 
+export const trainingSessionsRelations = relations(trainingSessions, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [trainingSessions.workspaceId],
+    references: [workspaces.id],
+  }),
+  team: one(teams, {
+    fields: [trainingSessions.teamId],
+    references: [teams.id],
+  }),
+  season: one(seasons, {
+    fields: [trainingSessions.seasonId],
+    references: [seasons.id],
+  }),
+  participants: many(trainingParticipants),
+  playerGpsStats: many(playerGpsTrainingStats),
+}));
+
+export const trainingParticipantsRelations = relations(trainingParticipants, ({ one }) => ({
+  trainingSession: one(trainingSessions, {
+    fields: [trainingParticipants.trainingSessionId],
+    references: [trainingSessions.id],
+  }),
+  player: one(players, {
+    fields: [trainingParticipants.playerId],
+    references: [players.id],
+  }),
+}));
+
+export const playerGpsTrainingStatsRelations = relations(playerGpsTrainingStats, ({ one }) => ({
+  workspace: one(workspaces, {
+    fields: [playerGpsTrainingStats.workspaceId],
+    references: [workspaces.id],
+  }),
+  trainingSession: one(trainingSessions, {
+    fields: [playerGpsTrainingStats.trainingSessionId],
+    references: [trainingSessions.id],
+  }),
+  player: one(players, {
+    fields: [playerGpsTrainingStats.playerId],
+    references: [players.id],
+  }),
+}));
+
 export type Season = typeof seasons.$inferSelect;
 export type Workspace = typeof workspaces.$inferSelect;
 export type User = typeof users.$inferSelect;
@@ -546,6 +687,9 @@ export type PlayerMatchStats = typeof playerMatchStats.$inferSelect;
 export type GoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferSelect;
 export type TeamMatchStats = typeof teamMatchStats.$inferSelect;
 export type PlayerGpsMatchStats = typeof playerGpsMatchStats.$inferSelect;
+export type TrainingSession = typeof trainingSessions.$inferSelect;
+export type TrainingParticipant = typeof trainingParticipants.$inferSelect;
+export type PlayerGpsTrainingStats = typeof playerGpsTrainingStats.$inferSelect;
 export type PublicReport = typeof publicReports.$inferSelect;
 export type VideoAnalysisConnection = typeof videoAnalysisConnections.$inferSelect;
 
@@ -559,4 +703,7 @@ export type NewPlayerMatchStats = typeof playerMatchStats.$inferInsert;
 export type NewGoalkeeperMatchStats = typeof goalkeeperMatchStats.$inferInsert;
 export type NewTeamMatchStats = typeof teamMatchStats.$inferInsert;
 export type NewPlayerGpsMatchStats = typeof playerGpsMatchStats.$inferInsert;
+export type NewTrainingSession = typeof trainingSessions.$inferInsert;
+export type NewTrainingParticipant = typeof trainingParticipants.$inferInsert;
+export type NewPlayerGpsTrainingStats = typeof playerGpsTrainingStats.$inferInsert;
 export type NewPublicReport = typeof publicReports.$inferInsert;

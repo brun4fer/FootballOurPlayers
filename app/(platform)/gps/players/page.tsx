@@ -42,11 +42,11 @@ export default async function GpsPlayersPage({ searchParams }: PageProps) {
 
   return (
     <AnalyticsPageShell
-      title="Player GPS"
+      title="Player GPS - Matches"
       description="Individual GPS totals, comparisons and match-to-match evolution."
       filters={[{ label: "Competition", value: competition?.name }, { label: "Players", value: series.map((item) => item.label) }, { label: "Chart Metrics", value: selectedMetrics.map((item) => item.label) }]}
       searchQuery={query}
-      exportFileName="player-gps"
+      exportFileName="player-gps-matches"
     >
       <GpsFilters competitions={base.competitions} players={base.playerOptions} matches={base.matchOptions} competitionId={base.selectedCompetitionId} playerIds={playerIds} matchIds={matchIds} metricKeys={metricKeys} showPlayers />
 

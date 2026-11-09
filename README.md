@@ -18,7 +18,8 @@ Plataforma de análise tática de futebol com estatísticas agregadas.
   - `/admin/teams`
   - `/admin/players`
   - `/admin/matches`
-  - `/admin/gps` (GPS values by player and match)
+  - `/admin/gps/matches` (GPS values by player and match)
+  - `/admin/gps/training` (training units, participants and GPS values)
   - `/admin/stats` (fluxo competição -> jogo -> equipa -> jogador)
 - Painel:
   - `/dashboard`
@@ -46,6 +47,17 @@ O schema Drizzle e a migração inicial incluem:
 - `goalkeeper_match_stats`
 - `team_match_stats`
 - `player_gps_match_stats`
+- `training_sessions`
+- `training_participants`
+- `player_gps_training_stats`
+
+## GPS
+
+- GPS Matches keeps the existing competition and match workflow.
+- GPS Training reuses the registered team and players, while storing its records separately by season, date, microcycle and training unit.
+- Team values are calculated from player records. Training duration is stored once per session and is not multiplied by the number of players.
+- Multi-select filters include Select all and Clear controls for players, matches/trainings and chart metrics.
+- GPS administration lists saved records with safe edit and delete-statistics actions. Deleting statistics keeps the player, match and training.
 
 ## Métricas Dinâmicas
 

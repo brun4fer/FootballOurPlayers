@@ -6,7 +6,7 @@ import {
   type OutfieldStatKey,
   outfieldStatFields,
 } from "@/lib/stat-fields";
-import { gpsMetricDefinitions, type GpsMetricKey } from "@/lib/gps-metrics";
+import { editableTrainingGpsMetricDefinitions, gpsMetricDefinitions, type GpsMetricKey } from "@/lib/gps-metrics";
 import { toInt } from "@/lib/utils";
 
 const idSchema = z.coerce.number().int().positive();
@@ -88,6 +88,11 @@ export type ParsedGpsStats = {
   matchId: number;
 } & Record<GpsMetricKey, number>;
 
+export type ParsedTrainingGpsStats = {
+  playerId: number;
+  trainingSessionId: number;
+} & Omit<Record<GpsMetricKey, number>, "minutesPlayed">;
+
 export function parseOutfieldStats(formData: FormData): ParsedOutfieldStats {
   const numericStats = outfieldStatFields.reduce((acc, field) => {
     acc[field.key] = toInt(formData.get(field.key));
@@ -128,6 +133,21 @@ export function parseGpsStats(formData: FormData): ParsedGpsStats {
     values[metric.key] = metric.step === 1 ? Math.floor(nonNegative) : nonNegative;
     return values;
   }, {} as Record<GpsMetricKey, number>);
+
+  return { ...base, ...numericStats };
+}
+
+export function parseTrainingGpsStats(formData: FormData): ParsedTrainingGpsStats {
+  const base = z.object({ playerId: idSchema, trainingSessionId: idSchema }).parse({
+    playerId: formData.get("playerId"),
+    trainingSessionId: formData.get("trainingSessionId"),
+  });
+  const numericStats = editableTrainingGpsMetricDefinitions.reduce((values, metric) => {
+    const parsed = Number(formData.get(metric.key) ?? 0);
+    const nonNegative = Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+    values[metric.key] = metric.step === 1 ? Math.floor(nonNegative) : nonNegative;
+    return values;
+  }, {} as Omit<Record<GpsMetricKey, number>, "minutesPlayed">);
 
   return { ...base, ...numericStats };
 }

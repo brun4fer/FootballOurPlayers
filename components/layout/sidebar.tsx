@@ -68,8 +68,10 @@ const links = [
       },
     ],
   },
-  { href: "/gps/players", label: "Player GPS", icon: Activity },
-  { href: "/gps/teams", label: "Team GPS", icon: Activity },
+  { href: "/gps/players", label: "Player GPS - Matches", icon: Activity },
+  { href: "/gps/teams", label: "Team GPS - Matches", icon: Activity },
+  { href: "/gps/training/players", label: "Player GPS - Training", icon: Activity },
+  { href: "/gps/training/teams", label: "Team GPS - Training", icon: Activity },
   { href: "/admin", label: "Administration", icon: Shield },
   { href: "/admin/seasons", label: "Seasons", icon: Database },
   { href: "/admin/competitions", label: "Competitions", icon: Database },
@@ -87,19 +89,19 @@ export function Sidebar() {
     ? "teams"
     : pathname.startsWith("/players")
       ? "players"
-      : pathname.startsWith("/gps/teams")
+      : pathname.startsWith("/gps/teams") || pathname.startsWith("/gps/training/teams")
         ? "gps-teams"
-        : pathname.startsWith("/gps/players")
+        : pathname.startsWith("/gps/players") || pathname.startsWith("/gps/training/players")
           ? "gps-players"
           : "all";
   const visibleLinks = links.filter(({ href }) => {
     if (analyticsScope === "teams") return href !== "/players" && !href.startsWith("/gps/");
     if (analyticsScope === "players") return href !== "/teams" && !href.startsWith("/gps/");
     if (analyticsScope === "gps-teams") {
-      return href !== "/players" && href !== "/teams" && href !== "/gps/players";
+      return href !== "/players" && href !== "/teams" && href !== "/gps/players" && href !== "/gps/training/players";
     }
     if (analyticsScope === "gps-players") {
-      return href !== "/players" && href !== "/teams" && href !== "/gps/teams";
+      return href !== "/players" && href !== "/teams" && href !== "/gps/teams" && href !== "/gps/training/teams";
     }
     return true;
   });

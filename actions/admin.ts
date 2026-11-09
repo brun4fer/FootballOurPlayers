@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -9,14 +9,17 @@ import {
   goalkeeperMatchStats,
   matches,
   playerGpsMatchStats,
+  playerGpsTrainingStats,
   playerMatchStats,
   players,
   seasons,
   teamCompetitions,
   teamMatchStats,
   teams,
+  trainingParticipants,
+  trainingSessions,
 } from "@/db/schema";
-import { parseGoalkeeperStats, parseGpsStats, parseOutfieldStats } from "@/lib/validators";
+import { parseGoalkeeperStats, parseGpsStats, parseOutfieldStats, parseTrainingGpsStats } from "@/lib/validators";
 import { getAdminWorkspaceId } from "@/lib/admin-auth";
 
 async function requireOwnedTeam(id: number) {
@@ -590,9 +593,173 @@ export async function upsertGpsStatsAction(formData: FormData) {
       },
     });
 
-  revalidatePath("/admin/gps");
+  revalidatePath("/admin/gps/matches");
   revalidatePath("/gps/players");
   revalidatePath("/gps/teams");
+}
+
+export async function deleteGpsMatchStatsAction(formData: FormData) {
+  const workspaceId = await getAdminWorkspaceId();
+  const id = toRequiredId(formData.get("id"));
+  await db.delete(playerGpsMatchStats).where(and(
+    eq(playerGpsMatchStats.id, id),
+    eq(playerGpsMatchStats.workspaceId, workspaceId),
+  ));
+  revalidatePath("/admin/gps/matches");
+  revalidatePath("/gps/players");
+  revalidatePath("/gps/teams");
+}
+
+export async function createTrainingSessionAction(formData: FormData) {
+  const workspaceId = await getAdminWorkspaceId();
+  const seasonId = toRequiredId(formData.get("seasonId"));
+  const trainingDate = String(formData.get("trainingDate") ?? "");
+  const microcycleNumber = toRequiredId(formData.get("microcycleNumber"));
+  const trainingUnitNumber = toRequiredId(formData.get("trainingUnitNumber"));
+  const durationMinutes = toRequiredId(formData.get("durationMinutes"));
+  const playerIds = [...new Set(formData.getAll("playerIds").map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trainingDate)) throw new Error("Select a valid training date.");
+  if (!playerIds.length) throw new Error("Select at least one player for the training.");
+
+  const [season] = await db.select({ id: seasons.id }).from(seasons)
+    .where(and(eq(seasons.id, seasonId), eq(seasons.workspaceId, workspaceId))).limit(1);
+  if (!season) throw new Error("Invalid season.");
+  const teamId = await getFixedHomeTeamId();
+  const ownedPlayers = await db.select({ id: players.id }).from(players)
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .where(and(eq(players.teamId, teamId), eq(teams.workspaceId, workspaceId), inArray(players.id, playerIds)));
+  if (ownedPlayers.length !== playerIds.length) throw new Error("One or more selected players are invalid.");
+
+  const [training] = await db.insert(trainingSessions).values({ workspaceId, teamId, seasonId, trainingDate, microcycleNumber, trainingUnitNumber, durationMinutes }).returning({ id: trainingSessions.id });
+  try {
+    await db.insert(trainingParticipants).values(playerIds.map((playerId) => ({ trainingSessionId: training.id, playerId })));
+  } catch (error) {
+    await db.delete(trainingSessions).where(eq(trainingSessions.id, training.id));
+    throw error;
+  }
+
+  revalidatePath("/admin/gps/training");
+  revalidatePath("/gps/training/players");
+  revalidatePath("/gps/training/teams");
+}
+
+export async function deleteTrainingSessionAction(formData: FormData) {
+  const workspaceId = await getAdminWorkspaceId();
+  const id = toRequiredId(formData.get("id"));
+  await db.delete(trainingSessions).where(and(eq(trainingSessions.id, id), eq(trainingSessions.workspaceId, workspaceId)));
+  revalidatePath("/admin/gps/training");
+  revalidatePath("/gps/training/players");
+  revalidatePath("/gps/training/teams");
+}
+
+export async function updateTrainingSessionAction(formData: FormData) {
+  const workspaceId = await getAdminWorkspaceId();
+  const id = toRequiredId(formData.get("id"));
+  const seasonId = toRequiredId(formData.get("seasonId"));
+  const trainingDate = String(formData.get("trainingDate") ?? "");
+  const microcycleNumber = toRequiredId(formData.get("microcycleNumber"));
+  const trainingUnitNumber = toRequiredId(formData.get("trainingUnitNumber"));
+  const durationMinutes = toRequiredId(formData.get("durationMinutes"));
+  const playerIds = [...new Set(formData.getAll("playerIds").map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0))];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trainingDate)) throw new Error("Select a valid training date.");
+  if (!playerIds.length) throw new Error("Select at least one player for the training.");
+
+  const [training] = await db.select({ id: trainingSessions.id, teamId: trainingSessions.teamId })
+    .from(trainingSessions)
+    .where(and(eq(trainingSessions.id, id), eq(trainingSessions.workspaceId, workspaceId)))
+    .limit(1);
+  if (!training) throw new Error("Invalid training.");
+
+  const [season] = await db.select({ id: seasons.id }).from(seasons)
+    .where(and(eq(seasons.id, seasonId), eq(seasons.workspaceId, workspaceId))).limit(1);
+  if (!season) throw new Error("Invalid season.");
+
+  const ownedPlayers = await db.select({ id: players.id }).from(players)
+    .innerJoin(teams, eq(players.teamId, teams.id))
+    .where(and(eq(players.teamId, training.teamId), eq(teams.workspaceId, workspaceId), inArray(players.id, playerIds)));
+  if (ownedPlayers.length !== playerIds.length) throw new Error("One or more selected players are invalid.");
+
+  const currentParticipants = await db.select({ playerId: trainingParticipants.playerId })
+    .from(trainingParticipants)
+    .where(eq(trainingParticipants.trainingSessionId, id));
+  const selectedIds = new Set(playerIds);
+  const currentIds = new Set(currentParticipants.map((participant) => participant.playerId));
+  const removedIds = currentParticipants.map((participant) => participant.playerId).filter((playerId) => !selectedIds.has(playerId));
+  const addedIds = playerIds.filter((playerId) => !currentIds.has(playerId));
+
+  if (removedIds.length) {
+    const existingGps = await db.select({ playerId: playerGpsTrainingStats.playerId })
+      .from(playerGpsTrainingStats)
+      .where(and(
+        eq(playerGpsTrainingStats.trainingSessionId, id),
+        inArray(playerGpsTrainingStats.playerId, removedIds),
+      ))
+      .limit(1);
+    if (existingGps.length) {
+      throw new Error("Delete the GPS statistics for removed players before removing them from this training.");
+    }
+  }
+
+  await db.update(trainingSessions).set({
+    seasonId,
+    trainingDate,
+    microcycleNumber,
+    trainingUnitNumber,
+    durationMinutes,
+  }).where(and(eq(trainingSessions.id, id), eq(trainingSessions.workspaceId, workspaceId)));
+
+  if (removedIds.length) {
+    await db.delete(trainingParticipants).where(and(
+      eq(trainingParticipants.trainingSessionId, id),
+      inArray(trainingParticipants.playerId, removedIds),
+    ));
+  }
+  if (addedIds.length) {
+    await db.insert(trainingParticipants)
+      .values(addedIds.map((playerId) => ({ trainingSessionId: id, playerId })))
+      .onConflictDoNothing();
+  }
+
+  revalidatePath("/admin/gps/training");
+  revalidatePath("/gps/training/players");
+  revalidatePath("/gps/training/teams");
+}
+
+export async function upsertTrainingGpsStatsAction(formData: FormData) {
+  const data = parseTrainingGpsStats(formData);
+  const workspaceId = await getAdminWorkspaceId();
+  const [participant] = await db.select({ playerId: trainingParticipants.playerId })
+    .from(trainingParticipants)
+    .innerJoin(trainingSessions, eq(trainingParticipants.trainingSessionId, trainingSessions.id))
+    .where(and(
+      eq(trainingParticipants.trainingSessionId, data.trainingSessionId),
+      eq(trainingParticipants.playerId, data.playerId),
+      eq(trainingSessions.workspaceId, workspaceId),
+    )).limit(1);
+  if (!participant) throw new Error("The selected player is not registered for this training.");
+
+  await db.insert(playerGpsTrainingStats)
+    .values({ workspaceId, ...data })
+    .onConflictDoUpdate({
+      target: [playerGpsTrainingStats.playerId, playerGpsTrainingStats.trainingSessionId],
+      set: { workspaceId, ...data },
+    });
+
+  revalidatePath("/admin/gps/training");
+  revalidatePath("/gps/training/players");
+  revalidatePath("/gps/training/teams");
+}
+
+export async function deleteTrainingGpsStatsAction(formData: FormData) {
+  const workspaceId = await getAdminWorkspaceId();
+  const id = toRequiredId(formData.get("id"));
+  await db.delete(playerGpsTrainingStats).where(and(
+    eq(playerGpsTrainingStats.id, id),
+    eq(playerGpsTrainingStats.workspaceId, workspaceId),
+  ));
+  revalidatePath("/admin/gps/training");
+  revalidatePath("/gps/training/players");
+  revalidatePath("/gps/training/teams");
 }
 
 export async function upsertTeamStatsAction(formData: FormData) {

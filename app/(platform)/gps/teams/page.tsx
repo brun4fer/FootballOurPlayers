@@ -31,11 +31,11 @@ export default async function GpsTeamsPage({ searchParams }: PageProps) {
 
   return (
     <AnalyticsPageShell
-      title="Team GPS"
+      title="Team GPS - Matches"
       description="Collective GPS workload calculated automatically from the players in this account."
       filters={[{ label: "Competition", value: competition?.name }, { label: "Team", value: base.teamName }, { label: "Chart Metrics", value: selectedMetrics.map((item) => item.label) }]}
       searchQuery={query}
-      exportFileName="team-gps"
+      exportFileName="team-gps-matches"
     >
       <GpsFilters competitions={base.competitions} matches={base.matchOptions} competitionId={base.selectedCompetitionId} matchIds={matchIds} metricKeys={metricKeys} showPlayers={false} />
 

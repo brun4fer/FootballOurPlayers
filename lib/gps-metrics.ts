@@ -15,6 +15,16 @@ export const gpsMetricDefinitions = [
   { key: "changesOfDirection", label: "Changes of Direction", shortLabel: "Direction Changes", unit: "", step: 1, aggregation: "sum" },
 ] as const;
 
+export const trainingGpsMetricDefinitions = gpsMetricDefinitions.map((metric) =>
+  metric.key === "minutesPlayed"
+    ? { ...metric, label: "Training Duration", shortLabel: "Duration" }
+    : metric,
+);
+
+export const editableTrainingGpsMetricDefinitions = trainingGpsMetricDefinitions.filter(
+  (metric) => metric.key !== "minutesPlayed",
+);
+
 export type GpsMetricKey = (typeof gpsMetricDefinitions)[number]["key"];
 export type GpsValues = Record<GpsMetricKey, number>;
 
